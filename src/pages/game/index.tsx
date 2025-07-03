@@ -214,13 +214,18 @@ export default function GamePage() {
         hasGameSettings: !!gameSettings,
         allHolesScored,
         gameType: gameSettings?.holes,
-        totalHolesScored: holeScores.filter(s => s.points >= 0).length
+        totalHolesScored: holeScores.filter(s => s.points >= 0).length,
+        requiredHoles: gameSettings?.holes || 0,
+        currentNine,
+        frontNineCompleted
       });
       return;
     }
     
-    // Navigate to completion page instead of summary
-    router.push("/game/complete");
+    // For 9-hole games, or completed 18-hole games, proceed to completion
+    if (gameSettings.holes === 9 || (gameSettings.holes === 18 && currentNine === "back")) {
+      router.push("/game/complete");
+    }
   };
   
   const handleNewGame = () => {
