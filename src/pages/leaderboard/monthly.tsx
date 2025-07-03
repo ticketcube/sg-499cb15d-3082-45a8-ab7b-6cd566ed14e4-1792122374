@@ -1,0 +1,284 @@
+
+import { useState, useEffect } from "react";
+import { Layout } from "@/components/layout/Layout";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Trophy, Medal, Award, Crown, Lock } from "lucide-react";
+import Link from "next/link";
+import { useAuth } from "@/contexts/AuthContext";
+
+interface MonthlyLeaderboardEntry {
+  id: string;
+  playerName: string;
+  totalFourPoints: number;
+  gamesPlayed: number;
+  averageScore: number;
+  rank: number;
+}
+
+export default function MonthlyLeaderboard() {
+  const [leaderboard, setLeaderboard] = useState<MonthlyLeaderboardEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [hasAccess, setHasAccess] = useState(false);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      checkMonthlyAccess();
+      if (hasAccess) {
+        loadMonthlyLeaderboard();
+      }
+    }
+    setLoading(false);
+  }, [user, hasAccess]);
+
+  const checkMonthlyAccess = () => {
+    // Check if user has paid for monthly access
+    const monthlyAccess = localStorage.getItem(`monthlyAccess_${user?.uid}`);
+    if (monthlyAccess) {
+      const accessData = JSON.parse(monthlyAccess);
+      const currentMonth = new Date().getMonth();
+      const currentYear = new Date().getFullYear();
+      
+      if (accessData.month === currentMonth && accessData.year === currentYear) {
+        setHasAccess(true);
+      }
+    }
+  };
+
+  const loadMonthlyLeaderboard = () => {
+    try {
+      // Get current month's date range
+      const now = new Date();
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+      const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).getTime();
+
+      // Load games from localStorage (will be replaced with backend)
+      const savedGames = localStorage.getItem('savedGames') 
+        ? JSON.parse(localStorage.getItem('savedGames') || '[]') 
+        : [];
+
+      // Filter this month's games and aggregate by player
+      const monthlyGames = savedGames.filter((game: any) => 
+        game.timestamp >= monthStart && game.timestamp <= monthEnd
+      );
+
+      // Aggregate by player
+      const playerStats: { [key: string]: MonthlyLeaderboardEntry } = {};
+      
+      monthlyGames.forEach((game: any) => {
+        if (!playerStats[game.playerName]) {
+          playerStats[game.playerName] = {
+            id: game.playerName,
+            playerName: game.playerName,
+            totalFourPoints: 0,
+            gamesPlayed: 0,
+            averageScore: 0,
+            rank: 0
+          };
+        }
+        
+        playerStats[game.playerName].totalFourPoints += game.fourPointsEarned;
+        playerStats[game.playerName].gamesPlayed += 1;
+      });
+
+      // Calculate average scores and sort
+      const sortedPlayers = Object.values(playerStats)
+        .map(player => ({
+          ...player,
+          averageScore: player.totalFourPoints / player.gamesPlayed
+        }))
+        .sort((a, b) => b.totalFourPoints - a.totalFourPoints)
+        .map((player, index) => ({
+          ...player,
+          rank: index + 1
+        }));
+
+      setLeaderboard(sortedPlayers);
+    } catch (error) {
+      console.error('Error loading monthly leaderboard:', error);
+    }
+  };
+
+  const handlePurchaseAccess = async () => {
+    // This will integrate with Stripe later
+    // For now, simulate payment
+    if (user) {
+      const currentMonth = new Date().getMonth();
+      const currentYear = new Date().getFullYear();
+      
+      localStorage.setItem(`monthlyAccess_${user.uid}`, JSON.stringify({
+        month: currentMonth,
+        year: currentYear,
+        paid: true
+      }));
+      
+      // Add 4 points to user account
+      const currentPoints = parseInt(localStorage.getItem(`userPoints_${user.uid}`) || '0');
+      localStorage.setItem(`userPoints_${user.uid}`, (currentPoints + 4).toString());
+      
+      setHasAccess(true);
+      loadMonthlyLeaderboard();
+    }
+  };
+
+  const getRankIcon = (rank: number) => {
+    switch (rank) {
+      case 1:
+        return <Crown className="h-6 w-6 text-yellow-500" />;
+      case 2:
+        return <Trophy className="h-6 w-6 text-gray-400" />;
+      case 3:
+        return <Medal className="h-6 w-6 text-amber-600" />;
+      default:
+        return <Award className="h-5 w-5 text-gray-500" />;
+    }
+  };
+
+  const getRankBadgeColor = (rank: number) => {
+    switch (rank) {
+      case 1:
+        return "bg-yellow-100 text-yellow-800";
+      case 2:
+        return "bg-gray-100 text-gray-800";
+      case 3:
+        return "bg-amber-100 text-amber-800";
+      default:
+        return "bg-slate-100 text-slate-800";
+    }
+  };
+
+  if (!user) {
+    return (
+      <Layout>
+        <div className="p-4 flex flex-col items-center justify-center min-h-[60vh]">
+          <Card className="max-w-md mx-auto">
+            <CardHeader className="text-center">
+              <CardTitle>Monthly Leaderboard</CardTitle>
+              <p className="text-muted-foreground">Sign in to access the monthly leaderboard</p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Link href="/auth/login" className="w-full">
+                <Button className="w-full">Sign In</Button>
+              </Link>
+              <Link href="/auth/register" className="w-full">
+                <Button variant="outline" className="w-full">Create Account</Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (!hasAccess) {
+    return (
+      <Layout>
+        <div className="p-4">
+          <div className="max-w-md mx-auto">
+            <div className="text-center mb-6">
+              <h1 className="text-2xl font-bold mb-2">Monthly Leaderboard</h1>
+              <p className="text-muted-foreground">Premium access required</p>
+            </div>
+
+            <div className="flex gap-2 mb-6">
+              <Link href="/leaderboard/daily" className="flex-1">
+                <Button variant="outline" className="w-full">Daily</Button>
+              </Link>
+              <Button className="flex-1" disabled>Monthly</Button>
+            </div>
+
+            <Card>
+              <CardContent className="p-6 text-center">
+                <Lock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Premium Access Required</h3>
+                <p className="text-muted-foreground mb-4">
+                  Access the monthly leaderboard for $1 and earn 4 bonus points!
+                </p>
+                <Button onClick={handlePurchaseAccess} className="w-full">
+                  Purchase Access - $1
+                </Button>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Includes 4 bonus points added to your account
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  return (
+    <Layout>
+      <div className="p-4">
+        <div className="max-w-2xl mx-auto">
+          <div className="text-center mb-6">
+            <h1 className="text-2xl font-bold mb-2">Monthly Leaderboard</h1>
+            <p className="text-muted-foreground">This month's champions</p>
+          </div>
+
+          <div className="flex gap-2 mb-6">
+            <Link href="/leaderboard/daily" className="flex-1">
+              <Button variant="outline" className="w-full">Daily</Button>
+            </Link>
+            <Button className="flex-1">Monthly</Button>
+          </div>
+
+          {loading ? (
+            <Card>
+              <CardContent className="p-6 text-center">
+                <p>Loading leaderboard...</p>
+              </CardContent>
+            </Card>
+          ) : leaderboard.length === 0 ? (
+            <Card>
+              <CardContent className="p-6 text-center">
+                <Trophy className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No games this month</h3>
+                <p className="text-muted-foreground mb-4">Be the first to play and claim the top spot!</p>
+                <Link href="/game">
+                  <Button>Start Playing</Button>
+                </Link>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {leaderboard.map((entry) => (
+                <Card key={entry.id} className={entry.rank <= 3 ? "border-2 border-yellow-200" : ""}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        {getRankIcon(entry.rank)}
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold">{entry.playerName}</span>
+                            <Badge className={getRankBadgeColor(entry.rank)}>
+                              #{entry.rank}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {entry.gamesPlayed} games • Avg: {entry.averageScore.toFixed(1)}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="flex items-center gap-2">
+                          <span className={`text-lg font-bold ${entry.totalFourPoints >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {entry.totalFourPoints >= 0 ? '+' : ''}{entry.totalFourPoints}
+                          </span>
+                          <span className="text-sm text-muted-foreground">4pts</span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </Layout>
+  );
+}
