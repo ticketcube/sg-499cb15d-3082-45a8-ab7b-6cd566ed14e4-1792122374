@@ -1,4 +1,3 @@
-
 import { ReactNode } from "react";
 
 interface LayoutProps {
@@ -7,8 +6,10 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   return (
-    <div className="min-h-screen flex flex-col">
-      <main className="flex-grow">{children}</main>
+    <div className="min-h-screen flex flex-col bg-white">
+      <main className="flex-grow flex flex-col overflow-x-hidden">
+        {children}
+      </main>
     </div>
   );
 }
