@@ -42,6 +42,7 @@ export const gameService = {
         hole_scores: [],
         leaderboard_type: gameScore.leaderboardType,
         paid_entry: gameScore.paidEntry,
+        game_type: gameScore.gameType,
       })
       .select()
       .single();

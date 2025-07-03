@@ -44,6 +44,7 @@ export default function GameCompletePage() {
         timestamp: Date.now(),
         validated: true,
         leaderboardType: "monthly",
+        gameType: gameSettings.holes,
       };
 
       await gameService.submitGameScore(gameScoreData);
@@ -89,6 +90,7 @@ export default function GameCompletePage() {
           validated: true,
           leaderboardType: "daily",
           paidEntry: true,
+          gameType: gameSettings.holes,
         };
 
         await gameService.submitGameScore(gameScoreData);
