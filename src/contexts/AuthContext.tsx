@@ -8,8 +8,8 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<any>;
-  register: (email: string, password: string, displayName: string) => Promise<any>;
+  login: (email: string, password: string) => Promise<{ user: User | null; session: Session | null; }>;
+  register: (email: string, password: string, displayName: string) => Promise<{ user: User | null; session: Session | null; }>;
   logout: () => Promise<void>;
 }
 
@@ -17,8 +17,8 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
   loading: true,
-  login: async () => {},
-  register: async () => {},
+  login: async () => ({ user: null, session: null }),
+  register: async () => ({ user: null, session: null }),
   logout: async () => {}
 });
 
@@ -29,7 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {  { session } } = await supabase.auth.getSession();
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -37,7 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     getSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {  { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
     });
