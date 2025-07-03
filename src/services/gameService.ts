@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { GameScore } from "@/types";
 
@@ -30,22 +29,20 @@ export const gameService = {
   async submitGameScore(gameScore: GameScore) {
     const { data, error } = await supabase
       .from("games")
-      .insert([
-        {
-          user_id: gameScore.userId,
-          player_name: gameScore.playerName,
-          course_id: gameScore.courseId,
-          course_name: gameScore.courseName,
-          tee_id: gameScore.teeId,
-          tee_name: gameScore.teeName,
-          target_score: gameScore.targetScore,
-          total_points: gameScore.totalPoints,
-          four_points_earned: gameScore.fourPointsEarned,
-          hole_scores: gameScore.holeScores,
-          leaderboard_type: gameScore.leaderboardType,
-          paid_entry: gameScore.paidEntry,
-        },
-      ])
+      .insert({
+        user_id: gameScore.userId,
+        player_name: gameScore.playerName,
+        course_id: gameScore.courseId,
+        course_name: gameScore.courseName,
+        tee_id: gameScore.teeId,
+        tee_name: gameScore.teeName,
+        target_score: gameScore.targetScore,
+        total_points: gameScore.totalPoints,
+        four_points_earned: gameScore.fourPointsEarned,
+        hole_scores: gameScore.holeScores as any,
+        leaderboard_type: gameScore.leaderboardType,
+        paid_entry: gameScore.paidEntry,
+      })
       .select()
       .single();
 
