@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 import { GameSettings, HoleScore } from "@/types";
+import { useEffect } from "react";
 
 interface GameContextType {
   gameSettings: GameSettings | null;
@@ -39,6 +40,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const allHolesScored = gameSettings?.holes === 9 
     ? holeScores.filter(s => s.hole <= 9 && s.points >= 0).length === 9
     : holeScores.filter(s => s.points >= 0).length === 18;
+
+  // Add debug logging
+  useEffect(() => {
+    console.log('Game Settings:', gameSettings);
+    console.log('Hole Scores:', holeScores);
+    console.log('All Holes Scored:', allHolesScored);
+    console.log('Game Type:', gameSettings?.holes);
+    console.log('Scored Holes:', holeScores.filter(s => s.points >= 0).length);
+  }, [gameSettings, holeScores, allHolesScored]);
 
   const totalPoints = holeScores.reduce((sum, score) => sum + score.points, 0);
   const fourPointsEarned = gameSettings 

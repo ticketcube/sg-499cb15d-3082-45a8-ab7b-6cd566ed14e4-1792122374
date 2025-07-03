@@ -209,7 +209,15 @@ export default function GamePage() {
   };
   
   const handleCompleteGame = async () => {
-    if (!gameSettings || !allHolesScored) return;
+    if (!gameSettings || !allHolesScored) {
+      console.log('Cannot complete game:', {
+        hasGameSettings: !!gameSettings,
+        allHolesScored,
+        gameType: gameSettings?.holes,
+        totalHolesScored: holeScores.filter(s => s.points >= 0).length
+      });
+      return;
+    }
     
     // Navigate to completion page instead of summary
     router.push("/game/complete");
