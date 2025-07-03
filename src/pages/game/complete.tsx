@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -21,10 +20,10 @@ export default function GameCompletePage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!gameSettings || !holeScores.length) {
+    if (!gameSettings) {
       router.push("/game");
     }
-  }, [gameSettings, holeScores, router]);
+  }, [gameSettings, router]);
 
   const handleSubmitToMonthly = async () => {
     if (!user || !gameSettings) return;
