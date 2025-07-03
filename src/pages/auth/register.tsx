@@ -42,7 +42,7 @@ export default function RegisterPage() {
     setLoading(true);
     
     try {
-      await register(email, password, displayName);
+      await register(email, displayName);
       toast({
         title: "Success",
         description: "Account created successfully!"

@@ -32,7 +32,7 @@ export default function LoginPage() {
     setLoading(true);
     
     try {
-      await login(email, password);
+      await login(email);
       toast({
         title: "Success",
         description: "Logged in successfully!"

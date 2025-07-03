@@ -9,8 +9,8 @@ interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, displayName: string) => Promise<void>;
+  login: (email: string) => Promise<void>;
+  register: (email: string, displayName: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   }, []);
 
-  const login = async (email: string, _password: string) => {
+  const login = async (email: string) => {
     // Mock authentication - replace with real auth later
     const mockUser: User = {
       uid: `user_${Date.now()}`,
@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("currentUser", JSON.stringify(mockUser));
   };
 
-  const register = async (email: string, password: string, displayName: string) => {
+  const register = async (email: string, displayName: string) => {
     // Mock registration - replace with real auth later
     const mockUser: User = {
       uid: `user_${Date.now()}`,
