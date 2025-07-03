@@ -39,7 +39,7 @@ export const gameService = {
         target_score: gameScore.targetScore,
         total_points: gameScore.totalPoints,
         four_points_earned: gameScore.fourPointsEarned,
-        hole_scores: gameScore.holeScores as any,
+        hole_scores: gameScore.holeScores as unknown as Json,
         leaderboard_type: gameScore.leaderboardType,
         paid_entry: gameScore.paidEntry,
       })
