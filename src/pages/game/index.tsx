@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -8,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/router";
 import { useGame } from "@/contexts/GameContext";
-import { scoreOptions, Course, Tee, GameSettings } from "@/types";
+import { scoreOptions, Course, GameSettings } from "@/types";
 import { courseService } from "@/services/courseService";
 import { gameService } from "@/services/gameService";
 import { useToast } from "@/hooks/use-toast";
@@ -116,26 +115,31 @@ export default function GamePage() {
     const ghinValue = ghin !== undefined ? parseFloat(ghin) : undefined;
     const avgValue = avg !== undefined ? parseInt(avg) : undefined;
 
-    if (scoreType === 'ghin' && (ghinValue === undefined || isNaN(ghinValue))) {
+    if (scoreType === "ghin" && (ghinValue === undefined || isNaN(ghinValue))) {
       setTargetScore(null);
       return;
     }
-    if (scoreType === 'average' && (avgValue === undefined || isNaN(avgValue))) {
+    if (scoreType === "average" && (avgValue === undefined || isNaN(avgValue))) {
       setTargetScore(null);
       return;
     }
     
     try {
-      const target = gameService.calculateTargetScore({
+      let target = gameService.calculateTargetScore({
         ghinIndex: ghinValue,
         averageScore: avgValue,
         slopeRating: selectedTee.slopeRating,
         courseRating: selectedTee.courseRating,
         par: selectedCourse.par
       });
+
+      if (selectedCourse.holes === 9) {
+        target = target / 2;
+      }
       
       setTargetScore(Math.round(target));
     } catch (error) {
+      console.error("Error calculating target score:", error);
       setTargetScore(null);
     }
   };
