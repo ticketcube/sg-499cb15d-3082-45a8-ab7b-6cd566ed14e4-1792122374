@@ -14,7 +14,7 @@ export default function Home() {
           <div className='flex flex-col items-center text-center space-y-4'>
             <div className='relative h-24 md:h-32 w-auto'>
               <Image 
-                src='/4points-logo.svg' 
+                src='/4points-m91nnzka.png' 
                 alt='Golf 4Points Logo' 
                 width={128} 
                 height={128} 
