@@ -1,21 +1,49 @@
-import React from 'react'
-import Head from 'next/head'
 
-export default function Home() {
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+
+export default function HomePage() {
   return (
-    <>
-      <Head>
-        <title>Hello World</title>
-        <meta name="description" content="Welcome to my app" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-      
-      <main className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold text-gray-900">Hello World</h1>
-          <p className="text-lg text-gray-600">This is going to be your softgen app, start by describing your project.</p>
+    <main className="min-h-screen bg-white">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header with Logo */}
+        <div className="flex justify-center mb-8">
+          <Image
+            src="/4points-logo.svg"
+            alt="4Points Golf"
+            width={200}
+            height={150}
+            priority
+          />
         </div>
-      </main>
-    </>
-  )
+
+        {/* Quick Start Game Button */}
+        <Card className="mb-8 p-6 text-center">
+          <Button 
+            size="lg"
+            className="w-full py-8 text-xl bg-green-600 hover:bg-green-700"
+          >
+            Start New Game
+          </Button>
+        </Card>
+
+        {/* Quick Actions */}
+        <div className="grid grid-cols-2 gap-4">
+          <Button 
+            variant="outline" 
+            className="p-6 text-lg border-2"
+          >
+            Join Game
+          </Button>
+          <Button 
+            variant="outline" 
+            className="p-6 text-lg border-2"
+          >
+            Leaderboard
+          </Button>
+        </div>
+      </div>
+    </main>
+  );
 }
