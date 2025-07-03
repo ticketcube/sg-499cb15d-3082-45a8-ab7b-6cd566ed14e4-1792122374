@@ -35,6 +35,21 @@ export interface HoleScore {
   points: number;
 }
 
+export interface GameScore {
+  userId: string;
+  playerName: string;
+  courseId: string;
+  courseName: string;
+  teeId: string;
+  teeName: string;
+  targetScore: number;
+  totalPoints: number;
+  fourPointsEarned: number;
+  holeScores: HoleScore[];
+  timestamp: number;
+  validated: boolean;
+}
+
 export const scoreOptions = [
   { taps: 1, type: "B", points: 1, color: "text-green-600", bg: "bg-green-100" },
   { taps: 2, type: "P", points: 2, color: "text-blue-600", bg: "bg-blue-100" },

@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 
 interface User {
@@ -36,16 +35,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, _password: string) => {
     // Mock authentication - replace with real auth later
     const mockUser: User = {
       uid: `user_${Date.now()}`,
       email,
-      displayName: email.split('@')[0]
+      displayName: email.split("@")[0],
     };
-    
+
     setUser(mockUser);
-    localStorage.setItem('currentUser', JSON.stringify(mockUser));
+    localStorage.setItem("currentUser", JSON.stringify(mockUser));
   };
 
   const register = async (email: string, password: string, displayName: string) => {

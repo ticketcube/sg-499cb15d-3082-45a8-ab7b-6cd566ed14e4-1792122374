@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Trophy, Medal, Award, Crown } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
+import { GameScore } from "@/types";
 
 interface LeaderboardEntry {
   id: string;
@@ -35,15 +35,17 @@ export default function DailyLeaderboard() {
       const todayEnd = todayStart + 24 * 60 * 60 * 1000;
 
       // Load games from localStorage (will be replaced with backend)
-      const savedGames = localStorage.getItem('savedGames') 
-        ? JSON.parse(localStorage.getItem('savedGames') || '[]') 
+      const savedGames: GameScore[] = localStorage.getItem("savedGames")
+        ? JSON.parse(localStorage.getItem("savedGames") || "[]")
         : [];
 
       // Filter today's games and sort by 4Points earned
       const todaysGames = savedGames
-        .filter((game: any) => game.timestamp >= todayStart && game.timestamp < todayEnd)
-        .sort((a: any, b: any) => b.fourPointsEarned - a.fourPointsEarned)
-        .map((game: any, index: number) => ({
+        .filter(
+          (game) => game.timestamp >= todayStart && game.timestamp < todayEnd
+        )
+        .sort((a, b) => b.fourPointsEarned - a.fourPointsEarned)
+        .map((game, index) => ({
           id: game.timestamp.toString(),
           playerName: game.playerName,
           fourPointsEarned: game.fourPointsEarned,

@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Trophy, Medal, Award, Crown, Lock } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
+import { GameScore } from "@/types";
 
 interface MonthlyLeaderboardEntry {
   id: string;
@@ -23,6 +23,93 @@ export default function MonthlyLeaderboard() {
   const [hasAccess, setHasAccess] = useState(false);
   const { user } = useAuth();
 
+  const loadMonthlyLeaderboard = useCallback(() => {
+    try {
+      // Get current month's date range
+      const now = new Date();
+      const monthStart = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        1
+      ).getTime();
+      const monthEnd = new Date(
+        now.getFullYear(),
+        now.getMonth() + 1,
+        0,
+        23,
+        59,
+        59
+      ).getTime();
+
+      // Load games from localStorage (will be replaced with backend)
+      const savedGames: GameScore[] = localStorage.getItem("savedGames")
+        ? JSON.parse(localStorage.getItem("savedGames") || "[]")
+        : [];
+
+      // Filter this month's games and aggregate by player
+      const monthlyGames = savedGames.filter(
+        (game) => game.timestamp >= monthStart && game.timestamp <= monthEnd
+      );
+
+      // Aggregate by player
+      const playerStats: { [key: string]: MonthlyLeaderboardEntry } = {};
+
+      monthlyGames.forEach((game) => {
+        if (!playerStats[game.playerName]) {
+          playerStats[game.playerName] = {
+            id: game.playerName,
+            playerName: game.playerName,
+            totalFourPoints: 0,
+            gamesPlayed: 0,
+            averageScore: 0,
+            rank: 0,
+          };
+        }
+
+        playerStats[game.playerName].totalFourPoints += game.fourPointsEarned;
+        playerStats[game.playerName].gamesPlayed += 1;
+      });
+
+      // Calculate average scores and sort
+      const sortedPlayers = Object.values(playerStats)
+        .map((player) => ({
+          ...player,
+          averageScore:
+            player.gamesPlayed > 0
+              ? player.totalFourPoints / player.gamesPlayed
+              : 0,
+        }))
+        .sort((a, b) => b.totalFourPoints - a.totalFourPoints)
+        .map((player, index) => ({
+          ...player,
+          rank: index + 1,
+        }));
+
+      setLeaderboard(sortedPlayers);
+    } catch (error) {
+      console.error("Error loading monthly leaderboard:", error);
+    }
+  }, []);
+
+  const checkMonthlyAccess = useCallback(() => {
+    // Check if user has paid for monthly access
+    if (user) {
+      const monthlyAccess = localStorage.getItem(`monthlyAccess_${user.uid}`);
+      if (monthlyAccess) {
+        const accessData = JSON.parse(monthlyAccess);
+        const currentMonth = new Date().getMonth();
+        const currentYear = new Date().getFullYear();
+
+        if (
+          accessData.month === currentMonth &&
+          accessData.year === currentYear
+        ) {
+          setHasAccess(true);
+        }
+      }
+    }
+  }, [user]);
+
   useEffect(() => {
     if (user) {
       checkMonthlyAccess();
@@ -31,75 +118,7 @@ export default function MonthlyLeaderboard() {
       }
     }
     setLoading(false);
-  }, [user, hasAccess]);
-
-  const checkMonthlyAccess = () => {
-    // Check if user has paid for monthly access
-    const monthlyAccess = localStorage.getItem(`monthlyAccess_${user?.uid}`);
-    if (monthlyAccess) {
-      const accessData = JSON.parse(monthlyAccess);
-      const currentMonth = new Date().getMonth();
-      const currentYear = new Date().getFullYear();
-      
-      if (accessData.month === currentMonth && accessData.year === currentYear) {
-        setHasAccess(true);
-      }
-    }
-  };
-
-  const loadMonthlyLeaderboard = () => {
-    try {
-      // Get current month's date range
-      const now = new Date();
-      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-      const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).getTime();
-
-      // Load games from localStorage (will be replaced with backend)
-      const savedGames = localStorage.getItem('savedGames') 
-        ? JSON.parse(localStorage.getItem('savedGames') || '[]') 
-        : [];
-
-      // Filter this month's games and aggregate by player
-      const monthlyGames = savedGames.filter((game: any) => 
-        game.timestamp >= monthStart && game.timestamp <= monthEnd
-      );
-
-      // Aggregate by player
-      const playerStats: { [key: string]: MonthlyLeaderboardEntry } = {};
-      
-      monthlyGames.forEach((game: any) => {
-        if (!playerStats[game.playerName]) {
-          playerStats[game.playerName] = {
-            id: game.playerName,
-            playerName: game.playerName,
-            totalFourPoints: 0,
-            gamesPlayed: 0,
-            averageScore: 0,
-            rank: 0
-          };
-        }
-        
-        playerStats[game.playerName].totalFourPoints += game.fourPointsEarned;
-        playerStats[game.playerName].gamesPlayed += 1;
-      });
-
-      // Calculate average scores and sort
-      const sortedPlayers = Object.values(playerStats)
-        .map(player => ({
-          ...player,
-          averageScore: player.totalFourPoints / player.gamesPlayed
-        }))
-        .sort((a, b) => b.totalFourPoints - a.totalFourPoints)
-        .map((player, index) => ({
-          ...player,
-          rank: index + 1
-        }));
-
-      setLeaderboard(sortedPlayers);
-    } catch (error) {
-      console.error('Error loading monthly leaderboard:', error);
-    }
-  };
+  }, [user, hasAccess, checkMonthlyAccess, loadMonthlyLeaderboard]);
 
   const handlePurchaseAccess = async () => {
     // This will integrate with Stripe later

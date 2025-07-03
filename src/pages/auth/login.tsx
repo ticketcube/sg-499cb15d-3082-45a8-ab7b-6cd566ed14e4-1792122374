@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -39,7 +38,7 @@ export default function LoginPage() {
         description: "Logged in successfully!"
       });
       router.push("/leaderboard/daily");
-    } catch (error) {
+    } catch {
       toast({
         variant: "destructive",
         title: "Error",
