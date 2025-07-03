@@ -189,7 +189,7 @@ export default function GamePage() {
     if (!score || score.score === 0 || score.points === 0) {
       const scoreOptionReset = scoreOptions.find(option => option.taps === 5);
       if (score && scoreOptionReset && score.score === scoreOptionReset.taps) {
-        return { text: "R", color: scoreOptionReset.color, bg: scoreOptionReset.bg, points: 0 };
+        return { text: "+", color: scoreOptionReset.color, bg: scoreOptionReset.bg, points: 0 };
       }
       return { text: hole.toString(), color: "text-gray-800", bg: "bg-gray-100", points: undefined };
     }
