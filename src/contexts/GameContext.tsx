@@ -37,7 +37,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   const frontNineCompleted = holeScores.filter(s => s.hole <= 9 && s.points >= 0).length === 9;
   
-  // Updated allHolesScored calculation
+  // Updated allHolesScored calculation based on game type
   const allHolesScored = gameSettings?.holes === 9 
     ? holeScores.filter(s => s.hole <= 9 && s.points >= 0).length === 9
     : holeScores.filter(s => s.points >= 0).length === 18;
