@@ -1,6 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
 import { GameScore } from "@/types";
-import { Json } from "@/integrations/supabase/types";
 
 interface TargetScoreParams {
   ghinIndex?: number;
@@ -40,6 +39,7 @@ export const gameService = {
         target_score: gameScore.targetScore,
         total_points: gameScore.totalPoints,
         four_points_earned: gameScore.fourPointsEarned,
+        hole_scores: [],
         leaderboard_type: gameScore.leaderboardType,
         paid_entry: gameScore.paidEntry,
       })
