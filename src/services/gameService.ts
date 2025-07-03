@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { GameScore } from "@/types";
+import { Json } from "@/integrations/supabase/types";
 
 interface TargetScoreParams {
   ghinIndex?: number;
