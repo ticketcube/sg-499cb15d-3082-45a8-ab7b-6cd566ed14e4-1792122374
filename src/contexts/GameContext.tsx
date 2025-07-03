@@ -1,6 +1,6 @@
 
 import { createContext, useContext, useState, ReactNode } from "react";
-import { GameSettings, HoleScore, scoreOptions } from "@/types";
+import { GameSettings, HoleScore } from "@/types";
 
 interface GameContextType {
   gameSettings: GameSettings | null;
