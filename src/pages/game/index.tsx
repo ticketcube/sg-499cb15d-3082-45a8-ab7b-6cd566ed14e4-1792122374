@@ -209,21 +209,39 @@ export default function GamePage() {
   };
   
   const handleCompleteGame = async () => {
-    if (!gameSettings || !allHolesScored) {
-      console.log('Cannot complete game:', {
-        hasGameSettings: !!gameSettings,
-        allHolesScored,
-        gameType: gameSettings?.holes,
-        totalHolesScored: holeScores.filter(s => s.points >= 0).length,
-        requiredHoles: gameSettings?.holes || 0,
-        currentNine,
-        frontNineCompleted
-      });
+    if (!gameSettings) {
+      console.log('Cannot complete game: No game settings');
       return;
     }
-    
-    // For 9-hole games, or completed 18-hole games, proceed to completion
-    router.push("/game/complete");
+
+    // Debug logging
+    console.log('Complete Game Check:', {
+      gameType: gameSettings.holes,
+      currentNine,
+      frontNineCompleted,
+      allHolesScored,
+      totalScoredHoles: holeScores.filter(s => s.points >= 0).length
+    });
+
+    // For 9-hole games
+    if (gameSettings.holes === 9) {
+      if (holeScores.filter(s => s.hole <= 9 && s.points >= 0).length === 9) {
+        router.push("/game/complete");
+      } else {
+        console.log('9-hole game not complete');
+      }
+      return;
+    }
+
+    // For 18-hole games
+    if (gameSettings.holes === 18) {
+      if (currentNine === "back" && holeScores.filter(s => s.points >= 0).length === 18) {
+        router.push("/game/complete");
+      } else {
+        console.log('18-hole game not complete');
+      }
+      return;
+    }
   };
   
   const handleNewGame = () => {
