@@ -22,9 +22,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function GamePage() {
   const router = useRouter();
+  const { user } = useAuth();
   const { 
     gameSettings, 
     setGameSettings,
@@ -208,9 +210,49 @@ export default function GamePage() {
     return { text: hole.toString(), color: "text-gray-800", bg: "bg-gray-100", points: undefined };
   };
   
-  const handleCompleteGame = () => {
+  const handleCompleteGame = async () => {
     if (!gameSettings || !allHolesScored) return;
-    router.push("/game/summary");
+    
+    try {
+      // Prepare game score data
+      const gameScoreData = {
+        userId: user?.uid || "guest",
+        playerName: user?.displayName || "Guest Player",
+        courseId: gameSettings.courseId,
+        courseName: gameSettings.courseName,
+        teeId: gameSettings.teeId,
+        teeName: gameSettings.teeName,
+        targetScore: gameSettings.targetScore,
+        totalPoints: totalPoints,
+        fourPointsEarned: fourPointsEarned,
+        holeScores: holeScores,
+        timestamp: Date.now(),
+        validated: true
+      };
+      
+      // Save the game data to localStorage (will be replaced with backend)
+      const savedGames = localStorage.getItem('savedGames') 
+        ? JSON.parse(localStorage.getItem('savedGames') || '[]') 
+        : [];
+      
+      savedGames.push(gameScoreData);
+      localStorage.setItem('savedGames', JSON.stringify(savedGames));
+      
+      toast({
+        title: "Game completed!",
+        description: `You earned ${fourPointsEarned > 0 ? '+' : ''}${fourPointsEarned} 4Points.`,
+      });
+      
+      // Navigate to summary page
+      router.push("/game/summary");
+    } catch (error) {
+      console.error("Error saving game data:", error);
+      toast({
+        variant: 'destructive',
+        title: "Error",
+        description: "Failed to save game data. Please try again."
+      });
+    }
   };
   
   const handleNewGame = () => {
