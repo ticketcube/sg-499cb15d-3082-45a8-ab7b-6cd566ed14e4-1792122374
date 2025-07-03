@@ -1,4 +1,3 @@
-
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -74,7 +73,7 @@ export default function Home() {
               <div className="flex flex-col items-start text-left">
                 <h3 className="text-lg font-bold">2. Play & Score</h3>
                 <p className="text-sm text-muted-foreground">
-                  Tap to score: Bogey 1pt, Par 2pts, Birdie 3pts
+                  Tap to score: Bogey 1pt, Par 2pts, Birdie 4pts, Eagle 6pts
                 </p>
               </div>
             </div>
@@ -130,11 +129,15 @@ export default function Home() {
                 </div>
                 <div className="flex items-center justify-between p-2 bg-red-50 rounded-lg">
                   <span className="font-medium">Birdie</span>
-                  <span className="text-red-600">3 pts</span>
+                  <span className="text-red-600">4 pts</span>
                 </div>
                 <div className="flex items-center justify-between p-2 bg-purple-50 rounded-lg">
-                  <span className="font-medium">Eagle</span>
-                  <span className="text-purple-600">4 pts</span>
+                  <span className="font-medium">Eagle+</span>
+                  <span className="text-purple-600">6 pts</span>
+                </div>
+                <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg col-span-2">
+                  <span className="font-medium">Reset (5th tap)</span>
+                  <span className="text-gray-600">0 pts</span>
                 </div>
               </div>
             </div>
