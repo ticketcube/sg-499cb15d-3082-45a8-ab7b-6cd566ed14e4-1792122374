@@ -48,6 +48,8 @@ export interface GameScore {
   holeScores: HoleScore[];
   timestamp: number;
   validated: boolean;
+  leaderboardType?: "monthly" | "daily";
+  paidEntry?: boolean;
 }
 
 export const scoreOptions = [

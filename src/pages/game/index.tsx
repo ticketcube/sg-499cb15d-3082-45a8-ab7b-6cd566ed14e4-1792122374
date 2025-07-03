@@ -213,46 +213,8 @@ export default function GamePage() {
   const handleCompleteGame = async () => {
     if (!gameSettings || !allHolesScored) return;
     
-    try {
-      // Prepare game score data
-      const gameScoreData = {
-        userId: user?.id || "guest",
-        playerName: user?.user_metadata.display_name || "Guest Player",
-        courseId: gameSettings.courseId,
-        courseName: gameSettings.courseName,
-        teeId: gameSettings.teeId,
-        teeName: gameSettings.teeName,
-        targetScore: gameSettings.targetScore,
-        totalPoints: totalPoints,
-        fourPointsEarned: fourPointsEarned,
-        holeScores: holeScores,
-        timestamp: Date.now(),
-        validated: true
-      };
-      
-      // Save the game data to localStorage (will be replaced with backend)
-      const savedGames = localStorage.getItem('savedGames') 
-        ? JSON.parse(localStorage.getItem('savedGames') || '[]') 
-        : [];
-      
-      savedGames.push(gameScoreData);
-      localStorage.setItem('savedGames', JSON.stringify(savedGames));
-      
-      toast({
-        title: "Game completed!",
-        description: `You earned ${fourPointsEarned > 0 ? '+' : ''}${fourPointsEarned} 4Points.`,
-      });
-      
-      // Navigate to summary page
-      router.push("/game/summary");
-    } catch (error) {
-      console.error("Error saving game data:", error);
-      toast({
-        variant: 'destructive',
-        title: "Error",
-        description: "Failed to save game data. Please try again."
-      });
-    }
+    // Navigate to completion page instead of summary
+    router.push("/game/complete");
   };
   
   const handleNewGame = () => {
