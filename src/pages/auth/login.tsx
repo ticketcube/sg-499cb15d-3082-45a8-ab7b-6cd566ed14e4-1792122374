@@ -37,7 +37,8 @@ export default function LoginPage() {
         title: "Success",
         description: "Logged in successfully!"
       });
-      router.push("/leaderboard/daily");
+      const redirect = router.query.redirect as string | undefined;
+      router.push(redirect || "/leaderboard/daily");
     } catch {
       toast({
         variant: "destructive",

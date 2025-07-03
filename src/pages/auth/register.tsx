@@ -47,7 +47,8 @@ export default function RegisterPage() {
         title: "Success",
         description: "Account created successfully! Please check your email to verify."
       });
-      router.push("/leaderboard/daily");
+      const redirect = router.query.redirect as string | undefined;
+      router.push(redirect || "/leaderboard/daily");
     } catch {
       toast({
         variant: "destructive",

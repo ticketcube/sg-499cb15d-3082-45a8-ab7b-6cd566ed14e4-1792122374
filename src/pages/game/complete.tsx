@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import { useGame } from "@/contexts/GameContext";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { gameService } from "@/services/gameService";
+import { GameScore } from "@/types";
 
 export default function GameCompletePage() {
   const router = useRouter();
@@ -19,23 +21,17 @@ export default function GameCompletePage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    // Redirect if no game data
     if (!gameSettings || !holeScores.length) {
       router.push("/game");
     }
   }, [gameSettings, holeScores, router]);
 
   const handleSubmitToMonthly = async () => {
-    if (!user) {
-      router.push("/auth/login");
-      return;
-    }
-
-    if (!gameSettings) return;
+    if (!user || !gameSettings) return;
 
     setSubmitting(true);
     try {
-      const gameScoreData = {
+      const gameScoreData: GameScore = {
         userId: user.id,
         playerName: user.user_metadata?.display_name || "Anonymous Player",
         courseId: gameSettings.courseId,
@@ -48,7 +44,7 @@ export default function GameCompletePage() {
         holeScores: holeScores,
         timestamp: Date.now(),
         validated: true,
-        leaderboardType: "monthly"
+        leaderboardType: "monthly",
       };
 
       await gameService.submitGameScore(gameScoreData);
@@ -62,9 +58,9 @@ export default function GameCompletePage() {
     } catch (error) {
       console.error("Error submitting to monthly leaderboard:", error);
       toast({
-        variant: 'destructive',
+        variant: "destructive",
         title: "Error",
-        description: "Failed to submit score. Please try again."
+        description: "Failed to submit score. Please try again.",
       });
     } finally {
       setSubmitting(false);
@@ -72,20 +68,14 @@ export default function GameCompletePage() {
   };
 
   const handleSubmitToDaily = async () => {
-    if (!user) {
-      router.push("/auth/login");
-      return;
-    }
-
-    if (!gameSettings) return;
+    if (!user || !gameSettings) return;
 
     setSubmitting(true);
     try {
-      // Simulate payment processing (will integrate with Stripe later)
       const paymentSuccess = await simulatePayment();
-      
+
       if (paymentSuccess) {
-        const gameScoreData = {
+        const gameScoreData: GameScore = {
           userId: user.id,
           playerName: user.user_metadata?.display_name || "Anonymous Player",
           courseId: gameSettings.courseId,
@@ -99,7 +89,7 @@ export default function GameCompletePage() {
           timestamp: Date.now(),
           validated: true,
           leaderboardType: "daily",
-          paidEntry: true
+          paidEntry: true,
         };
 
         await gameService.submitGameScore(gameScoreData);
@@ -114,9 +104,9 @@ export default function GameCompletePage() {
     } catch (error) {
       console.error("Error submitting to daily prizes:", error);
       toast({
-        variant: 'destructive',
+        variant: "destructive",
         title: "Payment failed",
-        description: "Payment could not be processed. Please try again."
+        description: "Payment could not be processed. Please try again.",
       });
     } finally {
       setSubmitting(false);
@@ -124,11 +114,7 @@ export default function GameCompletePage() {
   };
 
   const simulatePayment = async (): Promise<boolean> => {
-    // Simulate payment processing delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // For demo purposes, always return success
-    // In production, this would integrate with Stripe
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     return true;
   };
 
@@ -141,11 +127,82 @@ export default function GameCompletePage() {
     return null;
   }
 
+  const renderAuthPrompt = () => (
+    <Card className="mb-6">
+      <CardHeader className="text-center">
+        <CardTitle>Almost there!</CardTitle>
+      </CardHeader>
+      <CardContent className="p-4 text-center">
+        <Users className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+        <p className="text-sm text-muted-foreground mb-3">
+          Sign in or create an account to submit your score.
+        </p>
+        <div className="flex flex-col gap-2">
+          <Link href={`/auth/login?redirect=${router.asPath}`} className="flex-1">
+            <Button variant="outline" className="w-full">Sign In</Button>
+          </Link>
+          <Link href={`/auth/register?redirect=${router.asPath}`} className="flex-1">
+            <Button className="w-full">Register</Button>
+          </Link>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  const renderLeaderboardOptions = () => (
+    <div className="space-y-4 mb-6">
+      <h3 className="text-lg font-semibold text-center">Submit Your Score</h3>
+      <Card className="border-2 border-blue-200">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-blue-600" />
+              <span className="font-semibold">Monthly Leaderboard</span>
+            </div>
+            <Badge className="bg-green-100 text-green-800">FREE</Badge>
+          </div>
+          <p className="text-sm text-muted-foreground mb-3">
+            Compete with players all month long. Track your progress and climb the rankings!
+          </p>
+          <Button
+            onClick={handleSubmitToMonthly}
+            disabled={submitting}
+            className="w-full"
+            variant="outline"
+          >
+            {submitting ? "Submitting..." : "Submit to Monthly"}
+          </Button>
+        </CardContent>
+      </Card>
+      <Card className="border-2 border-yellow-200">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-yellow-600" />
+              <span className="font-semibold">Daily Prizes</span>
+            </div>
+            <Badge className="bg-yellow-100 text-yellow-800">$1</Badge>
+          </div>
+          <p className="text-sm text-muted-foreground mb-3">
+            Enter today's prize competition! Winners receive cash prizes and bonus points.
+          </p>
+          <div className="flex items-center gap-2 mb-3 text-xs text-muted-foreground">
+            <Gift className="h-4 w-4" />
+            <span>1st: $50 • 2nd: $25 • 3rd: $10</span>
+          </div>
+          <Button onClick={handleSubmitToDaily} disabled={submitting} className="w-full">
+            <DollarSign className="h-4 w-4 mr-2" />
+            {submitting ? "Processing..." : "Enter Daily Prizes - $1"}
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
   return (
     <Layout>
       <div className="p-4">
         <div className="max-w-md mx-auto">
-          {/* Game Summary */}
           <Card className="mb-6">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl">Game Complete!</CardTitle>
@@ -163,93 +220,17 @@ export default function GameCompletePage() {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">4Points</p>
-                  <p className={`text-2xl font-bold ${fourPointsEarned >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {fourPointsEarned >= 0 ? '+' : ''}{fourPointsEarned}
+                  <p className={`text-2xl font-bold ${fourPointsEarned >= 0 ? "text-green-600" : "text-red-600"}`}>
+                    {fourPointsEarned >= 0 ? "+" : ""}{fourPointsEarned}
                   </p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Leaderboard Options */}
-          <div className="space-y-4 mb-6">
-            <h3 className="text-lg font-semibold text-center">Submit Your Score</h3>
-            
-            {/* Monthly Leaderboard - Free */}
-            <Card className="border-2 border-blue-200">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-blue-600" />
-                    <span className="font-semibold">Monthly Leaderboard</span>
-                  </div>
-                  <Badge className="bg-green-100 text-green-800">FREE</Badge>
-                </div>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Compete with players all month long. Track your progress and climb the rankings!
-                </p>
-                <Button 
-                  onClick={handleSubmitToMonthly} 
-                  disabled={submitting}
-                  className="w-full"
-                  variant="outline"
-                >
-                  {submitting ? "Submitting..." : "Submit to Monthly"}
-                </Button>
-              </CardContent>
-            </Card>
+          {user ? renderLeaderboardOptions() : renderAuthPrompt()}
 
-            {/* Daily Prizes - Paid */}
-            <Card className="border-2 border-yellow-200">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <Trophy className="h-5 w-5 text-yellow-600" />
-                    <span className="font-semibold">Daily Prizes</span>
-                  </div>
-                  <Badge className="bg-yellow-100 text-yellow-800">$1</Badge>
-                </div>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Enter today's prize competition! Winners receive cash prizes and bonus points.
-                </p>
-                <div className="flex items-center gap-2 mb-3 text-xs text-muted-foreground">
-                  <Gift className="h-4 w-4" />
-                  <span>1st: $50 • 2nd: $25 • 3rd: $10</span>
-                </div>
-                <Button 
-                  onClick={handleSubmitToDaily} 
-                  disabled={submitting}
-                  className="w-full"
-                >
-                  <DollarSign className="h-4 w-4 mr-2" />
-                  {submitting ? "Processing..." : "Enter Daily Prizes - $1"}
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Authentication Required */}
-          {!user && (
-            <Card className="mb-6">
-              <CardContent className="p-4 text-center">
-                <Users className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground mb-3">
-                  Sign in to submit your score to leaderboards
-                </p>
-                <div className="flex gap-2">
-                  <Link href="/auth/login" className="flex-1">
-                    <Button variant="outline" className="w-full">Sign In</Button>
-                  </Link>
-                  <Link href="/auth/register" className="flex-1">
-                    <Button className="w-full">Register</Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Action Buttons */}
-          <div className="space-y-2">
+          <div className="space-y-2 mt-6">
             <Button onClick={handleNewGame} variant="outline" size="lg" className="w-full">
               Play Another Round
             </Button>
