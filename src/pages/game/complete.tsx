@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useGame } from "@/contexts/GameContext";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
+import { gameService } from "@/services/gameService";
 
 export default function GameCompletePage() {
   const router = useRouter();
@@ -34,7 +35,6 @@ export default function GameCompletePage() {
 
     setSubmitting(true);
     try {
-      // Prepare game score data for monthly leaderboard
       const gameScoreData = {
         userId: user.id,
         playerName: user.user_metadata?.display_name || "Anonymous Player",
@@ -51,13 +51,7 @@ export default function GameCompletePage() {
         leaderboardType: "monthly"
       };
 
-      // Save to localStorage for now (will be replaced with Supabase)
-      const savedGames = localStorage.getItem('savedGames') 
-        ? JSON.parse(localStorage.getItem('savedGames') || '[]') 
-        : [];
-      
-      savedGames.push(gameScoreData);
-      localStorage.setItem('savedGames', JSON.stringify(savedGames));
+      await gameService.submitGameScore(gameScoreData);
 
       toast({
         title: "Score submitted!",
@@ -91,7 +85,6 @@ export default function GameCompletePage() {
       const paymentSuccess = await simulatePayment();
       
       if (paymentSuccess) {
-        // Prepare game score data for daily prizes leaderboard
         const gameScoreData = {
           userId: user.id,
           playerName: user.user_metadata?.display_name || "Anonymous Player",
@@ -109,13 +102,7 @@ export default function GameCompletePage() {
           paidEntry: true
         };
 
-        // Save to localStorage for now (will be replaced with Supabase)
-        const savedGames = localStorage.getItem('dailyPrizesLeaderboard') 
-          ? JSON.parse(localStorage.getItem('dailyPrizesLeaderboard') || '[]') 
-          : [];
-        
-        savedGames.push(gameScoreData);
-        localStorage.setItem('dailyPrizesLeaderboard', JSON.stringify(savedGames));
+        await gameService.submitGameScore(gameScoreData);
 
         toast({
           title: "Payment successful!",
