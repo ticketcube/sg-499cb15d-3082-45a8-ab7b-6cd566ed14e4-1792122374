@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, ReactNode } from "react";
 import { GameSettings, HoleScore } from "@/types";
 
@@ -35,10 +34,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const frontNineCompleted = holeScores.filter(s => s.hole <= 9).length === 9;
+  const frontNineCompleted = holeScores.filter(s => s.hole <= 9 && s.points >= 0).length === 9;
+  
   const allHolesScored = gameSettings?.holes === 9 
-    ? holeScores.length === 9 
-    : holeScores.length === 18;
+    ? holeScores.filter(s => s.hole <= 9 && s.points >= 0).length === 9
+    : holeScores.filter(s => s.points >= 0).length === 18;
 
   const totalPoints = holeScores.reduce((sum, score) => sum + score.points, 0);
   const fourPointsEarned = gameSettings 
