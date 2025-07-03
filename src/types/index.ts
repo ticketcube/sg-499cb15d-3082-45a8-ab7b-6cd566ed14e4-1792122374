@@ -50,6 +50,7 @@ export interface GameScore {
   validated: boolean;
   leaderboardType?: "monthly" | "daily";
   paidEntry?: boolean;
+  gameType: number;
 }
 
 export const scoreOptions = [

@@ -91,6 +91,7 @@ export interface Database {
           validated: boolean | null
           leaderboard_type: string | null
           paid_entry: boolean | null
+          game_type: number
         }
         Insert: {
           id?: string
@@ -108,6 +109,7 @@ export interface Database {
           validated?: boolean | null
           leaderboard_type?: string | null
           paid_entry?: boolean | null
+          game_type?: number
         }
         Update: {
           id?: string
@@ -125,6 +127,7 @@ export interface Database {
           validated?: boolean | null
           leaderboard_type?: string | null
           paid_entry?: boolean | null
+          game_type?: number
         }
         Relationships: [
           {
