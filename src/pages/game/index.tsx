@@ -216,8 +216,8 @@ export default function GamePage() {
     try {
       // Prepare game score data
       const gameScoreData = {
-        userId: user?.uid || "guest",
-        playerName: user?.displayName || "Guest Player",
+        userId: user?.id || "guest",
+        playerName: user?.user_metadata.display_name || "Guest Player",
         courseId: gameSettings.courseId,
         courseName: gameSettings.courseName,
         teeId: gameSettings.teeId,

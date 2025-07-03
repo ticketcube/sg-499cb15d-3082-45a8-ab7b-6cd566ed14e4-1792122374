@@ -42,10 +42,10 @@ export default function RegisterPage() {
     setLoading(true);
     
     try {
-      await register(email, displayName);
+      await register(email, password, displayName);
       toast({
         title: "Success",
-        description: "Account created successfully!"
+        description: "Account created successfully! Please check your email to verify."
       });
       router.push("/leaderboard/daily");
     } catch {

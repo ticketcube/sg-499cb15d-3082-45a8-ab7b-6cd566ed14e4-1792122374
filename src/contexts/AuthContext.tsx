@@ -1,74 +1,79 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 
-interface User {
-  uid: string;
-  email: string;
-  displayName: string;
-}
+    import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+    import { supabase } from "@/services/supabase";
+    import { Session, User } from "@supabase/supabase-js";
+    import { signUp as supabaseSignUp, signIn as supabaseSignIn, signOut as supabaseSignOut } from "@/services/supabase";
 
-interface AuthContextType {
-  user: User | null;
-  loading: boolean;
-  login: (email: string) => Promise<void>;
-  register: (email: string, displayName: string) => Promise<void>;
-  logout: () => Promise<void>;
-}
-
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  loading: true,
-  login: async () => {},
-  register: async () => {},
-  logout: async () => {}
-});
-
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Check for existing user session in localStorage
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
+    interface AuthContextType {
+      user: User | null;
+      session: Session | null;
+      loading: boolean;
+      login: (email: string, password: string) => Promise<any>;
+      register: (email: string, password: string, displayName: string) => Promise<any>;
+      logout: () => Promise<void>;
     }
-    setLoading(false);
-  }, []);
 
-  const login = async (email: string) => {
-    // Mock authentication - replace with real auth later
-    const mockUser: User = {
-      uid: `user_${Date.now()}`,
-      email,
-      displayName: email.split("@")[0],
-    };
+    const AuthContext = createContext<AuthContextType>({
+      user: null,
+      session: null,
+      loading: true,
+      login: async () => {},
+      register: async () => {},
+      logout: async () => {}
+    });
 
-    setUser(mockUser);
-    localStorage.setItem("currentUser", JSON.stringify(mockUser));
-  };
+    export function AuthProvider({ children }: { children: ReactNode }) {
+      const [user, setUser] = useState<User | null>(null);
+      const [session, setSession] = useState<Session | null>(null);
+      const [loading, setLoading] = useState(true);
 
-  const register = async (email: string, displayName: string) => {
-    // Mock registration - replace with real auth later
-    const mockUser: User = {
-      uid: `user_${Date.now()}`,
-      email,
-      displayName
-    };
-    
-    setUser(mockUser);
-    localStorage.setItem('currentUser', JSON.stringify(mockUser));
-  };
+      useEffect(() => {
+        const getSession = async () => {
+          const {  { session } } = await supabase.auth.getSession();
+          setSession(session);
+          setUser(session?.user ?? null);
+          setLoading(false);
+        };
 
-  const logout = async () => {
-    setUser(null);
-    localStorage.removeItem('currentUser');
-  };
+        getSession();
 
-  return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
-}
+        const {  { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+          setSession(session);
+          setUser(session?.user ?? null);
+        });
 
-export const useAuth = () => useContext(AuthContext);
+        return () => {
+          subscription.unsubscribe();
+        };
+      }, []);
+
+      const login = async (email: string, password: string) => {
+        return await supabaseSignIn(email, password);
+      };
+
+      const register = async (email: string, password: string, displayName: string) => {
+        return await supabaseSignUp(email, password, displayName);
+      };
+
+      const logout = async () => {
+        await supabaseSignOut();
+      };
+
+      const value = {
+        user,
+        session,
+        loading,
+        login,
+        register,
+        logout,
+      };
+
+      return (
+        <AuthContext.Provider value={value}>
+          {children}
+        </AuthContext.Provider>
+      );
+    }
+
+    export const useAuth = () => useContext(AuthContext);
+  

@@ -94,7 +94,7 @@ export default function MonthlyLeaderboard() {
   const checkMonthlyAccess = useCallback(() => {
     // Check if user has paid for monthly access
     if (user) {
-      const monthlyAccess = localStorage.getItem(`monthlyAccess_${user.uid}`);
+      const monthlyAccess = localStorage.getItem(`monthlyAccess_${user.id}`);
       if (monthlyAccess) {
         const accessData = JSON.parse(monthlyAccess);
         const currentMonth = new Date().getMonth();
@@ -127,15 +127,15 @@ export default function MonthlyLeaderboard() {
       const currentMonth = new Date().getMonth();
       const currentYear = new Date().getFullYear();
       
-      localStorage.setItem(`monthlyAccess_${user.uid}`, JSON.stringify({
+      localStorage.setItem(`monthlyAccess_${user.id}`, JSON.stringify({
         month: currentMonth,
         year: currentYear,
         paid: true
       }));
       
       // Add 4 points to user account
-      const currentPoints = parseInt(localStorage.getItem(`userPoints_${user.uid}`) || '0');
-      localStorage.setItem(`userPoints_${user.uid}`, (currentPoints + 4).toString());
+      const currentPoints = parseInt(localStorage.getItem(`userPoints_${user.id}`) || '0');
+      localStorage.setItem(`userPoints_${user.id}`, (currentPoints + 4).toString());
       
       setHasAccess(true);
       loadMonthlyLeaderboard();
