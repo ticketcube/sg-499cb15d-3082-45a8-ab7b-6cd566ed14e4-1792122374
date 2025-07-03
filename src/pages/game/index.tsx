@@ -223,9 +223,7 @@ export default function GamePage() {
     }
     
     // For 9-hole games, or completed 18-hole games, proceed to completion
-    if (gameSettings.holes === 9 || (gameSettings.holes === 18 && currentNine === "back")) {
-      router.push("/game/complete");
-    }
+    router.push("/game/complete");
   };
   
   const handleNewGame = () => {
