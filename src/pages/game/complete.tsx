@@ -20,9 +20,17 @@ export default function GameCompletePage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!gameSettings) {
-      router.push("/game");
-    }
+    // Add a small delay to ensure context is loaded before checking
+    const timer = setTimeout(() => {
+      if (!gameSettings) {
+        console.log('❌ No game settings found in complete page, redirecting to /game');
+        router.push("/game");
+      } else {
+        console.log('✅ Game settings found in complete page:', gameSettings);
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, [gameSettings, router]);
 
   const handleSubmitToMonthly = async () => {
