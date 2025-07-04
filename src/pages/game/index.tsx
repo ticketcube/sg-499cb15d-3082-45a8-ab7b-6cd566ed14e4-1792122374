@@ -33,7 +33,6 @@ export default function GamePage() {
     currentNine, 
     switchToBackNine: contextSwitchToBackNine, 
     frontNineCompleted,
-    allHolesScored,
     totalPoints,
     fourPointsEarned,
     resetGame
@@ -366,6 +365,18 @@ export default function GamePage() {
     
     const holesToShow = currentNine === 'front' ? [1,2,3,4,5,6,7,8,9] : [10,11,12,13,14,15,16,17,18];
 
+    // Calculate completion status directly here
+    let showCompleteButton = false;
+    if (gameSettings.holes === 9) {
+      // For 9-hole games, need all 9 holes scored
+      const frontNineScored = holeScores.filter(s => s.hole <= 9 && s.points >= 0).length;
+      showCompleteButton = frontNineScored === 9;
+    } else if (gameSettings.holes === 18) {
+      // For 18-hole games, need to be on back nine and have all 18 holes scored
+      const totalScored = holeScores.filter(s => s.points >= 0).length;
+      showCompleteButton = currentNine === "back" && totalScored === 18;
+    }
+
     return (
       <div className="p-2 sm:p-4 flex flex-col h-full">
         <Card className="max-w-md mx-auto flex-grow flex flex-col">
@@ -433,7 +444,7 @@ export default function GamePage() {
             </AlertDialog>
           )}
           
-          {allHolesScored && (
+          {showCompleteButton && (
             <Button onClick={handleCompleteGame} size="lg" className="w-full">
               Complete Game
             </Button>
