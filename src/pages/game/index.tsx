@@ -209,38 +209,49 @@ export default function GamePage() {
   };
   
   const handleCompleteGame = async () => {
+    console.log('=== COMPLETE GAME DEBUG ===');
+    console.log('Game Settings:', gameSettings);
+    console.log('Hole Scores:', holeScores);
+    console.log('Current Nine:', currentNine);
+    
     if (!gameSettings) {
-      console.log('Cannot complete game: No game settings');
+      console.log('❌ No game settings - redirecting to setup');
       return;
     }
 
-    // Debug logging
-    console.log('Complete Game Check:', {
-      gameType: gameSettings.holes,
-      currentNine,
-      frontNineCompleted,
-      allHolesScored,
-      totalScoredHoles: holeScores.filter(s => s.points >= 0).length
-    });
+    const scoredHoles = holeScores.filter(s => s.points >= 0);
+    console.log('Scored Holes Count:', scoredHoles.length);
+    console.log('Game Type (holes):', gameSettings.holes);
 
-    // For 9-hole games
+    // Simple completion check
+    let canComplete = false;
+    
     if (gameSettings.holes === 9) {
-      if (holeScores.filter(s => s.hole <= 9 && s.points >= 0).length === 9) {
-        router.push("/game/complete");
-      } else {
-        console.log('9-hole game not complete');
-      }
-      return;
+      // For 9-hole games, need all 9 holes scored
+      const frontNineScored = holeScores.filter(s => s.hole <= 9 && s.points >= 0).length;
+      console.log('Front nine scored:', frontNineScored);
+      canComplete = frontNineScored === 9;
+    } else if (gameSettings.holes === 18) {
+      // For 18-hole games, need to be on back nine and have all 18 holes scored
+      const totalScored = holeScores.filter(s => s.points >= 0).length;
+      console.log('Total scored:', totalScored);
+      console.log('Current nine:', currentNine);
+      canComplete = currentNine === "back" && totalScored === 18;
     }
 
-    // For 18-hole games
-    if (gameSettings.holes === 18) {
-      if (currentNine === "back" && holeScores.filter(s => s.points >= 0).length === 18) {
-        router.push("/game/complete");
-      } else {
-        console.log('18-hole game not complete');
-      }
-      return;
+    console.log('Can Complete:', canComplete);
+
+    if (canComplete) {
+      console.log('✅ Navigating to /game/complete');
+      router.push("/game/complete");
+    } else {
+      console.log('❌ Game not complete yet');
+      toast({
+        title: "Game not complete",
+        description: gameSettings.holes === 9 
+          ? "Please score all 9 holes to complete the game."
+          : "Please score all 18 holes to complete the game.",
+      });
     }
   };
   
