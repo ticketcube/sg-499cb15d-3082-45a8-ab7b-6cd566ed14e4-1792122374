@@ -20,6 +20,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [gameSettings, setGameSettings] = useState<GameSettings | null>(null);
   const [holeScores, setHoleScores] = useState<HoleScore[]>([]);
   const [currentNine, setCurrentNine] = useState<"front" | "back">("front");
+  const [isLoaded, setIsLoaded] = useState(false);
 
   // Load game state from localStorage on mount
   useEffect(() => {
@@ -36,24 +37,30 @@ export function GameProvider({ children }: { children: ReactNode }) {
     if (savedCurrentNine) {
       setCurrentNine(JSON.parse(savedCurrentNine));
     }
+    
+    setIsLoaded(true);
   }, []);
 
-  // Save game state to localStorage whenever it changes
+  // Save game state to localStorage whenever it changes (only after initial load)
   useEffect(() => {
+    if (!isLoaded) return;
+    
     if (gameSettings) {
       localStorage.setItem('currentGameSettings', JSON.stringify(gameSettings));
     } else {
       localStorage.removeItem('currentGameSettings');
     }
-  }, [gameSettings]);
+  }, [gameSettings, isLoaded]);
 
   useEffect(() => {
+    if (!isLoaded) return;
     localStorage.setItem('currentHoleScores', JSON.stringify(holeScores));
-  }, [holeScores]);
+  }, [holeScores, isLoaded]);
 
   useEffect(() => {
+    if (!isLoaded) return;
     localStorage.setItem('currentNine', JSON.stringify(currentNine));
-  }, [currentNine]);
+  }, [currentNine, isLoaded]);
 
   const setHoleScore = (hole: number, score: number, points: number) => {
     setHoleScores(prev => {
@@ -80,10 +87,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setGameSettings(null);
     setHoleScores([]);
     setCurrentNine("front");
+    setIsLoaded(false);
     // Clear localStorage
     localStorage.removeItem('currentGameSettings');
     localStorage.removeItem('currentHoleScores');
     localStorage.removeItem('currentNine');
+    setIsLoaded(true);
   };
 
   return (
