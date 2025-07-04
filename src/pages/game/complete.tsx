@@ -27,11 +27,14 @@ export default function GameCompletePage() {
         router.push("/game");
       } else {
         console.log('✅ Game settings found in complete page:', gameSettings);
+        console.log('✅ Total points on complete page:', totalPoints);
+        console.log('✅ Four points earned on complete page:', fourPointsEarned);
+        console.log('✅ Hole scores on complete page:', holeScores);
       }
     }, 100);
 
     return () => clearTimeout(timer);
-  }, [gameSettings, router]);
+  }, [gameSettings, totalPoints, fourPointsEarned, holeScores, router]);
 
   const handleSubmitToMonthly = async () => {
     if (!user || !gameSettings) return;
