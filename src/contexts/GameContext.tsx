@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { GameSettings, HoleScore } from "@/types";
 
 interface GameContextType {
@@ -20,6 +20,40 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [gameSettings, setGameSettings] = useState<GameSettings | null>(null);
   const [holeScores, setHoleScores] = useState<HoleScore[]>([]);
   const [currentNine, setCurrentNine] = useState<"front" | "back">("front");
+
+  // Load game state from localStorage on mount
+  useEffect(() => {
+    const savedGameSettings = localStorage.getItem('currentGameSettings');
+    const savedHoleScores = localStorage.getItem('currentHoleScores');
+    const savedCurrentNine = localStorage.getItem('currentNine');
+
+    if (savedGameSettings) {
+      setGameSettings(JSON.parse(savedGameSettings));
+    }
+    if (savedHoleScores) {
+      setHoleScores(JSON.parse(savedHoleScores));
+    }
+    if (savedCurrentNine) {
+      setCurrentNine(JSON.parse(savedCurrentNine));
+    }
+  }, []);
+
+  // Save game state to localStorage whenever it changes
+  useEffect(() => {
+    if (gameSettings) {
+      localStorage.setItem('currentGameSettings', JSON.stringify(gameSettings));
+    } else {
+      localStorage.removeItem('currentGameSettings');
+    }
+  }, [gameSettings]);
+
+  useEffect(() => {
+    localStorage.setItem('currentHoleScores', JSON.stringify(holeScores));
+  }, [holeScores]);
+
+  useEffect(() => {
+    localStorage.setItem('currentNine', JSON.stringify(currentNine));
+  }, [currentNine]);
 
   const setHoleScore = (hole: number, score: number, points: number) => {
     setHoleScores(prev => {
@@ -46,6 +80,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setGameSettings(null);
     setHoleScores([]);
     setCurrentNine("front");
+    // Clear localStorage
+    localStorage.removeItem('currentGameSettings');
+    localStorage.removeItem('currentHoleScores');
+    localStorage.removeItem('currentNine');
   };
 
   return (
