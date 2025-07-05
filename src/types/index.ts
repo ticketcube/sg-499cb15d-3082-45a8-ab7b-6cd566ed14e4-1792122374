@@ -1,4 +1,6 @@
 
+import type { Database } from "@/integrations/supabase/types";
+
 export interface Course {
   id: string;
   name: string;
@@ -53,9 +55,9 @@ export interface GameScore {
   gameType: 9 | 18;
 }
 
-export interface Game extends Database["public"]["Tables"]["games"]["Row"] {
-  profiles: { display_name: string } | null;
-}
+export type Game = Database["public"]["Tables"]["games"]["Row"] & {
+  profiles: { display_name: string | null } | null;
+};
 
 export const scoreOptions = [
   { taps: 1, type: "B", points: 1, color: "text-green-600", bg: "bg-green-100" },
