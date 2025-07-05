@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -6,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Trophy, Medal, Award, Crown, Lock } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { GameScore } from "@/types";
+import { gameService } from "@/services/gameService";
 
 interface MonthlyLeaderboardEntry {
   id: string;
@@ -23,42 +24,21 @@ export default function MonthlyLeaderboard() {
   const [hasAccess, setHasAccess] = useState(false);
   const { user } = useAuth();
 
-  const loadMonthlyLeaderboard = useCallback(() => {
+  const loadMonthlyLeaderboard = useCallback(async () => {
+    setLoading(true);
     try {
-      // Get current month's date range
-      const now = new Date();
-      const monthStart = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        1
-      ).getTime();
-      const monthEnd = new Date(
-        now.getFullYear(),
-        now.getMonth() + 1,
-        0,
-        23,
-        59,
-        59
-      ).getTime();
+      const monthlyGames = await gameService.getMonthlyLeaderboard();
 
-      // Load games from localStorage (will be replaced with backend)
-      const savedGames: GameScore[] = localStorage.getItem("savedGames")
-        ? JSON.parse(localStorage.getItem("savedGames") || "[]")
-        : [];
-
-      // Filter this month's games and aggregate by player
-      const monthlyGames = savedGames.filter(
-        (game) => game.timestamp >= monthStart && game.timestamp <= monthEnd
-      );
-
-      // Aggregate by player
       const playerStats: { [key: string]: MonthlyLeaderboardEntry } = {};
 
-      monthlyGames.forEach((game) => {
-        if (!playerStats[game.playerName]) {
-          playerStats[game.playerName] = {
-            id: game.playerName,
-            playerName: game.playerName,
+      monthlyGames.forEach((game: any) => {
+        const userId = game.user_id;
+        const playerName = game.profiles?.display_name || game.player_name;
+
+        if (!playerStats[userId]) {
+          playerStats[userId] = {
+            id: userId,
+            playerName: playerName,
             totalFourPoints: 0,
             gamesPlayed: 0,
             averageScore: 0,
@@ -66,11 +46,10 @@ export default function MonthlyLeaderboard() {
           };
         }
 
-        playerStats[game.playerName].totalFourPoints += game.fourPointsEarned;
-        playerStats[game.playerName].gamesPlayed += 1;
+        playerStats[userId].totalFourPoints += game.four_points_earned;
+        playerStats[userId].gamesPlayed += 1;
       });
 
-      // Calculate average scores and sort
       const sortedPlayers = Object.values(playerStats)
         .map((player) => ({
           ...player,
@@ -88,11 +67,12 @@ export default function MonthlyLeaderboard() {
       setLeaderboard(sortedPlayers);
     } catch (error) {
       console.error("Error loading monthly leaderboard:", error);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
   const checkMonthlyAccess = useCallback(() => {
-    // Check if user has paid for monthly access
     if (user) {
       const monthlyAccess = localStorage.getItem(`monthlyAccess_${user.id}`);
       if (monthlyAccess) {
@@ -115,14 +95,15 @@ export default function MonthlyLeaderboard() {
       checkMonthlyAccess();
       if (hasAccess) {
         loadMonthlyLeaderboard();
+      } else {
+        setLoading(false);
       }
+    } else {
+      setLoading(false);
     }
-    setLoading(false);
   }, [user, hasAccess, checkMonthlyAccess, loadMonthlyLeaderboard]);
 
   const handlePurchaseAccess = async () => {
-    // This will integrate with Stripe later
-    // For now, simulate payment
     if (user) {
       const currentMonth = new Date().getMonth();
       const currentYear = new Date().getFullYear();
@@ -133,12 +114,10 @@ export default function MonthlyLeaderboard() {
         paid: true
       }));
       
-      // Add 4 points to user account
       const currentPoints = parseInt(localStorage.getItem(`userPoints_${user.id}`) || '0');
       localStorage.setItem(`userPoints_${user.id}`, (currentPoints + 4).toString());
       
       setHasAccess(true);
-      loadMonthlyLeaderboard();
     }
   };
 

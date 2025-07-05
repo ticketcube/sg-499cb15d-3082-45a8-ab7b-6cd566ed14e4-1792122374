@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -6,14 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { Trophy, Medal, Award, Crown } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { GameScore } from "@/types";
+import { gameService } from "@/services/gameService";
 
 interface LeaderboardEntry {
   id: string;
   playerName: string;
   fourPointsEarned: number;
   courseName: string;
-  timestamp: number;
   rank: number;
 }
 
@@ -23,41 +23,30 @@ export default function DailyLeaderboard() {
   const { user } = useAuth();
 
   useEffect(() => {
-    loadDailyLeaderboard();
-  }, []);
+    if (user) {
+      loadDailyLeaderboard();
+    } else {
+      setLoading(false);
+    }
+  }, [user]);
 
-  const loadDailyLeaderboard = () => {
+  const loadDailyLeaderboard = async () => {
+    setLoading(true);
     try {
-      // Get today's date range
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const todayStart = today.getTime();
-      const todayEnd = todayStart + 24 * 60 * 60 * 1000;
-
-      // Load games from localStorage (will be replaced with backend)
-      const savedGames: GameScore[] = localStorage.getItem("savedGames")
-        ? JSON.parse(localStorage.getItem("savedGames") || "[]")
-        : [];
-
-      // Filter today's games and sort by 4Points earned
-      const todaysGames = savedGames
-        .filter(
-          (game) => game.timestamp >= todayStart && game.timestamp < todayEnd
-        )
-        .sort((a, b) => b.fourPointsEarned - a.fourPointsEarned)
-        .map((game, index) => ({
-          id: game.timestamp.toString(),
-          playerName: game.playerName,
-          fourPointsEarned: game.fourPointsEarned,
-          courseName: game.courseName,
-          timestamp: game.timestamp,
-          rank: index + 1
-        }));
+      const dailyGames = await gameService.getDailyLeaderboard();
+      
+      const todaysGames = dailyGames.map((game: any, index: number) => ({
+        id: game.id,
+        playerName: game.profiles?.display_name || game.player_name,
+        fourPointsEarned: game.four_points_earned,
+        courseName: game.course_name,
+        rank: index + 1,
+      }));
 
       setLeaderboard(todaysGames);
-      setLoading(false);
     } catch (error) {
-      console.error('Error loading leaderboard:', error);
+      console.error("Error loading leaderboard:", error);
+    } finally {
       setLoading(false);
     }
   };
