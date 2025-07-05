@@ -50,7 +50,11 @@ export interface GameScore {
   validated: boolean;
   leaderboardType?: "monthly" | "daily";
   paidEntry?: boolean;
-  gameType: number;
+  gameType: 9 | 18;
+}
+
+export interface Game extends Database["public"]["Tables"]["games"]["Row"] {
+  profiles: { display_name: string } | null;
 }
 
 export const scoreOptions = [

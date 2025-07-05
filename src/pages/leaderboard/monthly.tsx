@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,7 @@ import { Trophy, Medal, Award, Crown, Lock } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { gameService } from "@/services/gameService";
+import { Game } from "@/types";
 
 interface MonthlyLeaderboardEntry {
   id: string;
@@ -31,7 +31,7 @@ export default function MonthlyLeaderboard() {
 
       const playerStats: { [key: string]: MonthlyLeaderboardEntry } = {};
 
-      monthlyGames.forEach((game: any) => {
+      monthlyGames.forEach((game: Game) => {
         const userId = game.user_id;
         const playerName = game.profiles?.display_name || game.player_name;
 
