@@ -69,15 +69,16 @@ export default function GameCompletePage() {
       const result = await gameService.submitGameScore(gameScoreData);
       console.log('✅ Submission result:', result);
 
-      // Reset the game after successful submission
-      resetGame();
-
       toast({
         title: "Score submitted!",
         description: "Your score has been added to the monthly leaderboard.",
       });
 
-      router.push("/leaderboard/monthly");
+      // Navigate first, then reset the game
+      await router.push("/leaderboard/monthly");
+      
+      // Reset the game after navigation
+      resetGame();
     } catch (error) {
       console.error("❌ Error submitting to monthly leaderboard:", error);
       toast({
@@ -118,15 +119,16 @@ export default function GameCompletePage() {
 
         await gameService.submitGameScore(gameScoreData);
 
-        // Reset the game after successful submission
-        resetGame();
-
         toast({
           title: "Payment successful!",
           description: "Your score has been added to the daily prizes leaderboard.",
         });
 
-        router.push("/leaderboard/daily");
+        // Navigate first, then reset the game
+        await router.push("/leaderboard/daily");
+        
+        // Reset the game after navigation
+        resetGame();
       }
     } catch (error) {
       console.error("Error submitting to daily prizes:", error);
