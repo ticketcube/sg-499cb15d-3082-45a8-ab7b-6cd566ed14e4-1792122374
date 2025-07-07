@@ -42,7 +42,7 @@ async function getLeaderboard(type: 'daily' | 'monthly'): Promise<Game[]> {
       return [];
     }
 
-    const userIds = [...new Set(games.map(g => g.user_id).filter(id => id))];
+    const userIds = [...new Set(games.map(g => g.user_id).filter((id): id is string => !!id))];
     
     if (userIds.length === 0) {
         return games.map(g => ({ ...g, profiles: null })) as GameWithProfile[];
@@ -58,7 +58,7 @@ async function getLeaderboard(type: 'daily' | 'monthly'): Promise<Game[]> {
       return games.map(g => ({ ...g, profiles: null })) as GameWithProfile[];
     }
 
-    const profilesMap = new Map(profiles.map(p => [p.id, p.display_name]));
+    const profilesMap = new Map(profiles?.map(p => [p.id, p.display_name || '']) || []);
 
     const gamesWithProfiles = games.map(game => ({
       ...game,
