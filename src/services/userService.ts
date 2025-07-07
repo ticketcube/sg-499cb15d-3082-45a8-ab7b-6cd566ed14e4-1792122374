@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 // The auto-generated Database type from Supabase seems to be out of sync and is missing the 'profiles' table.
@@ -13,7 +14,7 @@ export const userService = {
   async updateProfile(userId: string, displayName: string): Promise<Profile | null> {
     // Using `as any` to bypass TypeScript errors due to out-of-sync Supabase types.
     // This assumes the 'profiles' table exists in the database.
-    const {  profileData, error: profileError } = await (supabase
+    const { data: profileData, error: profileError } = await (supabase
       .from("profiles") as any)
       .update({ 
         display_name: displayName,
@@ -35,11 +36,11 @@ export const userService = {
     // Also update the user metadata in Supabase Auth.
     // The 'data' property is used for user_metadata.
     const { error: metadataError } = await supabase.auth.updateUser({
-       { display_name: displayName }
+      data: { display_name: displayName }
     });
 
     if (metadataError) {
-      console.error("Error updating user meta", metadataError);
+      console.error("Error updating user metadata:", metadataError);
       throw metadataError;
     }
 
