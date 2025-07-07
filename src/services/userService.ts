@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -5,7 +6,7 @@ type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 
 export const userService = {
   async updateProfile(userId: string, displayName: string): Promise<Profile | null> {
-    const {  profile, error: fetchError } = await supabase
+    const { data: profile, error: fetchError } = await supabase
       .from("profiles")
       .select("id")
       .eq("id", userId)
@@ -18,7 +19,7 @@ export const userService = {
 
     if (!profile) {
       // Profile doesn't exist, create it
-      const {  newProfile, error: createError } = await supabase
+      const { data: newProfile, error: createError } = await supabase
         .from("profiles")
         .insert([{ 
           id: userId,
@@ -36,7 +37,7 @@ export const userService = {
 
       // Update auth metadata
       const { error: metadataError } = await supabase.auth.updateUser({
-         { display_name: displayName },
+        data: { display_name: displayName }
       });
 
       if (metadataError) {
@@ -46,7 +47,7 @@ export const userService = {
       return newProfile;
     } else {
       // Profile exists, update it
-      const {  updatedProfile, error: updateError } = await supabase
+      const { data: updatedProfile, error: updateError } = await supabase
         .from("profiles")
         .update({ 
           display_name: displayName,
@@ -63,7 +64,7 @@ export const userService = {
 
       // Update auth metadata
       const { error: metadataError } = await supabase.auth.updateUser({
-         { display_name: displayName },
+        data: { display_name: displayName }
       });
 
       if (metadataError) {
