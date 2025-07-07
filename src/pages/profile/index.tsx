@@ -32,7 +32,7 @@ export default function ProfilePage() {
       setDisplayName(profileData?.display_name || user.email?.split("@")[0] || "");
 
       // Load past rounds
-      const {  games, error } = await supabase
+      const { data: games, error } = await supabase
         .from("games")
         .select("*")
         .eq("user_id", user.id)
