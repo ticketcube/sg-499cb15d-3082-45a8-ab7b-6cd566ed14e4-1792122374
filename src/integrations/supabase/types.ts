@@ -121,22 +121,22 @@ export interface Database {
         Relationships: [];
       };
       course_tees: {
-        Row: any;
-        Insert: any;
-        Update: any;
-        Relationships: any[];
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
       };
       daily_prizes: {
-        Row: any;
-        Insert: any;
-        Update: any;
-        Relationships: any[];
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
       };
       user_points: {
-        Row: any;
-        Insert: any;
-        Update: any;
-        Relationships: any[];
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+        Relationships: [];
       };
     }
     Views: {
