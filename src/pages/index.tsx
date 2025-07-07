@@ -74,25 +74,7 @@ export default function Home() {
       </section>
 
       {/* Final CTA Section */}
-      <section className="py-8 bg-green-50">
-        <div className="px-4">
-          <div className="flex flex-col items-center text-center space-y-4">
-            <h2 className="text-xl font-bold tracking-tighter">Ready to Start?</h2>
-            <div className="flex flex-col w-full gap-3 mt-2 max-w-sm">
-              <Link href="/game" className="w-full">
-                <Button size="lg" className="w-full h-12 text-base rounded-xl bg-green-600 hover:bg-green-700">
-                  Play Now
-                </Button>
-              </Link>
-              <Link href="/leaderboard/daily" className="w-full">
-                <Button variant="outline" size="lg" className="w-full h-12 text-base rounded-xl">
-                  View Leaderboard
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+     
     </>
   );
 
