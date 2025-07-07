@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Game, GameScore } from "@/types";
 import type { Json, Database } from "@/integrations/supabase/types";
@@ -34,7 +35,7 @@ export const gameService = {
   },
 
   async submitGameScore(gameScore: GameScore) {
-    console.log('📝 Submitting game score to Supabase:', {
+    console.log("📝 Submitting game score to Supabase:", {
       user_id: gameScore.userId,
       player_name: gameScore.playerName,
       course_name: gameScore.courseName,
@@ -49,7 +50,6 @@ export const gameService = {
       return uuidRegex.test(str);
     };
 
-    // Only include course_id and tee_id if they are valid UUIDs
     const insertData: GameInsert = {
       user_id: gameScore.userId,
       player_name: gameScore.playerName,
@@ -62,17 +62,9 @@ export const gameService = {
       leaderboard_type: gameScore.leaderboardType,
       paid_entry: gameScore.paidEntry || false,
       game_type: gameScore.gameType,
+      course_id: gameScore.courseId && isValidUUID(gameScore.courseId) ? gameScore.courseId : "00000000-0000-0000-0000-000000000000",
+      tee_id: gameScore.teeId && isValidUUID(gameScore.teeId) ? gameScore.teeId : "00000000-0000-0000-0000-000000000000",
     };
-
-    // Only add course_id if it's a valid UUID
-    if (gameScore.courseId && isValidUUID(gameScore.courseId)) {
-      insertData.course_id = gameScore.courseId;
-    }
-
-    // Only add tee_id if it's a valid UUID
-    if (gameScore.teeId && isValidUUID(gameScore.teeId)) {
-      insertData.tee_id = gameScore.teeId;
-    }
 
     const { data, error } = await supabase
       .from("games")
@@ -84,7 +76,7 @@ export const gameService = {
       console.error("❌ Error submitting game score:", error);
       throw error;
     }
-    console.log('✅ Game score submitted successfully:', data);
+    console.log("✅ Game score submitted successfully:", data);
     return data;
   },
 
