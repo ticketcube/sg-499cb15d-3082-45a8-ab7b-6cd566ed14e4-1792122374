@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Game, GameScore } from "@/types";
 import type { Json, Database } from "@/integrations/supabase/types";
@@ -14,6 +15,57 @@ interface TargetScoreParams {
   slopeRating: number;
   courseRating: number;
   par: number;
+}
+
+async function getLeaderboard(type: 'daily' | 'monthly'): Promise<Game[]> {
+    const dateFilter = new Date();
+    if (type === 'daily') {
+        dateFilter.setHours(0, 0, 0, 0);
+    } else { // monthly
+        dateFilter.setDate(1);
+        dateFilter.setHours(0, 0, 0, 0);
+    }
+
+    const {  games, error: gamesError } = await supabase
+      .from("games")
+      .select("*")
+      .eq("leaderboard_type", type)
+      .gte("created_at", dateFilter.toISOString())
+      .order("four_points_earned", { ascending: false });
+
+    if (gamesError) {
+      console.error(`Error fetching ${type} games:`, gamesError);
+      throw gamesError;
+    }
+
+    if (!games || games.length === 0) {
+      return [];
+    }
+
+    const userIds = [...new Set(games.map(g => g.user_id).filter(id => id))];
+    
+    if (userIds.length === 0) {
+        return games.map(g => ({ ...g, profiles: null })) as GameWithProfile[];
+    }
+
+    const {  profiles, error: profilesError } = await supabase
+      .from("profiles")
+      .select("id, display_name")
+      .in("id", userIds);
+
+    if (profilesError) {
+      console.error(`Error fetching profiles for ${type} leaderboard:`, profilesError);
+      return games.map(g => ({ ...g, profiles: null })) as GameWithProfile[];
+    }
+
+    const profilesMap = new Map(profiles.map(p => [p.id, p.display_name]));
+
+    const gamesWithProfiles = games.map(game => ({
+      ...game,
+      profiles: { display_name: profilesMap.get(game.user_id) || game.player_name || null }
+    }));
+
+    return (gamesWithProfiles as GameWithProfile[]);
 }
 
 export const gameService = {
@@ -43,14 +95,12 @@ export const gameService = {
       leaderboard_type: gameScore.leaderboardType,
     });
 
-    // Helper function to check if a string is a valid UUID
     const isValidUUID = (str: string): boolean => {
       if (!str) return false;
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
       return uuidRegex.test(str);
     };
 
-    // Ensure we have valid UUIDs or use a default
     const defaultUUID = "00000000-0000-0000-0000-000000000000";
     const courseId = isValidUUID(gameScore.courseId) ? gameScore.courseId : defaultUUID;
     const teeId = isValidUUID(gameScore.teeId) ? gameScore.teeId : defaultUUID;
@@ -92,39 +142,10 @@ export const gameService = {
   },
 
   async getDailyLeaderboard(): Promise<Game[]> {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const { data, error } = await supabase
-      .from("games")
-      .select("*, profiles(display_name)")
-      .eq("leaderboard_type", "daily")
-      .gte("created_at", today.toISOString())
-      .order("four_points_earned", { ascending: false });
-
-    if (error) {
-      console.error("Error fetching daily leaderboard:", error);
-      throw error;
-    }
-    return (data as GameWithProfile[]) || [];
+    return getLeaderboard('daily');
   },
 
   async getMonthlyLeaderboard(): Promise<Game[]> {
-    const startOfMonth = new Date();
-    startOfMonth.setDate(1);
-    startOfMonth.setHours(0, 0, 0, 0);
-
-    const { data, error } = await supabase
-      .from("games")
-      .select("*, profiles(display_name)")
-      .eq("leaderboard_type", "monthly")
-      .gte("created_at", startOfMonth.toISOString())
-      .order("four_points_earned", { ascending: false });
-
-    if (error) {
-      console.error("Error fetching monthly leaderboard:", error);
-      throw error;
-    }
-    return (data as GameWithProfile[]) || [];
+    return getLeaderboard('monthly');
   },
 };

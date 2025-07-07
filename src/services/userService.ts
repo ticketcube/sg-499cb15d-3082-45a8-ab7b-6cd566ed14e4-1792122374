@@ -5,16 +5,20 @@ type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 
 export const userService = {
   async updateProfile(userId: string, displayName: string): Promise<Profile | null> {
-    // First try to get the profile
-    const { data: existingProfile, error: fetchError } = await supabase
+    const {  profile, error: fetchError } = await supabase
       .from("profiles")
-      .select("*")
+      .select("id")
       .eq("id", userId)
       .single();
 
-    if (fetchError && fetchError.code === 'PGRST116') {
+    if (fetchError && fetchError.code !== 'PGRST116') {
+        console.error("Error fetching profile:", fetchError);
+        throw fetchError;
+    }
+
+    if (!profile) {
       // Profile doesn't exist, create it
-      const { data: newProfile, error: createError } = await supabase
+      const {  newProfile, error: createError } = await supabase
         .from("profiles")
         .insert([{ 
           id: userId,
@@ -32,49 +36,42 @@ export const userService = {
 
       // Update auth metadata
       const { error: metadataError } = await supabase.auth.updateUser({
-        data: { display_name: displayName }
+         { display_name: displayName }
       });
 
       if (metadataError) {
         console.error("Error updating user auth metadata", metadataError);
-        throw metadataError;
       }
 
       return newProfile;
+    } else {
+      // Profile exists, update it
+      const {  updatedProfile, error: updateError } = await supabase
+        .from("profiles")
+        .update({ 
+          display_name: displayName,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", userId)
+        .select()
+        .single();
+
+      if (updateError) {
+        console.error("Error updating profile:", updateError);
+        throw updateError;
+      }
+
+      // Update auth metadata
+      const { error: metadataError } = await supabase.auth.updateUser({
+         { display_name: displayName }
+      });
+
+      if (metadataError) {
+        console.error("Error updating user auth metadata", metadataError);
+      }
+
+      return updatedProfile;
     }
-
-    if (fetchError) {
-      console.error("Error fetching profile:", fetchError);
-      throw fetchError;
-    }
-
-    // Profile exists, update it
-    const { data: updatedProfile, error: updateError } = await supabase
-      .from("profiles")
-      .update({ 
-        display_name: displayName,
-        updated_at: new Date().toISOString()
-      })
-      .eq("id", userId)
-      .select()
-      .single();
-
-    if (updateError) {
-      console.error("Error updating profile:", updateError);
-      throw updateError;
-    }
-
-    // Update auth metadata
-    const { error: metadataError } = await supabase.auth.updateUser({
-      data: { display_name: displayName }
-    });
-
-    if (metadataError) {
-      console.error("Error updating user auth metadata", metadataError);
-      throw metadataError;
-    }
-
-    return updatedProfile;
   },
 
   async getProfile(userId: string): Promise<Profile | null> {
