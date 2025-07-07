@@ -48,6 +48,9 @@ export default function GameCompletePage() {
         holeScores,
       });
 
+      // Calculate hole categories from hole scores
+      const holeCategories = gameService.calculateHoleCategories(holeScores, gameSettings.par);
+
       const gameScoreData: GameScore = {
         userId: user.id,
         playerName: user.user_metadata?.display_name || "Anonymous Player",
@@ -55,10 +58,13 @@ export default function GameCompletePage() {
         courseName: gameSettings.courseName,
         teeId: gameSettings.teeId,
         teeName: gameSettings.teeName,
+        ghinHandicap: gameSettings.ghinIndex,
+        adjustedAverageScore: gameSettings.averageScore,
         targetScore: gameSettings.targetScore,
         totalPoints: totalPoints,
         fourPointsEarned: fourPointsEarned,
         holeScores: holeScores,
+        holeCategories: holeCategories,
         timestamp: Date.now(),
         validated: true,
         leaderboardType: "monthly",
@@ -99,6 +105,9 @@ export default function GameCompletePage() {
       const paymentSuccess = await simulatePayment();
 
       if (paymentSuccess) {
+        // Calculate hole categories from hole scores
+        const holeCategories = gameService.calculateHoleCategories(holeScores, gameSettings.par);
+
         const gameScoreData: GameScore = {
           userId: user.id,
           playerName: user.user_metadata?.display_name || "Anonymous Player",
@@ -106,10 +115,13 @@ export default function GameCompletePage() {
           courseName: gameSettings.courseName,
           teeId: gameSettings.teeId,
           teeName: gameSettings.teeName,
+          ghinHandicap: gameSettings.ghinIndex,
+          adjustedAverageScore: gameSettings.averageScore,
           targetScore: gameSettings.targetScore,
           totalPoints: totalPoints,
           fourPointsEarned: fourPointsEarned,
           holeScores: holeScores,
+          holeCategories: holeCategories,
           timestamp: Date.now(),
           validated: true,
           leaderboardType: "daily",
