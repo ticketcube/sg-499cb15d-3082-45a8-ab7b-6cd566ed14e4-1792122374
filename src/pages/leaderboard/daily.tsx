@@ -4,7 +4,7 @@ import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Medal, Award, Crown } from "lucide-react";
+import { Trophy, Medal, Award, Crown, Gift } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { gameService } from "@/services/gameService";
@@ -78,19 +78,6 @@ export default function DailyLeaderboard() {
     }
   };
 
-  const getBonusPoints = (rank: number) => {
-    switch (rank) {
-      case 1:
-        return 18;
-      case 2:
-        return 10;
-      case 3:
-        return 8;
-      default:
-        return 0;
-    }
-  };
-
   if (!user) {
     return (
       <Layout>
@@ -119,8 +106,9 @@ export default function DailyLeaderboard() {
       <div className="p-4">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold mb-2">Daily Leaderboard</h1>
-            <p className="text-muted-foreground">Today's top performers</p>
+            <h1 className="text-2xl font-bold mb-2">Daily Prizes Leaderboard</h1>
+            <p className="text-muted-foreground">Today's top performers for the cash prize!</p>
+            <Badge variant="outline" className="mt-2 border-yellow-400 bg-yellow-50 text-yellow-800">$1 Entry</Badge>
           </div>
 
           <div className="flex gap-2 mb-6">
@@ -172,11 +160,6 @@ export default function DailyLeaderboard() {
                           </span>
                           <span className="text-sm text-muted-foreground">4pts</span>
                         </div>
-                        {getBonusPoints(entry.rank) > 0 && (
-                          <div className="text-sm text-green-600 font-medium">
-                            +{getBonusPoints(entry.rank)} bonus
-                          </div>
-                        )}
                       </div>
                     </div>
                   </CardContent>
@@ -187,30 +170,31 @@ export default function DailyLeaderboard() {
 
           <Card className="mt-6">
             <CardHeader>
-              <CardTitle className="text-lg">Daily Rewards</CardTitle>
+              <CardTitle className="text-lg flex items-center gap-2"><Gift className="h-5 w-5" /> Daily Prizes</CardTitle>
             </CardHeader>
             <CardContent>
+              <p className="text-sm text-muted-foreground mb-3">Winners are paid out at the end of the day.</p>
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="flex items-center gap-2">
                     <Crown className="h-4 w-4 text-yellow-500" />
                     1st Place
                   </span>
-                  <span className="font-semibold text-green-600">+18 pts</span>
+                  <span className="font-semibold text-green-600">$50</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="flex items-center gap-2">
                     <Trophy className="h-4 w-4 text-gray-400" />
                     2nd Place
                   </span>
-                  <span className="font-semibold text-green-600">+10 pts</span>
+                  <span className="font-semibold text-green-600">$25</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="flex items-center gap-2">
                     <Medal className="h-4 w-4 text-amber-600" />
                     3rd Place
                   </span>
-                  <span className="font-semibold text-green-600">+8 pts</span>
+                  <span className="font-semibold text-green-600">$10</span>
                 </div>
               </div>
             </CardContent>

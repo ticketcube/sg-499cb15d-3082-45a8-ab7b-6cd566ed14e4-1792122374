@@ -4,7 +4,7 @@ import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Medal, Award, Crown } from "lucide-react";
+import { Trophy, Medal, Award, Crown, Calendar } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { gameService } from "@/services/gameService";
@@ -137,7 +137,8 @@ export default function MonthlyLeaderboard() {
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-6">
             <h1 className="text-2xl font-bold mb-2">Monthly Leaderboard</h1>
-            <p className="text-muted-foreground">This month's champions</p>
+            <p className="text-muted-foreground">This month's champions.</p>
+            <Badge variant="outline" className="mt-2 border-green-400 bg-green-50 text-green-800">Free to Enter</Badge>
           </div>
 
           <div className="flex gap-2 mb-6">
@@ -198,9 +199,40 @@ export default function MonthlyLeaderboard() {
               ))}
             </div>
           )}
+
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2"><Calendar className="h-5 w-5" /> Monthly Rewards</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-3">Bonus points are awarded at the end of the month to top players.</p>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="flex items-center gap-2">
+                    <Crown className="h-4 w-4 text-yellow-500" />
+                    1st Place
+                  </span>
+                  <span className="font-semibold text-green-600">+100 bonus</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="flex items-center gap-2">
+                    <Trophy className="h-4 w-4 text-gray-400" />
+                    2nd Place
+                  </span>
+                  <span className="font-semibold text-green-600">+50 bonus</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="flex items-center gap-2">
+                    <Medal className="h-4 w-4 text-amber-600" />
+                    3rd Place
+                  </span>
+                  <span className="font-semibold text-green-600">+25 bonus</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </Layout>
   );
 }
-  
