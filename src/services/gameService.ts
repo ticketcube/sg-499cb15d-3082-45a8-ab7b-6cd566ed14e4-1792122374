@@ -25,6 +25,7 @@ async function getLeaderboard(type: 'daily' | 'monthly'): Promise<Game[]> {
         dateFilter.setHours(0, 0, 0, 0);
     }
 
+    // First get games without trying to join profiles
     const { data: games, error: gamesError } = await supabase
       .from("games")
       .select("*")
@@ -41,12 +42,22 @@ async function getLeaderboard(type: 'daily' | 'monthly'): Promise<Game[]> {
       return [];
     }
 
-    const userIds = [...new Set(games.map(g => g.user_id).filter((id): id is string => !!id))];
+    // Get unique user IDs that are valid UUIDs
+    const userIds = [...new Set(games
+      .map(g => g.user_id)
+      .filter((id): id is string => {
+        if (!id) return false;
+        // Check if it's a valid UUID format
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        return uuidRegex.test(id);
+      })
+    )];
     
     if (userIds.length === 0) {
         return games.map(g => ({ ...g, profiles: null })) as GameWithProfile[];
     }
 
+    // Fetch profiles separately
     const { data: profiles, error: profilesError } = await supabase
       .from("profiles")
       .select("id, display_name")
@@ -57,11 +68,15 @@ async function getLeaderboard(type: 'daily' | 'monthly'): Promise<Game[]> {
       return games.map(g => ({ ...g, profiles: null })) as GameWithProfile[];
     }
 
+    // Create a map of user_id to display_name
     const profilesMap = new Map((profiles || []).map(p => [p.id, p.display_name || '']));
 
+    // Combine games with profile data
     const gamesWithProfiles = games.map(game => ({
       ...game,
-      profiles: { display_name: profilesMap.get(game.user_id) || game.player_name || null }
+      profiles: game.user_id && profilesMap.has(game.user_id) 
+        ? { display_name: profilesMap.get(game.user_id) || null }
+        : null
     }));
 
     return (gamesWithProfiles as GameWithProfile[]);
@@ -100,9 +115,9 @@ export const gameService = {
       return uuidRegex.test(str);
     };
 
-    const defaultUUID = "00000000-0000-0000-0000-000000000000";
-    const courseId = isValidUUID(gameScore.courseId) ? gameScore.courseId : defaultUUID;
-    const teeId = isValidUUID(gameScore.teeId) ? gameScore.teeId : defaultUUID;
+    // Use null for invalid UUIDs instead of a default UUID
+    const courseId = isValidUUID(gameScore.courseId) ? gameScore.courseId : null;
+    const teeId = isValidUUID(gameScore.teeId) ? gameScore.teeId : null;
 
     const insertData: GameInsert = {
       user_id: gameScore.userId,
