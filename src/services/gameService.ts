@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Game, GameScore } from "@/types";
+import type { Json } from "@/integrations/supabase/types";
 
 interface TargetScoreParams {
   ghinIndex?: number;
@@ -40,7 +41,7 @@ export const gameService = {
         target_score: gameScore.targetScore,
         total_points: gameScore.totalPoints,
         four_points_earned: gameScore.fourPointsEarned,
-        hole_scores: gameScore.holeScores as any, // Bypassing strict JSON type check for complex objects
+        hole_scores: gameScore.holeScores as unknown as Json,
         leaderboard_type: gameScore.leaderboardType,
         paid_entry: gameScore.paidEntry,
         game_type: gameScore.gameType,
@@ -70,7 +71,7 @@ export const gameService = {
       console.error("Error fetching daily leaderboard:", error);
       throw error;
     }
-    return (data as Game[]) || [];
+    return (data as unknown as Game[]) || [];
   },
 
   async getMonthlyLeaderboard(): Promise<Game[]> {
@@ -89,6 +90,7 @@ export const gameService = {
       console.error("Error fetching monthly leaderboard:", error);
       throw error;
     }
-    return (data as Game[]) || [];
+    return (data as unknown as Game[]) || [];
   },
 };
+  
