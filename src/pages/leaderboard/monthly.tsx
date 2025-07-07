@@ -31,7 +31,7 @@ export default function MonthlyLeaderboard() {
 
       const playerStats: { [key: string]: MonthlyLeaderboardEntry } = {};
 
-      monthlyGames.forEach((game: Game) => {
+      monthlyGames.forEach((game: any) => {
         const userId = game.user_id;
         const playerName = game.profiles?.display_name || game.player_name;
 

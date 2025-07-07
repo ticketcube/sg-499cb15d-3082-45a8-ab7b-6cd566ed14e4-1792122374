@@ -45,7 +45,7 @@ export default function RegisterPage() {
       await register(email, password, displayName);
       toast({
         title: "Success",
-        description: "Account created successfully! Please check your email to verify."
+        description: "Account created successfully! You can now submit scores and view leaderboards."
       });
       const redirect = router.query.redirect as string | undefined;
       router.push(redirect || "/leaderboard/daily");

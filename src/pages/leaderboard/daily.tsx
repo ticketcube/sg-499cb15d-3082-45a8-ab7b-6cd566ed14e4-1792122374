@@ -35,7 +35,7 @@ export default function DailyLeaderboard() {
     try {
       const dailyGames = await gameService.getDailyLeaderboard();
       
-      const todaysGames = dailyGames.map((game: Game, index: number) => ({
+      const todaysGames = dailyGames.map((game: any, index: number) => ({
         id: game.id,
         playerName: game.profiles?.display_name || game.player_name,
         fourPointsEarned: game.four_points_earned,
