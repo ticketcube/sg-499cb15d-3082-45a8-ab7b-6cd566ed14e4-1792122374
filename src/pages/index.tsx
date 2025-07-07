@@ -1,4 +1,3 @@
-
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -11,24 +10,31 @@ export default function Home() {
       <section className='py-12 bg-white'>
         <div className='px-4'>
           <div className='flex flex-col items-center text-center space-y-6'>
-            {/* Logo in Square with Tap To Play */}
-            <div className='bg-white border-2 border-gray-200 rounded-2xl p-8 shadow-lg'>
-              <div className='flex flex-col items-center space-y-4'>
-                <div className='relative h-16 w-auto'>
-                  <Image 
-                    src='/4points-m91nnzka.png' 
-                    alt='4Points Logo' 
-                    width={64} 
-                    height={64} 
-                    className='h-full w-auto'
-                    priority
-                  />
+            {/* Logo in Square with Tap To Play - Now Clickable */}
+            <Link href="/game">
+              <div className='bg-white border-2 border-gray-200 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow cursor-pointer hover:border-green-300'>
+                <div className='flex flex-col items-center space-y-4'>
+                  <div className='relative h-16 w-auto'>
+                    <Image 
+                      src='/4points-m91nnzka.png' 
+                      alt='4Points Logo' 
+                      width={64} 
+                      height={64} 
+                      className='h-full w-auto'
+                      priority
+                    />
+                  </div>
+                  <h1 className="text-xl font-bold text-red-600">
+                    Tap To Play!
+                  </h1>
                 </div>
-                <h1 className="text-xl font-bold text-green-600">
-                  Tap To Play!
-                </h1>
               </div>
-            </div>
+            </Link>
+
+            {/* Clear instruction text */}
+            <p className="text-base text-gray-600 font-medium">
+              Tap the Square to Start Playing Now!
+            </p>
 
             {/* Two Small Buttons */}
             <div className="flex gap-3 w-full max-w-xs">
