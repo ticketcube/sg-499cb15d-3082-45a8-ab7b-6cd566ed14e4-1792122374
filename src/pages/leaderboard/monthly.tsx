@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -197,6 +196,15 @@ export default function MonthlyLeaderboard() {
                   </CardContent>
                 </Card>
               ))}
+              
+              {/* Start New Game Button */}
+              <div className="pt-4">
+                <Link href="/game" className="w-full">
+                  <Button size="lg" className="w-full bg-green-600 hover:bg-green-700 text-white">
+                    Start New Game
+                  </Button>
+                </Link>
+              </div>
             </div>
           )}
 
