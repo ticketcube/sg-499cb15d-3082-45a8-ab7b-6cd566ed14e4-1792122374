@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Game, GameScore } from "@/types";
 import type { Json, Database } from "@/integrations/supabase/types";
@@ -26,7 +25,7 @@ async function getLeaderboard(type: 'daily' | 'monthly'): Promise<Game[]> {
         dateFilter.setHours(0, 0, 0, 0);
     }
 
-    const {  games, error: gamesError } = await supabase
+    const { data: games, error: gamesError } = await supabase
       .from("games")
       .select("*")
       .eq("leaderboard_type", type)
@@ -48,7 +47,7 @@ async function getLeaderboard(type: 'daily' | 'monthly'): Promise<Game[]> {
         return games.map(g => ({ ...g, profiles: null })) as GameWithProfile[];
     }
 
-    const {  profiles, error: profilesError } = await supabase
+    const { data: profiles, error: profilesError } = await supabase
       .from("profiles")
       .select("id, display_name")
       .in("id", userIds);
@@ -58,7 +57,7 @@ async function getLeaderboard(type: 'daily' | 'monthly'): Promise<Game[]> {
       return games.map(g => ({ ...g, profiles: null })) as GameWithProfile[];
     }
 
-    const profilesMap = new Map(profiles?.map(p => [p.id, p.display_name || '']) || []);
+    const profilesMap = new Map((profiles || []).map(p => [p.id, p.display_name || '']));
 
     const gamesWithProfiles = games.map(game => ({
       ...game,
