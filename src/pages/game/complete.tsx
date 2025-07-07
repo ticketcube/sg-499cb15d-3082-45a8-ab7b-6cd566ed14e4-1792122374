@@ -3,7 +3,7 @@ import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, DollarSign, Users, Gift, Calendar } from "lucide-react";
+import { Trophy, DollarSign, Users, Gift, Calendar, Edit } from "lucide-react";
 import { useRouter } from "next/router";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGame } from "@/contexts/GameContext";
@@ -69,6 +69,9 @@ export default function GameCompletePage() {
       const result = await gameService.submitGameScore(gameScoreData);
       console.log('✅ Submission result:', result);
 
+      // Reset the game after successful submission
+      resetGame();
+
       toast({
         title: "Score submitted!",
         description: "Your score has been added to the monthly leaderboard.",
@@ -115,6 +118,9 @@ export default function GameCompletePage() {
 
         await gameService.submitGameScore(gameScoreData);
 
+        // Reset the game after successful submission
+        resetGame();
+
         toast({
           title: "Payment successful!",
           description: "Your score has been added to the daily prizes leaderboard.",
@@ -142,6 +148,11 @@ export default function GameCompletePage() {
   const handleNewGame = () => {
     resetGame();
     router.push("/game");
+  };
+
+  const handleEditScore = () => {
+    // Go back to the game page to edit scores
+    router.back();
   };
 
   if (!gameSettings) {
@@ -230,7 +241,7 @@ export default function GameCompletePage() {
               <p className="text-muted-foreground">{gameSettings.courseName}</p>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-3 gap-4 text-center">
+              <div className="grid grid-cols-3 gap-4 text-center mb-4">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Total Points</p>
                   <p className="text-2xl font-bold">{totalPoints}</p>
@@ -246,6 +257,17 @@ export default function GameCompletePage() {
                   </p>
                 </div>
               </div>
+              
+              {/* Edit Score Button */}
+              <Button 
+                onClick={handleEditScore} 
+                variant="outline" 
+                size="sm" 
+                className="w-full gap-2"
+              >
+                <Edit className="h-4 w-4" />
+                Edit Score
+              </Button>
             </CardContent>
           </Card>
 
