@@ -230,6 +230,59 @@ export interface Database {
           }
         ]
       }
+      profiles: {
+        Row: {
+          id: string
+          display_name: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id: string
+          display_name?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          display_name?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      guest_users: {
+        Row: {
+          id: string
+          golfer_name: string
+          created_at: string | null
+          last_used: string | null
+          games_played: number | null
+        }
+        Insert: {
+          id?: string
+          golfer_name: string
+          created_at?: string | null
+          last_used?: string | null
+          games_played?: number | null
+        }
+        Update: {
+          id?: string
+          golfer_name?: string
+          created_at?: string | null
+          last_used?: string | null
+          games_played?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       // Add your views here
