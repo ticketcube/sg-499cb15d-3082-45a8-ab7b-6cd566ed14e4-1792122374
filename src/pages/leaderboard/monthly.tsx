@@ -137,7 +137,8 @@ export default function MonthlyLeaderboard() {
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-6">
             <h1 className="text-2xl font-bold mb-2">Monthly Leaderboard</h1>
-            <p className="text-muted-foreground">This month's champions. Free to enter.</p>
+            <p className="text-muted-foreground">This month's champions.</p>
+            <Badge variant="outline" className="mt-2 border-green-400 bg-green-50 text-green-800">Free to Enter</Badge>
           </div>
 
           <div className="flex gap-2 mb-6">
