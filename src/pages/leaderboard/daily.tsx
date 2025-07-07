@@ -8,6 +8,7 @@ import { Trophy, Medal, Award, Crown } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { gameService } from "@/services/gameService";
+import { Game } from "@/types";
 
 interface LeaderboardEntry {
   id: string;
@@ -33,13 +34,9 @@ export default function DailyLeaderboard() {
   const loadDailyLeaderboard = async () => {
     setLoading(true);
     try {
-      const dailyGames = await gameService.getDailyLeaderboard();
-      if (!dailyGames) {
-        setLeaderboard([]);
-        return;
-      }
+      const dailyGames: Game[] = await gameService.getDailyLeaderboard();
       
-      const todaysGames = dailyGames.map((game, index: number) => ({
+      const todaysGames = dailyGames.map((game: Game, index: number) => ({
         id: game.id,
         playerName: game.profiles?.display_name || game.player_name || "Anonymous",
         fourPointsEarned: game.four_points_earned,
