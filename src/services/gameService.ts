@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Game, GameScore } from "@/types";
 import type { Json, Database } from "@/integrations/supabase/types";
@@ -42,23 +41,40 @@ export const gameService = {
       leaderboard_type: gameScore.leaderboardType,
     });
 
+    // Helper function to check if a string is a valid UUID
+    const isValidUUID = (str: string): boolean => {
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      return uuidRegex.test(str);
+    };
+
+    // Only include course_id and tee_id if they are valid UUIDs
+    const insertData: any = {
+      user_id: gameScore.userId,
+      player_name: gameScore.playerName,
+      course_name: gameScore.courseName,
+      tee_name: gameScore.teeName,
+      target_score: gameScore.targetScore,
+      total_points: gameScore.totalPoints,
+      four_points_earned: gameScore.fourPointsEarned,
+      hole_scores: gameScore.holeScores as unknown as Json,
+      leaderboard_type: gameScore.leaderboardType,
+      paid_entry: gameScore.paidEntry || false,
+      game_type: gameScore.gameType,
+    };
+
+    // Only add course_id if it's a valid UUID
+    if (gameScore.courseId && isValidUUID(gameScore.courseId)) {
+      insertData.course_id = gameScore.courseId;
+    }
+
+    // Only add tee_id if it's a valid UUID
+    if (gameScore.teeId && isValidUUID(gameScore.teeId)) {
+      insertData.tee_id = gameScore.teeId;
+    }
+
     const { data, error } = await supabase
       .from("games")
-      .insert({
-        user_id: gameScore.userId,
-        player_name: gameScore.playerName,
-        course_id: gameScore.courseId,
-        course_name: gameScore.courseName,
-        tee_id: gameScore.teeId,
-        tee_name: gameScore.teeName,
-        target_score: gameScore.targetScore,
-        total_points: gameScore.totalPoints,
-        four_points_earned: gameScore.fourPointsEarned,
-        hole_scores: gameScore.holeScores as unknown as Json,
-        leaderboard_type: gameScore.leaderboardType,
-        paid_entry: gameScore.paidEntry,
-        game_type: gameScore.gameType,
-      })
+      .insert(insertData)
       .select()
       .single();
 
