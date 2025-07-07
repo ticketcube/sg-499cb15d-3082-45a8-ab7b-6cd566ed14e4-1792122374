@@ -41,7 +41,9 @@ export default function PublicProfilePage() {
         return;
       }
 
-      setProfile(profileData);
+      if (profileData) {
+        setProfile({ ...profileData, id: profileUserId });
+      }
 
       // Load public past rounds (no sensitive data)
       const { data: games, error: gamesError } = await supabase
