@@ -41,6 +41,13 @@ export default function GameCompletePage() {
 
     setSubmitting(true);
     try {
+      console.log('🎮 Game data being submitted:', {
+        gameSettings,
+        totalPoints,
+        fourPointsEarned,
+        holeScores,
+      });
+
       const gameScoreData: GameScore = {
         userId: user.id,
         playerName: user.user_metadata?.display_name || "Anonymous Player",
@@ -58,7 +65,9 @@ export default function GameCompletePage() {
         gameType: gameSettings.holes as 9 | 18,
       };
 
-      await gameService.submitGameScore(gameScoreData);
+      console.log('📊 Prepared game score data:', gameScoreData);
+      const result = await gameService.submitGameScore(gameScoreData);
+      console.log('✅ Submission result:', result);
 
       toast({
         title: "Score submitted!",
@@ -67,7 +76,7 @@ export default function GameCompletePage() {
 
       router.push("/leaderboard/monthly");
     } catch (error) {
-      console.error("Error submitting to monthly leaderboard:", error);
+      console.error("❌ Error submitting to monthly leaderboard:", error);
       toast({
         variant: "destructive",
         title: "Error",

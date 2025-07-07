@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Game, GameScore } from "@/types";
 import type { Json } from "@/integrations/supabase/types";
@@ -29,6 +28,15 @@ export const gameService = {
   },
 
   async submitGameScore(gameScore: GameScore) {
+    console.log('📝 Submitting game score to Supabase:', {
+      user_id: gameScore.userId,
+      player_name: gameScore.playerName,
+      course_name: gameScore.courseName,
+      total_points: gameScore.totalPoints,
+      four_points_earned: gameScore.fourPointsEarned,
+      leaderboard_type: gameScore.leaderboardType,
+    });
+
     const { data, error } = await supabase
       .from("games")
       .insert({
@@ -50,9 +58,10 @@ export const gameService = {
       .single();
 
     if (error) {
-      console.error("Error submitting game score:", error);
+      console.error("❌ Error submitting game score:", error);
       throw error;
     }
+    console.log('✅ Game score submitted successfully:', data);
     return data;
   },
 
