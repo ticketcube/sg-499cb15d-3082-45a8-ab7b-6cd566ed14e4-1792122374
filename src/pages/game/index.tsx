@@ -372,8 +372,13 @@ export default function GamePage() {
             </div>
           )}
           
-          <Button className="w-full" size="lg" disabled={!isFormValid} onClick={handleStartGame}>
-            Start Game
+          <Button 
+            className="w-full bg-green-600 hover:bg-green-700 text-white" 
+            size="lg" 
+            disabled={!isFormValid} 
+            onClick={handleStartGame}
+          >
+            Start New Game
           </Button>
         </CardContent>
       </Card>
