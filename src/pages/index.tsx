@@ -52,9 +52,9 @@ export default function Home() {
 
             {/* Main CTA */}
             <div className="w-full max-w-sm">
-              <Link href="/game" className="w-full">
+              <Link href="/leaderboard/monthly" className="w-full">
                 <Button size="lg" className="w-full h-14 text-lg rounded-xl bg-green-600 hover:bg-green-700">
-                  Start Playing Now
+                  View Leaderboards
                 </Button>
               </Link>
             </div>
