@@ -1,39 +1,26 @@
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { userService } from "@/services/userService";
-import { gameService } from "@/services/gameService";
 import { supabase } from "@/integrations/supabase/client";
-import { Game } from "@/types";
+import { Game, Profile } from "@/types";
 import { Edit2, Save, X } from "lucide-react";
 import { useRouter } from "next/router";
 
 export default function ProfilePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [pastRounds, setPastRounds] = useState<Game[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push("/auth/login");
-      return;
-    }
-
-    if (user) {
-      loadProfileData();
-    }
-  }, [user, loading, router]);
-
-  const loadProfileData = async () => {
+  const loadProfileData = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -45,7 +32,7 @@ export default function ProfilePage() {
       setDisplayName(profileData?.display_name || user.email?.split("@")[0] || "");
 
       // Load past rounds
-      const { data: games, error } = await supabase
+      const {  games, error } = await supabase
         .from("games")
         .select("*")
         .eq("user_id", user.id)
@@ -57,11 +44,22 @@ export default function ProfilePage() {
         setPastRounds(games as Game[]);
       }
     } catch (error) {
-      console.error("Error loading profile data:", error);
+      console.error("Error loading profile ", error);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/auth/login");
+      return;
+    }
+
+    if (user) {
+      loadProfileData();
+    }
+  }, [user, loading, router, loadProfileData]);
 
   const handleSaveProfile = async () => {
     if (!user || !displayName.trim()) return;

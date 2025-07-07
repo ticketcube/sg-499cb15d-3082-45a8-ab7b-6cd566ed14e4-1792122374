@@ -54,6 +54,12 @@ export interface GameScore {
   gameType: 9 | 18;
 }
 
+export interface Profile {
+  id: string;
+  display_name: string;
+  created_at: string;
+}
+
 export type Game = Database["public"]["Tables"]["games"]["Row"] & {
   profiles: { display_name: string | null } | null;
 };

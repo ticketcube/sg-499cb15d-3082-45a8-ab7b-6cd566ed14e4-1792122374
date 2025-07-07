@@ -1,16 +1,15 @@
-
 import { useState, useEffect } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { Game } from "@/types";
+import { Game, Profile } from "@/types";
 import { useRouter } from "next/router";
 import { User } from "lucide-react";
 
 export default function PublicProfilePage() {
   const router = useRouter();
   const { userId } = router.query;
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [pastRounds, setPastRounds] = useState<Game[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
