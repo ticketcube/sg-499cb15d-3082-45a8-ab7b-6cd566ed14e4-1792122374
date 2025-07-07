@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 // The auto-generated Database type from Supabase seems to be out of sync and is missing the 'profiles' table.
@@ -12,7 +13,7 @@ interface Profile {
 export const userService = {
   async updateProfile(userId: string, displayName: string): Promise<Profile | null> {
     // @ts-expect-error - This is necessary because the auto-generated Supabase types are missing the 'profiles' table.
-    const { data, error } = await supabase
+    const {  profileData, error: profileError } = await supabase
       .from("profiles")
       .update({ 
         display_name: displayName,
@@ -22,12 +23,12 @@ export const userService = {
       .select()
       .single();
 
-    if (error) {
-      console.error("Error updating profile:", error);
-      if (error.code === 'PGRST116') { // "JSON object requested, multiple (or no) rows returned"
+    if (profileError) {
+      console.error("Error updating profile:", profileError);
+      if (profileError.code === 'PGRST116') { // "JSON object requested, multiple (or no) rows returned"
         console.warn(`Profile not found for user ${userId}, cannot update.`);
       } else {
-        throw error;
+        throw profileError;
       }
     }
 
@@ -41,7 +42,7 @@ export const userService = {
       throw metadataError;
     }
 
-    return data;
+    return profileData as Profile | null;
   },
 
   async getProfile(userId: string): Promise<Profile | null> {
@@ -61,6 +62,6 @@ export const userService = {
       throw error;
     }
 
-    return data;
+    return data as Profile | null;
   }
 };
