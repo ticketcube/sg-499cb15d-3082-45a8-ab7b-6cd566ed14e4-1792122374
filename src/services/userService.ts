@@ -6,7 +6,7 @@ type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 
 export const userService = {
   async updateProfile(userId: string, displayName: string): Promise<Profile | null> {
-    const {  profileData, error: profileError } = await supabase
+    const { data: profileData, error: profileError } = await supabase
       .from("profiles")
       .update({ 
         display_name: displayName,
@@ -18,7 +18,7 @@ export const userService = {
 
     if (profileError) {
       console.error("Error updating profile:", profileError);
-      if (profileError.code === 'PGRST116') { // "JSON object requested, multiple (or no) rows returned"
+      if (profileError.code === 'PGRST116') {
         console.warn(`Profile not found for user ${userId}, cannot update.`);
         return null;
       } else {
@@ -27,13 +27,12 @@ export const userService = {
     }
 
     // Also update the user metadata in Supabase Auth.
-    // The 'data' property is used for user_metadata.
     const { error: metadataError } = await supabase.auth.updateUser({
-       { display_name: displayName }
+      data: { display_name: displayName }
     });
 
     if (metadataError) {
-      console.error("Error updating user meta", metadataError);
+      console.error("Error updating user metadata:", metadataError);
       throw metadataError;
     }
 
