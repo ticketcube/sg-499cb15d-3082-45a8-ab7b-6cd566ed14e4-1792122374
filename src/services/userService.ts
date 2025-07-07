@@ -5,7 +5,7 @@ type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 
 export const userService = {
   async updateProfile(userId: string, displayName: string): Promise<Profile | null> {
-    const {  profileData, error: profileError } = await supabase
+    const { data: profileData, error: profileError } = await supabase
       .from("profiles")
       .update({ 
         display_name: displayName,
