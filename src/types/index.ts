@@ -36,6 +36,14 @@ export interface HoleScore {
   points: number;
 }
 
+export interface HoleCategories {
+  eagle: number;
+  birdie: number;
+  par: number;
+  bogey: number;
+  bogey_plus: number;
+}
+
 export interface GameScore {
   userId: string;
   playerName: string;
@@ -43,10 +51,13 @@ export interface GameScore {
   courseName: string;
   teeId: string;
   teeName: string;
+  ghinHandicap?: number;
+  adjustedAverageScore?: number;
   targetScore: number;
   totalPoints: number;
   fourPointsEarned: number;
   holeScores: HoleScore[];
+  holeCategories: HoleCategories;
   timestamp: number;
   validated: boolean;
   leaderboardType?: "monthly" | "daily";
