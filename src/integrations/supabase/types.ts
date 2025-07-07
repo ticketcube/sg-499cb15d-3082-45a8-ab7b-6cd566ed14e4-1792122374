@@ -290,6 +290,144 @@ export type Database = {
         }
         Relationships: []
       }
+      game_pools: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          current_players: number
+          end_date: string | null
+          entry_fee_points: number
+          id: string
+          max_players: number | null
+          min_players: number
+          name: string
+          prize_pool_percentage: number
+          start_date: string | null
+          status: "UPCOMING" | "ACTIVE" | "COMPLETED"
+          total_prize_pool: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          current_players?: number
+          end_date?: string | null
+          entry_fee_points: number
+          id?: string
+          max_players?: number | null
+          min_players?: number
+          name: string
+          prize_pool_percentage?: number
+          start_date?: string | null
+          status: "UPCOMING" | "ACTIVE" | "COMPLETED"
+          total_prize_pool?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          current_players?: number
+          end_date?: string | null
+          entry_fee_points?: number
+          id?: string
+          max_players?: number | null
+          min_players?: number
+          name?: string
+          prize_pool_percentage?: number
+          start_date?: string | null
+          status?: "UPCOMING" | "ACTIVE" | "COMPLETED"
+          total_prize_pool?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_pools_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          points_awarded: number | null
+          status: "PENDING" | "COMPLETED" | "FAILED"
+          stripe_customer_id: string | null
+          stripe_payment_intent_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          points_awarded?: number | null
+          status: "PENDING" | "COMPLETED" | "FAILED"
+          stripe_customer_id?: string | null
+          stripe_payment_intent_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          points_awarded?: number | null
+          status?: "PENDING" | "COMPLETED" | "FAILED"
+          stripe_customer_id?: string | null
+          stripe_payment_intent_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_transactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      points_ledger: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          reference_id: string | null
+          type: "PAID" | "EARNED" | "WON" | "REDEEMED"
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          reference_id?: string | null
+          type: "PAID" | "EARNED" | "WON" | "REDEEMED"
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          reference_id?: string | null
+          type?: "PAID" | "EARNED" | "WON" | "REDEEMED"
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "points_ledger_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
