@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -16,10 +17,13 @@ export const userService = {
       .single();
 
     if (profileError) {
-      console.error("Error updating profile:", profileError);
-      if (profileError.code === 'PGRST116') { // "JSON object requested, multiple (or no) rows returned"
-        console.warn(`Profile not found for user ${userId}, cannot update.`);
+      // We'll log the warning but not throw, so we can still attempt to update auth metadata.
+      // A profile might not exist yet for a new user.
+      if (profileError.code === 'PGRST116') { 
+        console.warn(`Profile not found for user ${userId}, cannot update. This is expected for new users.`);
       } else {
+        // For other errors, we should probably stop.
+        console.error("Error updating profile:", profileError);
         throw profileError;
       }
     }
@@ -27,11 +31,11 @@ export const userService = {
     // Also update the user metadata in Supabase Auth.
     // The 'data' property is used for user_metadata.
     const { error: metadataError } = await supabase.auth.updateUser({
-       { display_name: displayName }
+      data: { display_name: displayName }
     });
 
     if (metadataError) {
-      console.error("Error updating user meta", metadataError);
+      console.error("Error updating user auth metadata", metadataError);
       throw metadataError;
     }
 
