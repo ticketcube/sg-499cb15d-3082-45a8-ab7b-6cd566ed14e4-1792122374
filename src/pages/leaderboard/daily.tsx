@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,6 @@ import { Trophy, Medal, Award, Crown } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { gameService } from "@/services/gameService";
-import { Game } from "@/types";
 
 interface LeaderboardEntry {
   id: string;
@@ -34,10 +34,14 @@ export default function DailyLeaderboard() {
     setLoading(true);
     try {
       const dailyGames = await gameService.getDailyLeaderboard();
+      if (!dailyGames) {
+        setLeaderboard([]);
+        return;
+      }
       
-      const todaysGames = dailyGames.map((game: any, index: number) => ({
+      const todaysGames = dailyGames.map((game, index: number) => ({
         id: game.id,
-        playerName: game.profiles?.display_name || game.player_name,
+        playerName: game.profiles?.display_name || game.player_name || "Anonymous",
         fourPointsEarned: game.four_points_earned,
         courseName: game.course_name,
         rank: index + 1,

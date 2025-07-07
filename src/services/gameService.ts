@@ -1,5 +1,6 @@
+
 import { supabase } from "@/integrations/supabase/client";
-import { GameScore } from "@/types";
+import { Game, GameScore } from "@/types";
 
 interface TargetScoreParams {
   ghinIndex?: number;
@@ -39,7 +40,7 @@ export const gameService = {
         target_score: gameScore.targetScore,
         total_points: gameScore.totalPoints,
         four_points_earned: gameScore.fourPointsEarned,
-        hole_scores: gameScore.holeScores as unknown as any,
+        hole_scores: gameScore.holeScores,
         leaderboard_type: gameScore.leaderboardType,
         paid_entry: gameScore.paidEntry,
         game_type: gameScore.gameType,
@@ -54,7 +55,7 @@ export const gameService = {
     return data;
   },
 
-  async getDailyLeaderboard() {
+  async getDailyLeaderboard(): Promise<Game[] | null> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -69,7 +70,7 @@ export const gameService = {
     return data;
   },
 
-  async getMonthlyLeaderboard() {
+  async getMonthlyLeaderboard(): Promise<Game[] | null> {
     const startOfMonth = new Date();
     startOfMonth.setDate(1);
     startOfMonth.setHours(0, 0, 0, 0);

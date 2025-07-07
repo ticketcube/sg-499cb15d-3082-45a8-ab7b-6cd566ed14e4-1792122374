@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,6 @@ import { Trophy, Medal, Award, Crown, Lock } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { gameService } from "@/services/gameService";
-import { Game } from "@/types";
 
 interface MonthlyLeaderboardEntry {
   id: string;
@@ -28,17 +28,23 @@ export default function MonthlyLeaderboard() {
     setLoading(true);
     try {
       const monthlyGames = await gameService.getMonthlyLeaderboard();
+      if (!monthlyGames) {
+        setLeaderboard([]);
+        return;
+      }
 
       const playerStats: { [key: string]: MonthlyLeaderboardEntry } = {};
 
-      monthlyGames.forEach((game: any) => {
+      monthlyGames.forEach((game) => {
         const userId = game.user_id;
+        if (!userId) return;
+
         const playerName = game.profiles?.display_name || game.player_name;
 
         if (!playerStats[userId]) {
           playerStats[userId] = {
             id: userId,
-            playerName: playerName,
+            playerName: playerName || "Anonymous",
             totalFourPoints: 0,
             gamesPlayed: 0,
             averageScore: 0,
