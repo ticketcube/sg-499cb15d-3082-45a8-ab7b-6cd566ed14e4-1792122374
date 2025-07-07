@@ -22,44 +22,64 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [currentNine, setCurrentNine] = useState<"front" | "back">("front");
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load game state from localStorage on mount
+  // Load game state from localStorage on mount (client-side only)
   useEffect(() => {
-    const savedGameSettings = localStorage.getItem('currentGameSettings');
-    const savedHoleScores = localStorage.getItem('currentHoleScores');
-    const savedCurrentNine = localStorage.getItem('currentNine');
+    if (typeof window === 'undefined') return;
+    
+    try {
+      const savedGameSettings = localStorage.getItem('currentGameSettings');
+      const savedHoleScores = localStorage.getItem('currentHoleScores');
+      const savedCurrentNine = localStorage.getItem('currentNine');
 
-    if (savedGameSettings) {
-      setGameSettings(JSON.parse(savedGameSettings));
-    }
-    if (savedHoleScores) {
-      setHoleScores(JSON.parse(savedHoleScores));
-    }
-    if (savedCurrentNine) {
-      setCurrentNine(JSON.parse(savedCurrentNine));
+      if (savedGameSettings) {
+        setGameSettings(JSON.parse(savedGameSettings));
+      }
+      if (savedHoleScores) {
+        setHoleScores(JSON.parse(savedHoleScores));
+      }
+      if (savedCurrentNine) {
+        setCurrentNine(JSON.parse(savedCurrentNine));
+      }
+    } catch (error) {
+      console.error('Error loading game state from localStorage:', error);
     }
     
     setIsLoaded(true);
   }, []);
 
-  // Save game state to localStorage whenever it changes (only after initial load)
+  // Save game state to localStorage whenever it changes (only after initial load and client-side)
   useEffect(() => {
-    if (!isLoaded) return;
+    if (!isLoaded || typeof window === 'undefined') return;
     
-    if (gameSettings) {
-      localStorage.setItem('currentGameSettings', JSON.stringify(gameSettings));
-    } else {
-      localStorage.removeItem('currentGameSettings');
+    try {
+      if (gameSettings) {
+        localStorage.setItem('currentGameSettings', JSON.stringify(gameSettings));
+      } else {
+        localStorage.removeItem('currentGameSettings');
+      }
+    } catch (error) {
+      console.error('Error saving game settings to localStorage:', error);
     }
   }, [gameSettings, isLoaded]);
 
   useEffect(() => {
-    if (!isLoaded) return;
-    localStorage.setItem('currentHoleScores', JSON.stringify(holeScores));
+    if (!isLoaded || typeof window === 'undefined') return;
+    
+    try {
+      localStorage.setItem('currentHoleScores', JSON.stringify(holeScores));
+    } catch (error) {
+      console.error('Error saving hole scores to localStorage:', error);
+    }
   }, [holeScores, isLoaded]);
 
   useEffect(() => {
-    if (!isLoaded) return;
-    localStorage.setItem('currentNine', JSON.stringify(currentNine));
+    if (!isLoaded || typeof window === 'undefined') return;
+    
+    try {
+      localStorage.setItem('currentNine', JSON.stringify(currentNine));
+    } catch (error) {
+      console.error('Error saving current nine to localStorage:', error);
+    }
   }, [currentNine, isLoaded]);
 
   const setHoleScore = (hole: number, score: number, points: number) => {
@@ -88,10 +108,18 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setHoleScores([]);
     setCurrentNine("front");
     setIsLoaded(false);
-    // Clear localStorage
-    localStorage.removeItem('currentGameSettings');
-    localStorage.removeItem('currentHoleScores');
-    localStorage.removeItem('currentNine');
+    
+    // Clear localStorage (client-side only)
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem('currentGameSettings');
+        localStorage.removeItem('currentHoleScores');
+        localStorage.removeItem('currentNine');
+      } catch (error) {
+        console.error('Error clearing localStorage:', error);
+      }
+    }
+    
     setIsLoaded(true);
   };
 
