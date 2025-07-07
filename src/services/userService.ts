@@ -1,18 +1,12 @@
-import { supabase } from "@/integrations/supabase/client";
 
-// The auto-generated Database type from Supabase seems to be out of sync and is missing the 'profiles' table.
-// We are defining a local interface for a Profile to bypass the resulting TypeScript errors.
-// This ensures the application can compile while still providing some type safety for profile objects.
-interface Profile {
-  id: string;
-  display_name: string;
-  updated_at: string;
-}
+import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
+
+type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 
 export const userService = {
   async updateProfile(userId: string, displayName: string): Promise<Profile | null> {
-    // @ts-expect-error - This is necessary because the auto-generated Supabase types are missing the 'profiles' table.
-    const { data: profileData, error: profileError } = await supabase
+    const {  profileData, error: profileError } = await supabase
       .from("profiles")
       .update({ 
         display_name: displayName,
@@ -26,6 +20,7 @@ export const userService = {
       console.error("Error updating profile:", profileError);
       if (profileError.code === 'PGRST116') { // "JSON object requested, multiple (or no) rows returned"
         console.warn(`Profile not found for user ${userId}, cannot update.`);
+        return null;
       } else {
         throw profileError;
       }
@@ -34,7 +29,7 @@ export const userService = {
     // Also update the user metadata in Supabase Auth.
     // The 'data' property is used for user_metadata.
     const { error: metadataError } = await supabase.auth.updateUser({
-      data: { display_name: displayName }
+       { display_name: displayName }
     });
 
     if (metadataError) {
@@ -46,7 +41,6 @@ export const userService = {
   },
 
   async getProfile(userId: string): Promise<Profile | null> {
-    // @ts-expect-error - This is necessary because the auto-generated Supabase types are missing the 'profiles' table.
     const { data, error } = await supabase
       .from("profiles")
       .select("*")
@@ -62,6 +56,6 @@ export const userService = {
       throw error;
     }
 
-    return data as Profile | null;
+    return data;
   }
 };
