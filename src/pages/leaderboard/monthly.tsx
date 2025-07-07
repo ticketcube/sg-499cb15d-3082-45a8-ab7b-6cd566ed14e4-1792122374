@@ -4,7 +4,7 @@ import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Medal, Award, Crown, Lock } from "lucide-react";
+import { Trophy, Medal, Award, Crown } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { gameService } from "@/services/gameService";
@@ -22,7 +22,6 @@ interface MonthlyLeaderboardEntry {
 export default function MonthlyLeaderboard() {
   const [leaderboard, setLeaderboard] = useState<MonthlyLeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [hasAccess, setHasAccess] = useState(false);
   const { user } = useAuth();
 
   const loadMonthlyLeaderboard = useCallback(async () => {
@@ -75,54 +74,13 @@ export default function MonthlyLeaderboard() {
     }
   }, []);
 
-  const checkMonthlyAccess = useCallback(() => {
-    if (user) {
-      const monthlyAccess = localStorage.getItem(`monthlyAccess_${user.id}`);
-      if (monthlyAccess) {
-        const accessData = JSON.parse(monthlyAccess);
-        const currentMonth = new Date().getMonth();
-        const currentYear = new Date().getFullYear();
-
-        if (
-          accessData.month === currentMonth &&
-          accessData.year === currentYear
-        ) {
-          setHasAccess(true);
-        }
-      }
-    }
-  }, [user]);
-
   useEffect(() => {
     if (user) {
-      checkMonthlyAccess();
-      if (hasAccess) {
-        loadMonthlyLeaderboard();
-      } else {
-        setLoading(false);
-      }
+      loadMonthlyLeaderboard();
     } else {
       setLoading(false);
     }
-  }, [user, hasAccess, checkMonthlyAccess, loadMonthlyLeaderboard]);
-
-  const handlePurchaseAccess = async () => {
-    if (user) {
-      const currentMonth = new Date().getMonth();
-      const currentYear = new Date().getFullYear();
-      
-      localStorage.setItem(`monthlyAccess_${user.id}`, JSON.stringify({
-        month: currentMonth,
-        year: currentYear,
-        paid: true
-      }));
-      
-      const currentPoints = parseInt(localStorage.getItem(`userPoints_${user.id}`) || '0');
-      localStorage.setItem(`userPoints_${user.id}`, (currentPoints + 4).toString());
-      
-      setHasAccess(true);
-    }
-  };
+  }, [user, loadMonthlyLeaderboard]);
 
   const getRankIcon = (rank: number) => {
     switch (rank) {
@@ -168,44 +126,6 @@ export default function MonthlyLeaderboard() {
               </Link>
             </CardContent>
           </Card>
-        </div>
-      </Layout>
-    );
-  }
-
-  if (!hasAccess) {
-    return (
-      <Layout>
-        <div className="p-4">
-          <div className="max-w-md mx-auto">
-            <div className="text-center mb-6">
-              <h1 className="text-2xl font-bold mb-2">Monthly Leaderboard</h1>
-              <p className="text-muted-foreground">Premium access required</p>
-            </div>
-
-            <div className="flex gap-2 mb-6">
-              <Link href="/leaderboard/daily" className="flex-1">
-                <Button variant="outline" className="w-full">Daily</Button>
-              </Link>
-              <Button className="flex-1" disabled>Monthly</Button>
-            </div>
-
-            <Card>
-              <CardContent className="p-6 text-center">
-                <Lock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Premium Access Required</h3>
-                <p className="text-muted-foreground mb-4">
-                  Access the monthly leaderboard for $1 and earn 4 bonus points!
-                </p>
-                <Button onClick={handlePurchaseAccess} className="w-full">
-                  Purchase Access - $1
-                </Button>
-                <p className="text-xs text-muted-foreground mt-2">
-                  Includes 4 bonus points added to your account
-                </p>
-              </CardContent>
-            </Card>
-          </div>
         </div>
       </Layout>
     );
@@ -283,3 +203,4 @@ export default function MonthlyLeaderboard() {
     </Layout>
   );
 }
+  

@@ -1,9 +1,8 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export const userService = {
   async updateProfile(userId: string, displayName: string) {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from("profiles")
       .update({ 
         display_name: displayName,
@@ -32,7 +31,7 @@ export const userService = {
   },
 
   async getProfile(userId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from("profiles")
       .select("*")
       .eq("id", userId)
