@@ -1,6 +1,11 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Game, GameScore } from "@/types";
-import type { Json } from "@/integrations/supabase/types";
+import type { Json, Database } from "@/integrations/supabase/types";
+
+type GameWithProfile = Database["public"]["Tables"]["games"]["Row"] & {
+  profiles: { display_name: string | null } | null;
+};
 
 interface TargetScoreParams {
   ghinIndex?: number;
@@ -80,7 +85,7 @@ export const gameService = {
       console.error("Error fetching daily leaderboard:", error);
       throw error;
     }
-    return (data as unknown as Game[]) || [];
+    return (data as GameWithProfile[]) || [];
   },
 
   async getMonthlyLeaderboard(): Promise<Game[]> {
@@ -99,7 +104,6 @@ export const gameService = {
       console.error("Error fetching monthly leaderboard:", error);
       throw error;
     }
-    return (data as unknown as Game[]) || [];
+    return (data as GameWithProfile[]) || [];
   },
 };
-  

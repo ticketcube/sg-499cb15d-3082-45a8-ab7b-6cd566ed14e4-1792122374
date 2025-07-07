@@ -1,21 +1,13 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 
-// The auto-generated Database type from Supabase seems to be out of sync and is missing the 'profiles' table.
-// We are defining a local interface for a Profile to bypass the resulting TypeScript errors.
-// This ensures the application can compile while still providing some type safety for profile objects.
-interface Profile {
-  id: string;
-  display_name: string;
-  updated_at: string;
-}
+type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 
 export const userService = {
   async updateProfile(userId: string, displayName: string): Promise<Profile | null> {
-    // Using `as any` to bypass TypeScript errors due to out-of-sync Supabase types.
-    // This assumes the 'profiles' table exists in the database.
-    const { data: profileData, error: profileError } = await (supabase
-      .from("profiles") as any)
+    const {  profileData, error: profileError } = await supabase
+      .from("profiles")
       .update({ 
         display_name: displayName,
         updated_at: new Date().toISOString()
@@ -36,11 +28,11 @@ export const userService = {
     // Also update the user metadata in Supabase Auth.
     // The 'data' property is used for user_metadata.
     const { error: metadataError } = await supabase.auth.updateUser({
-      data: { display_name: displayName }
+       { display_name: displayName }
     });
 
     if (metadataError) {
-      console.error("Error updating user metadata:", metadataError);
+      console.error("Error updating user meta", metadataError);
       throw metadataError;
     }
 
@@ -48,9 +40,8 @@ export const userService = {
   },
 
   async getProfile(userId: string): Promise<Profile | null> {
-    // Using `as any` to bypass TypeScript errors due to out-of-sync Supabase types.
-    const { data, error } = await (supabase
-      .from("profiles") as any)
+    const { data, error } = await supabase
+      .from("profiles")
       .select("*")
       .eq("id", userId)
       .single();
@@ -64,6 +55,6 @@ export const userService = {
       throw error;
     }
 
-    return data as Profile | null;
+    return data;
   }
 };
