@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 // The auto-generated Database type from Supabase seems to be out of sync and is missing the 'profiles' table.
@@ -34,7 +33,7 @@ export const userService = {
 
     // Also update the user metadata in Supabase Auth
     const { error: metadataError } = await supabase.auth.updateUser({
-       { display_name: displayName }
+      user_metadata: { display_name: displayName }
     });
 
     if (metadataError) {
