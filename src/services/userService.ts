@@ -36,7 +36,7 @@ export const userService = {
 
       // Update auth metadata
       const { error: metadataError } = await supabase.auth.updateUser({
-         { display_name: displayName }
+         { display_name: displayName },
       });
 
       if (metadataError) {
@@ -63,7 +63,7 @@ export const userService = {
 
       // Update auth metadata
       const { error: metadataError } = await supabase.auth.updateUser({
-         { display_name: displayName }
+         { display_name: displayName },
       });
 
       if (metadataError) {
