@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 // The auto-generated Database type from Supabase seems to be out of sync and is missing the 'profiles' table.
