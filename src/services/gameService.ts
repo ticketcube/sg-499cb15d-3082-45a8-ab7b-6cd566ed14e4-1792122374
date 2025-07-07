@@ -6,6 +6,8 @@ type GameWithProfile = Database["public"]["Tables"]["games"]["Row"] & {
   profiles: { display_name: string | null } | null;
 };
 
+type GameInsert = Database["public"]["Tables"]["games"]["Insert"];
+
 interface TargetScoreParams {
   ghinIndex?: number;
   averageScore?: number;
@@ -48,7 +50,7 @@ export const gameService = {
     };
 
     // Only include course_id and tee_id if they are valid UUIDs
-    const insertData: any = {
+    const insertData: GameInsert = {
       user_id: gameScore.userId,
       player_name: gameScore.playerName,
       course_name: gameScore.courseName,
