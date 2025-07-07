@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
 
@@ -29,7 +28,7 @@ export const userService = {
 
     // Also update the user metadata
     const { error: metadataError } = await supabase.auth.updateUser({
-       { display_name: displayName }
+      data: { display_name: displayName }
     });
 
     if (metadataError) {
