@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Game, GameScore } from "@/types";
 import type { Json, Database } from "@/integrations/supabase/types";
@@ -46,9 +45,15 @@ export const gameService = {
 
     // Helper function to check if a string is a valid UUID
     const isValidUUID = (str: string): boolean => {
+      if (!str) return false;
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
       return uuidRegex.test(str);
     };
+
+    // Ensure we have valid UUIDs or use a default
+    const defaultUUID = "00000000-0000-0000-0000-000000000000";
+    const courseId = isValidUUID(gameScore.courseId) ? gameScore.courseId : defaultUUID;
+    const teeId = isValidUUID(gameScore.teeId) ? gameScore.teeId : defaultUUID;
 
     const insertData: GameInsert = {
       user_id: gameScore.userId,
@@ -62,22 +67,28 @@ export const gameService = {
       leaderboard_type: gameScore.leaderboardType,
       paid_entry: gameScore.paidEntry || false,
       game_type: gameScore.gameType,
-      course_id: gameScore.courseId && isValidUUID(gameScore.courseId) ? gameScore.courseId : "00000000-0000-0000-0000-000000000000",
-      tee_id: gameScore.teeId && isValidUUID(gameScore.teeId) ? gameScore.teeId : "00000000-0000-0000-0000-000000000000",
+      course_id: courseId,
+      tee_id: teeId
     };
 
-    const { data, error } = await supabase
-      .from("games")
-      .insert(insertData)
-      .select()
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from("games")
+        .insert(insertData)
+        .select()
+        .single();
 
-    if (error) {
-      console.error("❌ Error submitting game score:", error);
+      if (error) {
+        console.error("❌ Error submitting game score:", error);
+        throw error;
+      }
+
+      console.log("✅ Game score submitted successfully:", data);
+      return data;
+    } catch (error) {
+      console.error("❌ Error in submitGameScore:", error);
       throw error;
     }
-    console.log("✅ Game score submitted successfully:", data);
-    return data;
   },
 
   async getDailyLeaderboard(): Promise<Game[]> {

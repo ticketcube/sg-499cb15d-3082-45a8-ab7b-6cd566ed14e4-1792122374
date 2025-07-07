@@ -5,7 +5,51 @@ type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 
 export const userService = {
   async updateProfile(userId: string, displayName: string): Promise<Profile | null> {
-    const { data: profileData, error: profileError } = await supabase
+    // First try to get the profile
+    const { data: existingProfile, error: fetchError } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .single();
+
+    if (fetchError && fetchError.code === 'PGRST116') {
+      // Profile doesn't exist, create it
+      const { data: newProfile, error: createError } = await supabase
+        .from("profiles")
+        .insert([{ 
+          id: userId,
+          display_name: displayName,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
+
+      if (createError) {
+        console.error("Error creating profile:", createError);
+        throw createError;
+      }
+
+      // Update auth metadata
+      const { error: metadataError } = await supabase.auth.updateUser({
+        data: { display_name: displayName }
+      });
+
+      if (metadataError) {
+        console.error("Error updating user auth metadata", metadataError);
+        throw metadataError;
+      }
+
+      return newProfile;
+    }
+
+    if (fetchError) {
+      console.error("Error fetching profile:", fetchError);
+      throw fetchError;
+    }
+
+    // Profile exists, update it
+    const { data: updatedProfile, error: updateError } = await supabase
       .from("profiles")
       .update({ 
         display_name: displayName,
@@ -15,20 +59,12 @@ export const userService = {
       .select()
       .single();
 
-    if (profileError) {
-      // We'll log the warning but not throw, so we can still attempt to update auth metadata.
-      // A profile might not exist yet for a new user.
-      if (profileError.code === 'PGRST116') { 
-        console.warn(`Profile not found for user ${userId}, cannot update. This is expected for new users.`);
-      } else {
-        // For other errors, we should probably stop.
-        console.error("Error updating profile:", profileError);
-        throw profileError;
-      }
+    if (updateError) {
+      console.error("Error updating profile:", updateError);
+      throw updateError;
     }
 
-    // Also update the user metadata in Supabase Auth.
-    // The 'data' property is used for user_metadata.
+    // Update auth metadata
     const { error: metadataError } = await supabase.auth.updateUser({
       data: { display_name: displayName }
     });
@@ -38,7 +74,7 @@ export const userService = {
       throw metadataError;
     }
 
-    return profileData;
+    return updatedProfile;
   },
 
   async getProfile(userId: string): Promise<Profile | null> {
