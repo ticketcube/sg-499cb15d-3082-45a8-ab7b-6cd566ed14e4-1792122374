@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -62,10 +61,10 @@ export default function Home() {
               </Button>
             </div>
 
-            {/* Main CTA */}
-            <div className="w-full max-w-sm">
+            {/* Main CTA - Same height as small buttons */}
+            <div className="w-full max-w-xs">
               <Link href="/leaderboard/monthly" className="w-full">
-                <Button size="lg" className="w-full h-14 text-lg rounded-xl bg-green-600 hover:bg-green-700">
+                <Button size="sm" className="w-full text-sm rounded-lg bg-green-600 hover:bg-green-700">
                   View Leaderboards
                 </Button>
               </Link>
@@ -100,14 +99,14 @@ export default function Home() {
   const renderHowItWorksView = () => (
     <section className="py-8 bg-gray-50 min-h-screen flex flex-col">
       <div className="px-4 flex-grow">
-        <div className="flex flex-col items-center text-center space-y-3 mb-8">
+        <div className="flex flex-col items-center text-center space-y-3 mb-6">
           <h2 className="text-xl font-bold tracking-tighter">How It Works</h2>
           <p className="text-base text-muted-foreground">
             Golf 4Points makes scoring simple and rewarding
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 mb-8">
+        <div className="grid grid-cols-1 gap-4 mb-4">
           <div className="flex items-center space-x-4 bg-white p-4 rounded-xl shadow-sm">
             <div className="p-3 bg-green-100 rounded-full min-w-fit">
               <span className="text-green-700 font-bold text-lg">1</span>
@@ -182,14 +181,14 @@ export default function Home() {
   const renderGameRulesView = () => (
     <section className="py-8 bg-white min-h-screen flex flex-col">
       <div className="px-4 flex-grow">
-        <div className="flex flex-col items-center text-center space-y-3 mb-8">
+        <div className="flex flex-col items-center text-center space-y-3 mb-6">
           <h2 className="text-xl font-bold tracking-tighter">Game Rules</h2>
           <p className="text-base text-muted-foreground">
             Simple scoring that makes every hole count
           </p>
         </div>
 
-        <div className="space-y-4 mb-8">
+        <div className="space-y-4 mb-4">
           <div className="bg-gray-50 p-4 rounded-xl">
             <h3 className="text-lg font-bold mb-3">Points Per Score</h3>
             <div className="grid grid-cols-2 gap-3">
