@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export interface PaymentTransaction {
@@ -60,8 +59,17 @@ export const paymentService = {
 
     if (error) throw error;
 
+    // Define the accumulator type
+    interface PointsSummary {
+      paidPoints: number;
+      earnedPoints: number;
+      wonPoints: number;
+      redeemedPoints: number;
+      totalPoints(): number;
+    }
+
     // Calculate totals for each type
-    return data.reduce((acc, entry) => {
+    return data.reduce((acc: PointsSummary, entry) => {
       switch (entry.type) {
         case 'PAID':
           acc.paidPoints += entry.amount;
