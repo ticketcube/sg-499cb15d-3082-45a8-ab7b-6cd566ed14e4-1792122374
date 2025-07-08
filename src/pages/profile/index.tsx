@@ -3,18 +3,32 @@ import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Calendar, Target, Trophy, TrendingUp, Edit2, Save, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { userService } from "@/services/userService";
 import { supabase } from "@/integrations/supabase/client";
-import { Game, Profile } from "@/types";
-import { Edit2, Save, X } from "lucide-react";
+import { Profile } from "@/types";
 import { useRouter } from "next/router";
+
+interface PlayerRound {
+  id: string;
+  course_name: string;
+  tee_name: string;
+  created_at: string;
+  ghin_handicap: number | null;
+  adjusted_average_score: number | null;
+  target_score: number;
+  total_points: number;
+  four_points_earned: number;
+  game_type: number;
+}
 
 export default function ProfilePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [pastRounds, setPastRounds] = useState<Game[]>([]);
+  const [pastRounds, setPastRounds] = useState<PlayerRound[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -31,17 +45,28 @@ export default function ProfilePage() {
       setProfile(profileData);
       setDisplayName(profileData?.display_name || user.email?.split("@")[0] || "");
 
-      // Load past rounds
+      // Load past rounds with detailed information
       const { data: games, error } = await supabase
         .from("games")
-        .select("*")
+        .select(`
+          id,
+          course_name,
+          tee_name,
+          created_at,
+          ghin_handicap,
+          adjusted_average_score,
+          target_score,
+          total_points,
+          four_points_earned,
+          game_type
+        `)
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
       if (error) {
         console.error("Error fetching past rounds:", error);
       } else {
-        setPastRounds(games as Game[]);
+        setPastRounds(games as PlayerRound[]);
       }
     } catch (error) {
       console.error("Error loading profile ", error);
@@ -81,6 +106,23 @@ export default function ProfilePage() {
     setIsEditing(false);
   };
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric"
+    });
+  };
+
+  const getScoreDisplay = (round: PlayerRound) => {
+    if (round.ghin_handicap !== null) {
+      return `GHIN: ${round.ghin_handicap}`;
+    } else if (round.adjusted_average_score !== null) {
+      return `AVG: ${round.adjusted_average_score}`;
+    }
+    return "N/A";
+  };
+
   if (loading || isLoading) {
     return (
       <Layout>
@@ -97,7 +139,7 @@ export default function ProfilePage() {
 
   return (
     <Layout>
-      <div className="py-8 px-4 max-w-4xl mx-auto">
+      <div className="py-8 px-4 max-w-6xl mx-auto">
         {/* Profile Header */}
         <Card className="mb-6">
           <CardHeader>
@@ -180,25 +222,45 @@ export default function ProfilePage() {
                 </Button>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {pastRounds.map((round) => (
-                  <div
-                    key={round.id}
-                    className="flex justify-between items-center p-4 bg-gray-50 rounded-lg"
-                  >
-                    <div>
-                      <h4 className="font-medium">{round.course_name}</h4>
-                      <p className="text-sm text-gray-600">
-                        {round.tee_name} • {new Date(round.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-green-600">{round.total_points} pts</p>
-                      <p className="text-sm text-gray-600">
-                        {round.four_points_earned} 4-points
-                      </p>
-                    </div>
-                  </div>
+                  <Card key={round.id}>
+                    <CardContent className="p-4">
+                      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-center">
+                        <div className="md:col-span-2">
+                          <h3 className="font-semibold">{round.course_name}</h3>
+                          <p className="text-sm text-muted-foreground">{round.tee_name} Tees</p>
+                        </div>
+                        
+                        <div className="flex items-center space-x-2">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">{formatDate(round.created_at)}</span>
+                        </div>
+                        
+                        <div className="flex items-center space-x-2">
+                          <Badge variant="outline">{getScoreDisplay(round)}</Badge>
+                        </div>
+                        
+                        <div className="flex items-center space-x-2">
+                          <Target className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">Target: {round.target_score}</span>
+                        </div>
+                        
+                        <div className="flex items-center justify-between space-x-4">
+                          <div className="flex items-center space-x-2">
+                            <Trophy className="h-4 w-4 text-yellow-600" />
+                            <span className="text-sm font-medium">{round.total_points} pts</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <TrendingUp className={`h-4 w-4 ${round.four_points_earned >= 0 ? 'text-green-600' : 'text-red-600'}`} />
+                            <span className={`text-sm font-medium ${round.four_points_earned >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              {round.four_points_earned >= 0 ? '+' : ''}{round.four_points_earned}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 ))}
               </div>
             )}
