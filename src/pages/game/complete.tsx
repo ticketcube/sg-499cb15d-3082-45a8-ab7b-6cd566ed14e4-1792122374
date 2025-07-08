@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -47,9 +47,10 @@ export default function GameCompletePage() {
         localStorage.removeItem(PENDING_GAME_SUBMISSION_KEY);
       }
     }
-  }, [user]);
+  }, [user, gameSettings, handleSubmitToMonthly]);
 
-  const handleSubmitToMonthly = async () => {
+  // Move handleSubmitToMonthly inside useCallback to prevent infinite loop
+  const handleSubmitToMonthly = useCallback(async () => {
     if (!user || !gameSettings) return;
 
     setSubmitting(true);
@@ -108,7 +109,7 @@ export default function GameCompletePage() {
     } finally {
       setSubmitting(false);
     }
-  };
+  }, [user, gameSettings, totalPoints, fourPointsEarned, holeScores, toast, router, resetGame]);
 
   const handleSubmitToDaily = async () => {
     if (!user || !gameSettings) return;
