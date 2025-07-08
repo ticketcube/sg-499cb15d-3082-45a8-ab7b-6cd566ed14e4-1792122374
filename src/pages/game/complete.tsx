@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -38,18 +39,6 @@ export default function GameCompletePage() {
     return () => clearTimeout(timer);
   }, [gameSettings, totalPoints, fourPointsEarned, holeScores, router]);
 
-  useEffect(() => {
-    // Check for pending game submission after authentication
-    if (user && localStorage.getItem(PENDING_GAME_SUBMISSION_KEY)) {
-      const pendingGame = JSON.parse(localStorage.getItem(PENDING_GAME_SUBMISSION_KEY) || "");
-      if (pendingGame && gameSettings) {
-        handleSubmitToMonthly();
-        localStorage.removeItem(PENDING_GAME_SUBMISSION_KEY);
-      }
-    }
-  }, [user, gameSettings, handleSubmitToMonthly]);
-
-  // Move handleSubmitToMonthly inside useCallback to prevent infinite loop
   const handleSubmitToMonthly = useCallback(async () => {
     if (!user || !gameSettings) return;
 
@@ -85,7 +74,7 @@ export default function GameCompletePage() {
         gameType: gameSettings.holes as 9 | 18,
       };
 
-      console.log('📊 Prepared game score data:', gameScoreData);
+      console.log('📊 Prepared game score ', gameScoreData);
       const result = await gameService.submitGameScore(gameScoreData);
       console.log('✅ Submission result:', result);
 
@@ -110,6 +99,17 @@ export default function GameCompletePage() {
       setSubmitting(false);
     }
   }, [user, gameSettings, totalPoints, fourPointsEarned, holeScores, toast, router, resetGame]);
+
+  useEffect(() => {
+    // Check for pending game submission after authentication
+    if (user && localStorage.getItem(PENDING_GAME_SUBMISSION_KEY)) {
+      const pendingGame = JSON.parse(localStorage.getItem(PENDING_GAME_SUBMISSION_KEY) || "");
+      if (pendingGame && gameSettings) {
+        handleSubmitToMonthly();
+        localStorage.removeItem(PENDING_GAME_SUBMISSION_KEY);
+      }
+    }
+  }, [user, gameSettings, handleSubmitToMonthly]);
 
   const handleSubmitToDaily = async () => {
     if (!user || !gameSettings) return;
