@@ -12,7 +12,7 @@ import { Game } from "@/types";
 interface MonthlyLeaderboardEntry {
   id: string;
   playerName: string;
-  totalFourPoints: number;
+  totalPoints: number;
   gamesPlayed: number;
   averageScore: number;
   rank: number;
@@ -40,14 +40,14 @@ export default function MonthlyLeaderboard() {
           playerStats[userId] = {
             id: userId,
             playerName: playerName || "Anonymous",
-            totalFourPoints: 0,
+            totalPoints: 0,
             gamesPlayed: 0,
             averageScore: 0,
             rank: 0,
           };
         }
 
-        playerStats[userId].totalFourPoints += game.four_points_earned;
+        playerStats[userId].totalPoints += game.total_points;
         playerStats[userId].gamesPlayed += 1;
       });
 
@@ -56,10 +56,10 @@ export default function MonthlyLeaderboard() {
           ...player,
           averageScore:
             player.gamesPlayed > 0
-              ? player.totalFourPoints / player.gamesPlayed
+              ? player.totalPoints / player.gamesPlayed
               : 0,
         }))
-        .sort((a, b) => b.totalFourPoints - a.totalFourPoints)
+        .sort((a, b) => b.totalPoints - a.totalPoints)
         .map((player, index) => ({
           ...player,
           rank: index + 1,
@@ -136,7 +136,7 @@ export default function MonthlyLeaderboard() {
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-6">
             <h1 className="text-2xl font-bold mb-2">Monthly Leaderboard</h1>
-            <p className="text-muted-foreground">This month's champions.</p>
+            <p className="text-muted-foreground">This month's top point earners.</p>
             <Badge variant="outline" className="mt-2 border-green-400 bg-green-50 text-green-800">Free to Enter</Badge>
           </div>
 
@@ -186,10 +186,10 @@ export default function MonthlyLeaderboard() {
                       </div>
                       <div className="text-right">
                         <div className="flex items-center gap-2">
-                          <span className={`text-lg font-bold ${entry.totalFourPoints >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {entry.totalFourPoints >= 0 ? '+' : ''}{entry.totalFourPoints}
+                          <span className="text-lg font-bold text-green-600">
+                            {entry.totalPoints}
                           </span>
-                          <span className="text-sm text-muted-foreground">4pts</span>
+                          <span className="text-sm text-muted-foreground">pts</span>
                         </div>
                       </div>
                     </div>
