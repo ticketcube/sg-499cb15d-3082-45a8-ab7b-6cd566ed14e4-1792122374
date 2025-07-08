@@ -12,6 +12,8 @@ import Link from "next/link";
 import { gameService } from "@/services/gameService";
 import { GameScore } from "@/types";
 
+const PENDING_GAME_SUBMISSION_KEY = "pendingGameSubmission";
+
 export default function GameCompletePage() {
   const router = useRouter();
   const { user } = useAuth();
@@ -35,6 +37,17 @@ export default function GameCompletePage() {
 
     return () => clearTimeout(timer);
   }, [gameSettings, totalPoints, fourPointsEarned, holeScores, router]);
+
+  useEffect(() => {
+    // Check for pending game submission after authentication
+    if (user && localStorage.getItem(PENDING_GAME_SUBMISSION_KEY)) {
+      const pendingGame = JSON.parse(localStorage.getItem(PENDING_GAME_SUBMISSION_KEY) || "");
+      if (pendingGame && gameSettings) {
+        handleSubmitToMonthly();
+        localStorage.removeItem(PENDING_GAME_SUBMISSION_KEY);
+      }
+    }
+  }, [user]);
 
   const handleSubmitToMonthly = async () => {
     if (!user || !gameSettings) return;
@@ -184,10 +197,38 @@ export default function GameCompletePage() {
           Sign in or create an account to submit your score.
         </p>
         <div className="flex flex-col gap-2">
-          <Link href={`/auth/login?redirect=${router.asPath}`} className="flex-1">
+          <Link 
+            href={`/auth/login?redirect=${router.asPath}`} 
+            className="flex-1"
+            onClick={() => {
+              // Store game state before redirecting
+              if (gameSettings) {
+                localStorage.setItem(PENDING_GAME_SUBMISSION_KEY, JSON.stringify({
+                  gameSettings,
+                  totalPoints,
+                  fourPointsEarned,
+                  holeScores,
+                }));
+              }
+            }}
+          >
             <Button variant="outline" className="w-full">Sign In</Button>
           </Link>
-          <Link href={`/auth/register?redirect=${router.asPath}`} className="flex-1">
+          <Link 
+            href={`/auth/register?redirect=${router.asPath}`} 
+            className="flex-1"
+            onClick={() => {
+              // Store game state before redirecting
+              if (gameSettings) {
+                localStorage.setItem(PENDING_GAME_SUBMISSION_KEY, JSON.stringify({
+                  gameSettings,
+                  totalPoints,
+                  fourPointsEarned,
+                  holeScores,
+                }));
+              }
+            }}
+          >
             <Button className="w-full">Register</Button>
           </Link>
         </div>
