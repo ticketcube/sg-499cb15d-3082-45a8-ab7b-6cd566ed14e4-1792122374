@@ -142,9 +142,9 @@ export default function MonthlyLeaderboard() {
 
           <div className="flex gap-2 mb-6">
             <Link href="/leaderboard/daily" className="flex-1">
-              <Button variant="outline" className="w-full">Daily</Button>
+              <Button variant="outline" className="w-full">4Points Daily Leaderboard</Button>
             </Link>
-            <Button className="flex-1">Monthly</Button>
+            <Button className="flex-1">Total Points Leaderboard</Button>
           </div>
 
           {loading ? (
