@@ -1,7 +1,6 @@
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect, useCallback } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +8,7 @@ import { Search, User, Calendar, Target, Trophy, TrendingUp } from "lucide-react
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import Layout from "@/components/layout/Layout";
+import { Layout } from "@/components/layout/Layout";
 
 interface Player {
   id: string;
@@ -33,7 +32,6 @@ interface PlayerRound {
 
 export default function PlayersPage() {
   const { user } = useAuth();
-  const router = useRouter();
   const { toast } = useToast();
   const [players, setPlayers] = useState<Player[]>([]);
   const [filteredPlayers, setFilteredPlayers] = useState<Player[]>([]);
@@ -43,22 +41,7 @@ export default function PlayersPage() {
   const [loading, setLoading] = useState(true);
   const [loadingRounds, setLoadingRounds] = useState(false);
 
-  useEffect(() => {
-    fetchPlayers();
-  }, []);
-
-  useEffect(() => {
-    if (searchTerm.trim() === "") {
-      setFilteredPlayers(players);
-    } else {
-      const filtered = players.filter(player =>
-        player.player_name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredPlayers(filtered);
-    }
-  }, [searchTerm, players]);
-
-  const fetchPlayers = async () => {
+  const fetchPlayers = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from("games")
@@ -102,7 +85,22 @@ export default function PlayersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    fetchPlayers();
+  }, [fetchPlayers]);
+
+  useEffect(() => {
+    if (searchTerm.trim() === "") {
+      setFilteredPlayers(players);
+    } else {
+      const filtered = players.filter(player =>
+        player.player_name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredPlayers(filtered);
+    }
+  }, [searchTerm, players]);
 
   const fetchPlayerRounds = async (playerName: string) => {
     if (!user) {
