@@ -52,14 +52,14 @@ export default function SurveyPage() {
     }
 
     const newAnswers = [...answers];
-    newAnswers[currentStep] = answer;
+    newAnswers[currentStep - 1] = answer;
     setAnswers(newAnswers);
 
     if (responseId) {
       const updates: Partial<SurveyResponse> = {
-        drop_off_step: currentStep + 2
+        drop_off_step: currentStep + 1
       };
-      switch(currentStep + 1) {
+      switch(currentStep) {
         case 1: updates.question_1_answer = answer; break;
         case 2: updates.question_2_answer = answer; break;
         case 3: updates.question_3_answer = answer; break;
@@ -67,7 +67,7 @@ export default function SurveyPage() {
       await surveyService.updateSurveyResponse(responseId, updates);
     }
 
-    if (currentStep < surveyQuestions.length - 1) {
+    if (currentStep < surveyQuestions.length) {
       setCurrentStep(currentStep + 1);
     } else {
       setIsCompleting(true);
@@ -80,7 +80,7 @@ export default function SurveyPage() {
     }
   };
 
-  const progressPercentage = ((currentStep + 1) / surveyQuestions.length) * 100;
+  const progressPercentage = (currentStep / surveyQuestions.length) * 100;
 
   if (isCompleting) {
     return (
@@ -100,9 +100,23 @@ export default function SurveyPage() {
                 Join Now and Play 4Points!
               </h1>
               <p className="text-gray-600">
-                Thank you for your interest! Redirecting you to get started...
+                Thank you for your interest! Get started now or sign in if you're already a member.
               </p>
-              <div className="w-8 h-8 border-4 border-green-200 border-t-green-600 rounded-full animate-spin mx-auto"></div>
+              <div className="space-y-3">
+                <Button
+                  onClick={() => router.push('/')}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white text-lg py-3"
+                >
+                  Get Started
+                </Button>
+                <Button
+                  onClick={() => router.push('/leaderboard/daily')}
+                  variant="outline"
+                  className="w-full text-lg py-3"
+                >
+                  Member Login
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -146,7 +160,7 @@ export default function SurveyPage() {
     );
   }
 
-  const currentQuestion = surveyQuestions[currentStep];
+  const currentQuestion = surveyQuestions[currentStep - 1];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
@@ -155,7 +169,7 @@ export default function SurveyPage() {
           <div className="space-y-2">
             <Progress value={progressPercentage} className="w-full h-2" />
             <p className="text-sm text-gray-500 text-center">
-              Question {currentStep + 1} of {surveyQuestions.length}
+              Question {currentStep} of {surveyQuestions.length}
             </p>
           </div>
 
