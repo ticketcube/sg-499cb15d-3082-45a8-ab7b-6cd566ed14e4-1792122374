@@ -147,12 +147,21 @@ export default function SurveyPage() {
               <p className="text-lg font-medium text-green-600">
                 What's our secret? Join us to find out.
               </p>
-              <Button
-                onClick={() => setCurrentStep(1)}
-                className="w-full bg-green-600 hover:bg-green-700 text-white text-lg py-6"
-              >
-                Let's Get Started
-              </Button>
+              <div className="space-y-3">
+                <Button
+                  onClick={() => setCurrentStep(1)}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white text-lg py-6"
+                >
+                  Let's Get Started
+                </Button>
+                <Button
+                  onClick={() => router.push('/leaderboard/daily')}
+                  variant="outline"
+                  className="w-full text-lg py-3"
+                >
+                  Member Login
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
