@@ -200,7 +200,6 @@ export default function SurveyPage() {
           <div className="grid grid-cols-2 gap-3">
             {currentQuestion.options.map((option, index) => {
               const isFrequencyQuestion = currentQuestion.id === 1;
-              const numbers = option.match(/(\d+)(-\d+)?/);
               
               return (
                 <button
@@ -208,13 +207,16 @@ export default function SurveyPage() {
                   onClick={() => handleAnswer(option)}
                   className="aspect-square flex flex-col items-center justify-center rounded-lg border-2 transition-all duration-200 hover:shadow-lg border-gray-200 bg-white hover:border-green-400 hover:bg-green-50 p-4 text-center"
                 >
-                  {isFrequencyQuestion && numbers ? (
+                  {isFrequencyQuestion ? (
                     <>
                       <span className="text-2xl font-bold text-green-600">
-                        {numbers[0]}{numbers[1] || ''}
+                        {option === "New to Golf" ? "New" : 
+                         option === "1 to 11 Rounds/Year" ? "1-11" :
+                         option === "12 to 24 Rounds/Year" ? "12-24" :
+                         option === "25+ Rounds/Year" ? "25+" : option}
                       </span>
                       <span className="text-xs text-gray-600 mt-1">
-                        {option.includes('New') ? 'New to Golf' : 'Rounds/Year'}
+                        {option === "New to Golf" ? "to Golf" : "Rounds/Year"}
                       </span>
                     </>
                   ) : (
