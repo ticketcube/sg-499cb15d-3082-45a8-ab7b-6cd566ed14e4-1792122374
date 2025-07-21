@@ -40,6 +40,7 @@ export default function GamePage() {
   const { toast } = useToast();
   
   const [gameMode, setGameMode] = useState<'setup' | 'play'>('setup');
+  const [setupStep, setSetupStep] = useState<'course' | 'tee'>('course');
   
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -81,6 +82,7 @@ export default function GamePage() {
     setSelectedCourse(course);
     setSelectedTeeId("");
     setTargetScore(null);
+    setSetupStep('tee');
   };
   
   const handleTeeChange = (teeId: string) => {
@@ -277,6 +279,7 @@ export default function GamePage() {
   const handleNewGame = () => {
     resetGame();
     setGameMode("setup");
+    setSetupStep("course");
     setSelectedCourse(null);
     setSelectedTeeId("");
     setGhinIndex("");
@@ -292,122 +295,146 @@ export default function GamePage() {
     ((scoreType === "ghin" && ghinIndex !== "") || 
      (scoreType === "average" && averageScore !== ""));
   
+  const handleBackToCourseSelection = () => {
+    setSetupStep('course');
+    setSelectedCourse(null);
+    setSelectedTeeId("");
+    setTargetScore(null);
+    setGhinIndex("");
+    setAverageScore("");
+  };
+  
   const renderSetupUI = () => (
     <div className="p-4">
       <Card className="max-w-md mx-auto">
         <CardHeader>
-          <CardTitle className="text-center">Game Setup</CardTitle>
+          <CardTitle className="text-center">
+            {setupStep === 'course' ? 'Select Course' : `${selectedCourse?.name} - Select Tees`}
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-3">
-            <Label>Select Course</Label>
-            {loading ? (
-              <div className="grid gap-2">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="h-16 bg-gray-100 rounded-lg animate-pulse" />
-                ))}
-              </div>
-            ) : (
-              <div className="grid gap-2">
-                {courses.map(course => (
-                  <button
-                    key={course.id}
-                    onClick={() => {
-                      if (typeof window.navigator.vibrate === "function") {
-                        window.navigator.vibrate(10);
-                      }
-                      handleCourseChange(course.id);
-                    }}
-                    className={`p-4 rounded-lg border-2 transition-all duration-200 text-left hover:shadow-md ${
-                      selectedCourse?.id === course.id
-                        ? 'border-green-500 bg-green-50 shadow-md'
-                        : 'border-gray-200 bg-white hover:border-green-300'
-                    }`}
-                  >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{course.name}</h3>
-                        <p className="text-sm text-gray-600">{course.holes} holes • Par {course.par}</p>
-                      </div>
-                      {selectedCourse?.id === course.id && (
-                        <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                          <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+          {setupStep === 'course' ? (
+            <div className="space-y-3">
+              {loading ? (
+                <div className="grid grid-cols-3 gap-2">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="aspect-square bg-gray-100 rounded-lg animate-pulse" />
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-2">
+                  {courses.map(course => (
+                    <button
+                      key={course.id}
+                      onClick={() => {
+                        if (typeof window.navigator.vibrate === "function") {
+                          window.navigator.vibrate(10);
+                        }
+                        handleCourseChange(course.id);
+                      }}
+                      className="aspect-square flex flex-col items-center justify-center rounded-lg border-2 transition-all duration-200 hover:shadow-md border-gray-200 bg-white hover:border-green-300 hover:bg-green-50 p-2"
+                    >
+                      <h3 className="font-bold text-sm text-center leading-tight">{course.name}</h3>
+                      <p className="text-xs text-gray-600 mt-1">{course.holes}H</p>
+                      <p className="text-xs text-gray-600">Par {course.par}</p>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="space-y-3">
+                <Label>Select Tees</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  {selectedCourse?.tees.map(tee => (
+                    <button
+                      key={tee.id}
+                      onClick={() => {
+                        if (typeof window.navigator.vibrate === "function") {
+                          window.navigator.vibrate(10);
+                        }
+                        handleTeeChange(tee.id);
+                      }}
+                      className={`aspect-square flex flex-col items-center justify-center rounded-lg border-2 transition-all duration-200 hover:shadow-md p-2 ${
+                        selectedTeeId === tee.id
+                          ? 'border-green-500 bg-green-50 shadow-md'
+                          : 'border-gray-200 bg-white hover:border-green-300 hover:bg-green-50'
+                      }`}
+                    >
+                      <h3 className="font-bold text-sm text-center leading-tight">{tee.name}</h3>
+                      <p className="text-xs text-gray-600 mt-1">CR: {tee.courseRating}</p>
+                      <p className="text-xs text-gray-600">SR: {tee.slopeRating}</p>
+                      {selectedTeeId === tee.id && (
+                        <div className="absolute top-1 right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                           </svg>
                         </div>
                       )}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-          
-          {selectedCourse && (
-            <div className="space-y-1">
-              <Label htmlFor="tee">Tees</Label>
-              <Select onValueChange={handleTeeChange} value={selectedTeeId}>
-                <SelectTrigger id="tee">
-                  <SelectValue placeholder="Select tees" />
-                </SelectTrigger>
-                <SelectContent>
-                  {selectedCourse.tees.map(tee => (
-                    <SelectItem key={tee.id} value={tee.id}>
-                      {tee.name}
-                    </SelectItem>
+                    </button>
                   ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-          
-          {selectedTeeId && (
-            <>
-              <div className="flex gap-2 pt-2">
-                <Button 
-                  variant={scoreType === "ghin" ? "default" : "outline"}
-                  onClick={() => handleScoreTypeChange("ghin")}
-                  className="flex-1"
-                >
-                  GHIN
-                </Button>
-                <Button 
-                  variant={scoreType === "average" ? "default" : "outline"}
-                  onClick={() => handleScoreTypeChange("average")}
-                  className="flex-1"
-                >
-                  Avg Score
-                </Button>
+                </div>
               </div>
               
-              {scoreType === "ghin" ? (
-                <div className="space-y-1">
-                  <Label htmlFor="ghin">GHIN Index</Label>
-                  <Input id="ghin" type="number" placeholder="e.g., 10.4" value={ghinIndex} onChange={(e) => handleGhinIndexChange(e.target.value)} />
-                </div>
-              ) : (
-                <div className="space-y-1">
-                  <Label htmlFor="average">Average 18-Hole Score</Label>
-                  <Input id="average" type="number" placeholder="e.g., 90" value={averageScore} onChange={(e) => handleAverageScoreChange(e.target.value)} />
-                </div>
+              {selectedTeeId && (
+                <>
+                  <div className="flex gap-2 pt-2">
+                    <Button 
+                      variant={scoreType === "ghin" ? "default" : "outline"}
+                      onClick={() => handleScoreTypeChange("ghin")}
+                      className="flex-1"
+                    >
+                      GHIN
+                    </Button>
+                    <Button 
+                      variant={scoreType === "average" ? "default" : "outline"}
+                      onClick={() => handleScoreTypeChange("average")}
+                      className="flex-1"
+                    >
+                      Avg Score
+                    </Button>
+                  </div>
+                  
+                  {scoreType === "ghin" ? (
+                    <div className="space-y-1">
+                      <Label htmlFor="ghin">GHIN Index</Label>
+                      <Input id="ghin" type="number" placeholder="e.g., 10.4" value={ghinIndex} onChange={(e) => handleGhinIndexChange(e.target.value)} />
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      <Label htmlFor="average">Average 18-Hole Score</Label>
+                      <Input id="average" type="number" placeholder="e.g., 90" value={averageScore} onChange={(e) => handleAverageScoreChange(e.target.value)} />
+                    </div>
+                  )}
+                  
+                  {targetScore !== null && (
+                    <div className="p-3 bg-green-50 rounded-lg text-center">
+                      <p className="font-medium">Target Score: <span className="text-xl font-bold">{targetScore}</span></p>
+                    </div>
+                  )}
+                </>
               )}
-            </>
-          )}
-          
-          {targetScore !== null && (
-            <div className="p-3 bg-green-50 rounded-lg text-center">
-              <p className="font-medium">Target Score: <span className="text-xl font-bold">{targetScore}</span></p>
+              
+              <Button 
+                className="w-full bg-green-600 hover:bg-green-700 text-white" 
+                size="lg" 
+                disabled={!isFormValid} 
+                onClick={handleStartGame}
+              >
+                Start New Game
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="w-full" 
+                onClick={handleBackToCourseSelection}
+              >
+                Back
+              </Button>
             </div>
           )}
-          
-          <Button 
-            className="w-full bg-green-600 hover:bg-green-700 text-white" 
-            size="lg" 
-            disabled={!isFormValid} 
-            onClick={handleStartGame}
-          >
-            Start New Game
-          </Button>
         </CardContent>
       </Card>
     </div>
