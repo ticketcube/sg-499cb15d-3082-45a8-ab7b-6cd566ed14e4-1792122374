@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -25,18 +25,7 @@ export default function AdminPage() {
   const [responses, setResponses] = useState<SurveyResponse[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
-  useEffect(() => {
-    if (!loading && (!user || user.email !== 'alan@alanrakov.com')) {
-      router.push('/auth/login');
-      return;
-    }
-
-    if (user && user.email === 'alan@alanrakov.com') {
-      loadData();
-    }
-  }, [user, loading, router]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoadingData(true);
       const [enabled, analyticsData, responsesData] = await Promise.all([
@@ -49,7 +38,7 @@ export default function AdminPage() {
       setAnalytics(analyticsData);
       setResponses(responsesData);
     } catch (error) {
-      console.error('Error loading admin data:', error);
+      console.error('Error loading admin ', error);
       toast({
         variant: 'destructive',
         title: 'Error',
@@ -58,7 +47,18 @@ export default function AdminPage() {
     } finally {
       setLoadingData(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    if (!loading && (!user || user.email !== 'alan@alanrakov.com')) {
+      router.push('/auth/login');
+      return;
+    }
+
+    if (user && user.email === 'alan@alanrakov.com') {
+      loadData();
+    }
+  }, [user, loading, router, loadData]);
 
   const handleToggleSurvey = async (enabled: boolean) => {
     try {
@@ -70,7 +70,7 @@ export default function AdminPage() {
           description: `Survey ${enabled ? 'enabled' : 'disabled'} successfully`
         });
       }
-    } catch (error) {
+    } catch {
       toast({
         variant: 'destructive',
         title: 'Error',

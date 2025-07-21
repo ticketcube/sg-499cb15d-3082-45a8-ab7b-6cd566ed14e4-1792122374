@@ -39,6 +39,38 @@ export type Database = {
     }
     public: {
         Tables: {
+            admin_settings: {
+                Row: {
+                    id: string
+                    setting_key: string
+                    setting_value: Json
+                    updated_at: string
+                    updated_by: string | null
+                }
+                Insert: {
+                    id?: string
+                    setting_key: string
+                    setting_value: Json
+                    updated_at?: string
+                    updated_by?: string | null
+                }
+                Update: {
+                    id?: string
+                    setting_key?: string
+                    setting_value?: Json
+                    updated_at?: string
+                    updated_by?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "admin_settings_updated_by_fkey"
+                        columns: ["updated_by"]
+                        isOneToOne: false
+                        referencedRelation: "users"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
             course_tees: {
                 Row: {
                     color: string
@@ -73,6 +105,13 @@ export type Database = {
                         columns: ["course_id"]
                         isOneToOne: false
                         referencedRelation: "courses"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "profiles_id_fkey"
+                        columns: ["id"]
+                        isOneToOne: true
+                        referencedRelation: "users"
                         referencedColumns: ["id"]
                     },
                 ]
@@ -392,23 +431,68 @@ export type Database = {
                 }
                 Relationships: []
             }
+            survey_responses: {
+                Row: {
+                    completed: boolean
+                    completed_at: string | null
+                    drop_off_step: number | null
+                    id: string
+                    ip_address: string | null
+                    question_1_answer: string | null
+                    question_2_answer: string | null
+                    question_3_answer: string | null
+                    session_id: string
+                    started_at: string
+                    user_agent: string | null
+                }
+                Insert: {
+                    completed?: boolean
+                    completed_at?: string | null
+                    drop_off_step?: number | null
+                    id?: string
+                    ip_address?: string | null
+                    question_1_answer?: string | null
+                    question_2_answer?: string | null
+                    question_3_answer?: string | null
+                    session_id: string
+                    started_at?: string
+                    user_agent?: string | null
+                }
+                Update: {
+                    completed?: boolean
+                    completed_at?: string | null
+                    drop_off_step?: number | null
+                    id?: string
+                    ip_address?: string | null
+                    question_1_answer?: string | null
+                    question_2_answer?: string | null
+                    question_3_answer?: string | null
+                    session_id?: string
+                    started_at?: string
+                    user_agent?: string | null
+                }
+                Relationships: []
+            }
             user_points: {
                 Row: {
+                    created_at: string
                     id: string
                     total_points: number | null
                     updated_at: string | null
                     user_id: string | null
                 }
                 Insert: {
+                    created_at?: string
                     id?: string
                     total_points?: number | null
                     updated_at?: string | null
                     user_id?: string | null
                 }
                 Update: {
+                    created_at?: string
                     id?: string
                     total_points?: number | null
-                    updated_at?: string | null
+                    updated_at?: string
                     user_id?: string | null
                 }
                 Relationships: []

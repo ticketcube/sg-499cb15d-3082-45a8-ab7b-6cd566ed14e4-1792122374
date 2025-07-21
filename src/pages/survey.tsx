@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { surveyService } from "@/services/surveyService";
+import { surveyService, SurveyResponse } from "@/services/surveyService";
 import Image from "next/image";
 
 interface SurveyQuestion {
@@ -57,10 +56,14 @@ export default function SurveyPage() {
     setAnswers(newAnswers);
 
     if (responseId) {
-      const updates: any = {
-        [`question_${currentStep + 1}_answer`]: answer,
+      const updates: Partial<SurveyResponse> = {
         drop_off_step: currentStep + 2
       };
+      switch(currentStep + 1) {
+        case 1: updates.question_1_answer = answer; break;
+        case 2: updates.question_2_answer = answer; break;
+        case 3: updates.question_3_answer = answer; break;
+      }
       await surveyService.updateSurveyResponse(responseId, updates);
     }
 
@@ -131,7 +134,7 @@ export default function SurveyPage() {
                 What's our secret? Join us to find out.
               </p>
               <Button
-                onClick={() => setCurrentStep(0)}
+                onClick={() => setCurrentStep(1)}
                 className="w-full bg-green-600 hover:bg-green-700 text-white text-lg py-6"
               >
                 Let's Get Started
