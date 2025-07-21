@@ -21,7 +21,7 @@ const surveyQuestions: SurveyQuestion[] = [
   {
     id: 2,
     question: "Typical 18 hole round duration?",
-    options: ["Under 4 Hours", "4 to5 Hours", "5+ Hours"]
+    options: ["Under 4 Hours", "4-4½ Hours", "4½-5 Hours", "5+ Hours"]
   },
   {
     id: 3,
