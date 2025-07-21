@@ -16,12 +16,12 @@ const surveyQuestions: SurveyQuestion[] = [
   {
     id: 1,
     question: "How often do you play?",
-    options: ["New to Golf", "1-11 Rounds/Year", "12-24 Rounds/Year", "25+ Rounds/Year"]
+    options: ["New to Golf", "1 to 11 Rounds/Year", "12 to 24 Rounds/Year", "25+ Rounds/Year"]
   },
   {
     id: 2,
     question: "Typical 18 hole round duration?",
-    options: ["Under 4 Hours", "4-5 Hours", "5+ Hours"]
+    options: ["Under 4 Hours", "4 to5 Hours", "5+ Hours"]
   },
   {
     id: 3,
