@@ -299,20 +299,48 @@ export default function GamePage() {
           <CardTitle className="text-center">Game Setup</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-1">
-            <Label htmlFor="course">Course</Label>
-            <Select onValueChange={handleCourseChange} disabled={loading}>
-              <SelectTrigger id="course">
-                <SelectValue placeholder={loading ? "Loading..." : "Select a course"} />
-              </SelectTrigger>
-              <SelectContent>
-                {courses.map(course => (
-                  <SelectItem key={course.id} value={course.id}>
-                    {course.name} ({course.holes} holes)
-                  </SelectItem>
+          <div className="space-y-3">
+            <Label>Select Course</Label>
+            {loading ? (
+              <div className="grid gap-2">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="h-16 bg-gray-100 rounded-lg animate-pulse" />
                 ))}
-              </SelectContent>
-            </Select>
+              </div>
+            ) : (
+              <div className="grid gap-2">
+                {courses.map(course => (
+                  <button
+                    key={course.id}
+                    onClick={() => {
+                      if (typeof window.navigator.vibrate === "function") {
+                        window.navigator.vibrate(10);
+                      }
+                      handleCourseChange(course.id);
+                    }}
+                    className={`p-4 rounded-lg border-2 transition-all duration-200 text-left hover:shadow-md ${
+                      selectedCourse?.id === course.id
+                        ? 'border-green-500 bg-green-50 shadow-md'
+                        : 'border-gray-200 bg-white hover:border-green-300'
+                    }`}
+                  >
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h3 className="font-semibold text-gray-900">{course.name}</h3>
+                        <p className="text-sm text-gray-600">{course.holes} holes • Par {course.par}</p>
+                      </div>
+                      {selectedCourse?.id === course.id && (
+                        <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                          <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           
           {selectedCourse && (
