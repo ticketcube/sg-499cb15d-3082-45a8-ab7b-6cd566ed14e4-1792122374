@@ -1,8 +1,6 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
-type GameRow = Database['public']['Tables']['games']['Row'];
 type GameInsert = Database['public']['Tables']['games']['Insert'];
 
 export interface GameScoreData {
