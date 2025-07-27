@@ -17,9 +17,9 @@ export interface SurveyResponse {
 }
 
 interface ResponsesByAnswer {
-  question_1: { [key: string]: number };
-  question_2: { [key: string]: number };
-  question_3: { [key: string]: number };
+  question_1: Record<string, number>;
+  question_2: Record<string, number>;
+  question_3: Record<string, number>;
 }
 
 export interface SurveyAnalytics {
@@ -42,18 +42,7 @@ interface SurveyInsertData {
   user_id?: string;
 }
 
-interface ISurveyService {
-  checkIfSurveyCompleted(userId: string): Promise<boolean>;
-  isSurveyEnabled(): Promise<boolean>;
-  startSurvey(sessionId: string, userId?: string): Promise<string | null>;
-  updateSurveyResponse(responseId: string, updates: Partial<SurveyResponse>): Promise<boolean>;
-  completeSurvey(responseId: string): Promise<boolean>;
-  getSurveyAnalytics(): Promise<SurveyAnalytics | null>;
-  getAllResponses(): Promise<SurveyResponse[]>;
-  toggleSurvey(enabled: boolean): Promise<boolean>;
-}
-
-export const surveyService: ISurveyService = {
+export const surveyService = {
   async checkIfSurveyCompleted(userId: string): Promise<boolean> {
     try {
       const { data, error } = await supabase
