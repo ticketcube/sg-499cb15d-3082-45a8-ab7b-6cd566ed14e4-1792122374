@@ -1,5 +1,13 @@
 
-    import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
+
+// Constants
+const SURVEY_STEPS = {
+  QUESTION_1: 1,
+  QUESTION_2: 2,
+  QUESTION_3: 3,
+  COMPLETED: 4
+} as const;
 
 type SurveyResponseBase = {
   id: string;
@@ -80,7 +88,9 @@ export const surveyService = {
         return false;
       }
 
-      return data?.setting_value === true;
+      // Normalize boolean value
+      const settingValue = data?.setting_value;
+      return settingValue === true || settingValue === 'true' || settingValue === 1;
     } catch (error) {
       console.error('Error checking survey status:', error);
       return false;
@@ -89,14 +99,33 @@ export const surveyService = {
 
   async startSurvey(sessionId: string, userId?: string): Promise<string | null> {
     try {
+      // Check for duplicate session_id
+      const { data: existingSession, error: checkError } = await supabase
+        .from('survey_responses')
+        .select('id')
+        .eq('session_id', sessionId)
+        .limit(1);
+
+      if (checkError) {
+        console.error('Error checking for duplicate session:', checkError);
+        return null;
+      }
+
+      if (existingSession && existingSession.length > 0) {
+        console.warn('Session ID already exists:', sessionId);
+        return existingSession[0].id;
+      }
+
       const insertData: {
         session_id: string;
+        started_at: string;
         drop_off_step: number;
         user_agent: string | null;
         user_id?: string;
       } = {
         session_id: sessionId,
-        drop_off_step: 1,
+        started_at: new Date().toISOString(),
+        drop_off_step: SURVEY_STEPS.QUESTION_1,
         user_agent: typeof window !== 'undefined' ? window.navigator.userAgent : null,
       };
 
@@ -140,7 +169,7 @@ export const surveyService = {
         .update({
           completed: true,
           completed_at: new Date().toISOString(),
-          drop_off_step: 4
+          drop_off_step: SURVEY_STEPS.COMPLETED
         })
         .eq('id', responseId);
 
@@ -156,7 +185,7 @@ export const surveyService = {
     try {
       const { data, error } = await supabase
         .from('survey_responses')
-        .select('*');
+        .select('completed, drop_off_step, question_1_answer, question_2_answer, question_3_answer');
 
       if (error) throw error;
       
@@ -170,9 +199,9 @@ export const surveyService = {
       const completion_rate = total_started > 0 ? (total_completed / total_started) * 100 : 0;
 
       const dropOffCounts = {
-        question_1: responses.filter((r) => r.drop_off_step === 1 && !r.completed).length,
-        question_2: responses.filter((r) => r.drop_off_step === 2 && !r.completed).length,
-        question_3: responses.filter((r) => r.drop_off_step === 3 && !r.completed).length,
+        question_1: responses.filter((r) => r.drop_off_step === SURVEY_STEPS.QUESTION_1 && !r.completed).length,
+        question_2: responses.filter((r) => r.drop_off_step === SURVEY_STEPS.QUESTION_2 && !r.completed).length,
+        question_3: responses.filter((r) => r.drop_off_step === SURVEY_STEPS.QUESTION_3 && !r.completed).length,
         completed: total_completed,
       };
 
@@ -190,17 +219,21 @@ export const surveyService = {
       };
 
       responses.forEach((response) => {
+        // Cast answers to string to ensure proper type handling
         if (response.question_1_answer) {
-          responses_by_answer.question_1[response.question_1_answer] = 
-            (responses_by_answer.question_1[response.question_1_answer] || 0) + 1;
+          const answer = String(response.question_1_answer);
+          responses_by_answer.question_1[answer] = 
+            (responses_by_answer.question_1[answer] || 0) + 1;
         }
         if (response.question_2_answer) {
-          responses_by_answer.question_2[response.question_2_answer] = 
-            (responses_by_answer.question_2[response.question_2_answer] || 0) + 1;
+          const answer = String(response.question_2_answer);
+          responses_by_answer.question_2[answer] = 
+            (responses_by_answer.question_2[answer] || 0) + 1;
         }
         if (response.question_3_answer) {
-          responses_by_answer.question_3[response.question_3_answer] = 
-            (responses_by_answer.question_3[response.question_3_answer] || 0) + 1;
+          const answer = String(response.question_3_answer);
+          responses_by_answer.question_3[answer] = 
+            (responses_by_answer.question_3[answer] || 0) + 1;
         }
       });
 
@@ -221,7 +254,7 @@ export const surveyService = {
     try {
       const { data, error } = await supabase
         .from('survey_responses')
-        .select('*')
+        .select('id, session_id, user_id, completed, started_at, completed_at, drop_off_step, question_1_answer, question_2_answer, question_3_answer')
         .order('started_at', { ascending: false });
 
       if (error) throw error;
@@ -252,4 +285,3 @@ export const surveyService = {
 };
 
 export default surveyService;
-  
