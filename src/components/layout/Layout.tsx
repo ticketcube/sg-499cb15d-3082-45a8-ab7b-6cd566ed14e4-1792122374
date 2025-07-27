@@ -1,4 +1,3 @@
-
 import { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -25,15 +24,14 @@ export function Layout({ children }: LayoutProps) {
         <div className="flex justify-between items-center">
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
-              <div className="relative h-8 w-8">
-                <Image
-                  src="/4logo.png"
-                  alt="4Points Logo"
-                  fill
-                  className="object-contain"
-                  priority
-                />
-              </div>
+              <Image
+                src="/4logo.png"
+                alt="4Points Logo"
+                width={32}
+                height={32}
+                className="object-contain"
+                priority
+              />
             </Link>
           </div>
           
