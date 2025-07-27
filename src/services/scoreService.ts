@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export interface GameScoreData {
@@ -23,7 +22,7 @@ export interface LeaderboardEntry {
   id: string;
   user_id: string;
   score: number;
-  game_data: any;
+  game_data: GameScoreData["game_data"];
   created_at: string;
   player_name: string;
   rank: number;
@@ -83,7 +82,14 @@ export const scoreService = {
       // Group by user and get their best score
       const userBestScores: { [key: string]: LeaderboardEntry } = {};
 
-      data?.forEach((entry: any) => {
+      data?.forEach((entry: {
+        id: string;
+        user_id: string;
+        score: number;
+        game_data: GameScoreData["game_data"];
+        created_at: string;
+        profiles: { display_name: string } | null;
+      }) => {
         const userId = entry.user_id;
         const playerName = entry.profiles?.display_name || entry.game_data?.player_name || "Anonymous";
         

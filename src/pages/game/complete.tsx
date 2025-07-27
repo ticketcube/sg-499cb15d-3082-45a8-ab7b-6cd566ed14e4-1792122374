@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -59,7 +58,7 @@ export default function GameCompletePage() {
           tee_id: gameSettings.teeId,
           target_score: gameSettings.targetScore,
           four_points_earned: fourPointsEarned,
-          hole_scores: holeScores,
+          hole_scores: holeScores.map(s => s.score),
           game_type: gameSettings.holes as 9 | 18,
           ghin_handicap: gameSettings.ghinIndex,
           adjusted_average_score: gameSettings.averageScore,
