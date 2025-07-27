@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { Layout } from "@/components/layout/Layout";
@@ -19,10 +18,13 @@ export default function HomePage() {
   useEffect(() => {
     const checkSurveyStatus = async () => {
       try {
-        const surveyEnabled = await surveyService.isSurveyEnabled();
-        if (surveyEnabled && !user) {
-          router.push('/survey');
-          return;
+        // Only check survey status for authenticated users
+        if (user) {
+          const hasCompletedSurvey = await surveyService.checkIfSurveyCompleted(user.id);
+          if (!hasCompletedSurvey) {
+            router.push('/survey');
+            return;
+          }
         }
       } catch (error) {
         console.error('Error checking survey status:', error);
