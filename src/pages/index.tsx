@@ -171,9 +171,8 @@ export default function HomePage() {
             </Button>
           </Link>
           <Button 
-            variant="outline" 
+            className="w-full bg-green-600 hover:bg-green-700 text-white"
             size="lg" 
-            className="w-full h-12 text-base rounded-xl"
             onClick={() => setCurrentView('game-rules')}
           >
             Game Rules
