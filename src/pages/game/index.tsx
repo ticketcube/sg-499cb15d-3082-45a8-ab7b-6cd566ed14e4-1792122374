@@ -304,8 +304,8 @@ export default function GamePage() {
   };
   
   const renderSetupUI = () => (
-    <div className="p-4">
-      <Card className="max-w-md mx-auto">
+    <div className="p-4 flex-grow flex items-center justify-center">
+      <Card className="max-w-md mx-auto w-full">
         <CardHeader>
           <CardTitle className="text-center">
             {setupStep === 'course' ? 'Select Course' : `${selectedCourse?.name} - Select Tees`}
@@ -457,8 +457,8 @@ export default function GamePage() {
     }
 
     return (
-      <div className="p-2 sm:p-4 flex flex-col h-full">
-        <Card className="max-w-md mx-auto flex-grow flex flex-col">
+      <div className="p-2 sm:p-4 flex flex-col flex-grow min-h-0">
+        <Card className="max-w-md mx-auto flex-grow flex flex-col min-h-0">
           <CardHeader className="text-center pb-2">
             <CardTitle>{gameSettings.courseName}</CardTitle>
             <p className="text-muted-foreground text-sm">{gameSettings.teeName}</p>
@@ -539,7 +539,7 @@ export default function GamePage() {
   
   return (
     <Layout>
-      <div className="bg-white min-h-screen">
+      <div className="bg-white min-h-screen flex flex-col">
         {gameMode === "setup" ? renderSetupUI() : renderPlayUI()}
       </div>
     </Layout>

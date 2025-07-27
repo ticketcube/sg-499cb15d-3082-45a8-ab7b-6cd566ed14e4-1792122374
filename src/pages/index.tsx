@@ -74,7 +74,7 @@ export default function HomePage() {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="flex-1 text-sm red-600"
+                className="flex-1 text-sm text-gray-800"
                 onClick={() => setCurrentView('how-it-works')}
               >
                 How It Works
@@ -82,7 +82,7 @@ export default function HomePage() {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="flex-1 text-sm"
+                className="flex-1 text-sm text-gray-800"
                 onClick={() => setCurrentView('game-rules')}
               >
                 Game Rules
@@ -248,7 +248,7 @@ export default function HomePage() {
           </Link>
           <Button 
             size="lg" 
-            className="w-full h-12 text-base rounded-xl bg-green-600 hover:bg-green-700" className="w-full h-12 text-base rounded-xl bg-green-600 hover:bg-green-700"
+            className="w-full h-12 text-base rounded-xl bg-green-600 hover:bg-green-700"
             onClick={() => setCurrentView('how-it-works')}
           >
             How It Works
