@@ -102,6 +102,13 @@ export type Database = {
                         referencedRelation: "courses"
                         referencedColumns: ["id"]
                     },
+                    {
+                        foreignKeyName: "fk_course_tee_to_course"
+                        columns: ["course_id"]
+                        isOneToOne: false
+                        referencedRelation: "courses"
+                        referencedColumns: ["id"]
+                    },
                 ]
             }
             courses: {
