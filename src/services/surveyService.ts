@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 export interface SurveyResponse {
@@ -26,9 +27,9 @@ export interface SurveyAnalytics {
     completed: number;
   };
   responses_by_answer: {
-    question_1: Record<string, number>;
-    question_2: Record<string, number>;
-    question_3: Record<string, number>;
+    question_1: { [key: string]: number };
+    question_2: { [key: string]: number };
+    question_3: { [key: string]: number };
   };
 }
 
@@ -76,12 +77,7 @@ export const surveyService = {
 
   async startSurvey(sessionId: string, userId?: string): Promise<string | null> {
     try {
-      const insertData: {
-        session_id: string;
-        user_id?: string;
-        drop_off_step: number;
-        user_agent: string | null;
-      } = {
+      const insertData: any = {
         session_id: sessionId,
         drop_off_step: 1,
         user_agent: typeof window !== 'undefined' ? window.navigator.userAgent : null,
@@ -151,15 +147,15 @@ export const surveyService = {
       if (error) throw error;
 
       const total_started = responses.length;
-      const total_completed = responses.filter(r => r.completed).length;
+      const total_completed = responses.filter((r: any) => r.completed).length;
       const completion_rate = total_started > 0 ? (total_completed / total_started) * 100 : 0;
 
       // Calculate drop-off rates
       const dropOffCounts = {
-        question_1: responses.filter(r => r.drop_off_step === 1).length,
-        question_2: responses.filter(r => r.drop_off_step === 2).length,
-        question_3: responses.filter(r => r.drop_off_step === 3).length,
-        completed: responses.filter(r => r.drop_off_step === 4).length,
+        question_1: responses.filter((r: any) => r.drop_off_step === 1).length,
+        question_2: responses.filter((r: any) => r.drop_off_step === 2).length,
+        question_3: responses.filter((r: any) => r.drop_off_step === 3).length,
+        completed: responses.filter((r: any) => r.drop_off_step === 4).length,
       };
 
       const drop_off_rates = {
@@ -170,13 +166,13 @@ export const surveyService = {
       };
 
       // Count responses by answer
-      const responses_by_answer = {
+      const responses_by_answer: SurveyAnalytics['responses_by_answer'] = {
         question_1: {},
         question_2: {},
         question_3: {},
       };
 
-      responses.forEach(response => {
+      responses.forEach((response: any) => {
         if (response.question_1_answer) {
           responses_by_answer.question_1[response.question_1_answer] = 
             (responses_by_answer.question_1[response.question_1_answer] || 0) + 1;
