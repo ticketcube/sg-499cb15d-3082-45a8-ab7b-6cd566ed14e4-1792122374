@@ -16,6 +16,12 @@ export interface SurveyResponse {
   drop_off_step?: number;
 }
 
+interface ResponsesByAnswer {
+  question_1: { [key: string]: number };
+  question_2: { [key: string]: number };
+  question_3: { [key: string]: number };
+}
+
 export interface SurveyAnalytics {
   total_started: number;
   total_completed: number;
@@ -26,12 +32,16 @@ export interface SurveyAnalytics {
     question_3: number;
     completed: number;
   };
-  responses_by_answer: {
-    question_1: { [key: string]: number };
-    question_2: { [key: string]: number };
-    question_3: { [key: string]: number };
-  };
+  responses_by_answer: ResponsesByAnswer;
 }
+
+interface SurveyInsertData {
+  session_id: string;
+  drop_off_step: number;
+  user_agent: string | null;
+  user_id?: string;
+}
+
 
 export const surveyService = {
   async checkIfSurveyCompleted(userId: string): Promise<boolean> {
@@ -77,7 +87,7 @@ export const surveyService = {
 
   async startSurvey(sessionId: string, userId?: string): Promise<string | null> {
     try {
-      const insertData: any = {
+      const insertData: SurveyInsertData = {
         session_id: sessionId,
         drop_off_step: 1,
         user_agent: typeof window !== 'undefined' ? window.navigator.userAgent : null,
@@ -145,17 +155,23 @@ export const surveyService = {
         .select('*');
 
       if (error) throw error;
+      
+      if (!responses) {
+        return null;
+      }
 
-      const total_started = responses.length;
-      const total_completed = responses.filter((r: any) => r.completed).length;
+      const typedResponses: SurveyResponse[] = responses;
+
+      const total_started = typedResponses.length;
+      const total_completed = typedResponses.filter((r) => r.completed).length;
       const completion_rate = total_started > 0 ? (total_completed / total_started) * 100 : 0;
 
       // Calculate drop-off rates
       const dropOffCounts = {
-        question_1: responses.filter((r: any) => r.drop_off_step === 1).length,
-        question_2: responses.filter((r: any) => r.drop_off_step === 2).length,
-        question_3: responses.filter((r: any) => r.drop_off_step === 3).length,
-        completed: responses.filter((r: any) => r.drop_off_step === 4).length,
+        question_1: typedResponses.filter((r) => r.drop_off_step === 1).length,
+        question_2: typedResponses.filter((r) => r.drop_off_step === 2).length,
+        question_3: typedResponses.filter((r) => r.drop_off_step === 3).length,
+        completed: typedResponses.filter((r) => r.drop_off_step === 4).length,
       };
 
       const drop_off_rates = {
@@ -166,13 +182,13 @@ export const surveyService = {
       };
 
       // Count responses by answer
-      const responses_by_answer: SurveyAnalytics['responses_by_answer'] = {
+      const responses_by_answer: ResponsesByAnswer = {
         question_1: {},
         question_2: {},
         question_3: {},
       };
 
-      responses.forEach((response: any) => {
+      typedResponses.forEach((response) => {
         if (response.question_1_answer) {
           responses_by_answer.question_1[response.question_1_answer] = 
             (responses_by_answer.question_1[response.question_1_answer] || 0) + 1;
