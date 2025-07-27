@@ -42,8 +42,18 @@ interface SurveyInsertData {
   user_id?: string;
 }
 
+interface ISurveyService {
+  checkIfSurveyCompleted(userId: string): Promise<boolean>;
+  isSurveyEnabled(): Promise<boolean>;
+  startSurvey(sessionId: string, userId?: string): Promise<string | null>;
+  updateSurveyResponse(responseId: string, updates: Partial<SurveyResponse>): Promise<boolean>;
+  completeSurvey(responseId: string): Promise<boolean>;
+  getSurveyAnalytics(): Promise<SurveyAnalytics | null>;
+  getAllResponses(): Promise<SurveyResponse[]>;
+  toggleSurvey(enabled: boolean): Promise<boolean>;
+}
 
-export const surveyService = {
+export const surveyService: ISurveyService = {
   async checkIfSurveyCompleted(userId: string): Promise<boolean> {
     try {
       const { data, error } = await supabase
@@ -166,7 +176,6 @@ export const surveyService = {
       const total_completed = typedResponses.filter((r) => r.completed).length;
       const completion_rate = total_started > 0 ? (total_completed / total_started) * 100 : 0;
 
-      // Calculate drop-off rates
       const dropOffCounts = {
         question_1: typedResponses.filter((r) => r.drop_off_step === 1).length,
         question_2: typedResponses.filter((r) => r.drop_off_step === 2).length,
@@ -181,7 +190,6 @@ export const surveyService = {
         completed: total_started > 0 ? (dropOffCounts.completed / total_started) * 100 : 0,
       };
 
-      // Count responses by answer
       const responses_by_answer: ResponsesByAnswer = {
         question_1: {},
         question_2: {},
