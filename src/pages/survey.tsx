@@ -117,7 +117,7 @@ export default function SurveyPage() {
                   Get Started
                 </Button>
                 <Button
-                  onClick={() => router.push('/')}
+                  onClick={() => router.push('/auth/login')}
                   variant="outline"
                   className="w-full text-lg py-3"
                 >
@@ -162,7 +162,7 @@ export default function SurveyPage() {
                   Let's Get Started
                 </Button>
                 <Button
-                  onClick={() => router.push('/')}
+                  onClick={() => router.push('/auth/login')}
                   variant="outline"
                   className="w-full text-lg py-3"
                 >
