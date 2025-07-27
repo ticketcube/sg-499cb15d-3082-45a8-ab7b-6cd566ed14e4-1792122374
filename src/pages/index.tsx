@@ -74,7 +74,7 @@ export default function HomePage() {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="flex-1 text-sm"
+                className="flex-1 text-sm red-600"
                 onClick={() => setCurrentView('how-it-works')}
               >
                 How It Works
