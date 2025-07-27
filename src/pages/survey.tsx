@@ -111,7 +111,7 @@ export default function SurveyPage() {
               </p>
               <div className="space-y-3">
                 <Button
-                  onClick={() => router.push('/')}
+                  onClick={() => router.push('/auth/register')}
                   className="w-full bg-green-600 hover:bg-green-700 text-white text-lg py-3"
                 >
                   Get Started
