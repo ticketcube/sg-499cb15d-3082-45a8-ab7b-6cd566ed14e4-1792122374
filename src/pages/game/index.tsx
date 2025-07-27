@@ -304,10 +304,10 @@ export default function GamePage() {
   };
   
   const renderSetupUI = () => (
-    <div className="p-4 flex-grow flex items-center justify-center">
+    <div className="p-4 pt-6">
       <Card className="max-w-md mx-auto w-full">
-        <CardHeader>
-          <CardTitle className="text-center">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-center text-lg">
             {setupStep === 'course' ? 'Select Course' : `${selectedCourse?.name} - Select Tees`}
           </CardTitle>
         </CardHeader>
@@ -355,15 +355,15 @@ export default function GamePage() {
                         }
                         handleTeeChange(tee.id);
                       }}
-                      className={`aspect-square flex flex-col items-center justify-center rounded-lg border-2 transition-all duration-200 hover:shadow-md p-2 ${
+                      className={`aspect-square flex flex-col items-center justify-center rounded-lg border-2 transition-all duration-200 hover:shadow-md p-2 relative ${
                         selectedTeeId === tee.id
                           ? 'border-green-500 bg-green-50 shadow-md'
                           : 'border-gray-200 bg-white hover:border-green-300 hover:bg-green-50'
                       }`}
                     >
                       <h3 className="font-bold text-sm text-center leading-tight">{tee.name}</h3>
-                      <p className="text-xs text-gray-600 mt-1">CR: {tee.courseRating}</p>
-                      <p className="text-xs text-gray-600">SR: {tee.slopeRating}</p>
+                      <p className="text-xs text-gray-700 mt-1">CR: {tee.courseRating}</p>
+                      <p className="text-xs text-gray-700">SR: {tee.slopeRating}</p>
                       {selectedTeeId === tee.id && (
                         <div className="absolute top-1 right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
                           <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -457,13 +457,13 @@ export default function GamePage() {
     }
 
     return (
-      <div className="p-2 sm:p-4 flex flex-col flex-grow min-h-0">
-        <Card className="max-w-md mx-auto flex-grow flex flex-col min-h-0">
-          <CardHeader className="text-center pb-2">
-            <CardTitle>{gameSettings.courseName}</CardTitle>
-            <p className="text-muted-foreground text-sm">{gameSettings.teeName}</p>
+      <div className="p-3 pt-4 pb-6 flex flex-col min-h-screen">
+        <Card className="max-w-sm mx-auto w-full">
+          <CardHeader className="text-center pb-3">
+            <CardTitle className="text-lg">{gameSettings.courseName}</CardTitle>
+            <p className="text-gray-700 text-sm font-medium">{gameSettings.teeName}</p>
           </CardHeader>
-          <CardContent className="flex-grow flex flex-col justify-between">
+          <CardContent className="space-y-4">
             <div className="grid grid-cols-3 gap-2">
               {holesToShow.map(hole => {
                 const { text, color, bg, points } = getScoreDisplay(hole);
@@ -473,27 +473,27 @@ export default function GamePage() {
                     onClick={() => handleHoleTap(hole)}
                     className={`aspect-square flex flex-col items-center justify-center rounded-lg border transition-colors ${color} ${bg}`}
                   >
-                    <span className="text-2xl font-bold">{text}</span>
+                    <span className="text-xl font-bold">{text}</span>
                     {points !== undefined && <span className="text-xs">{points} pts</span>}
-                    {points === undefined && <span className="text-xs text-gray-500">Hole {hole}</span>}
+                    {points === undefined && <span className="text-xs text-gray-600">Hole {hole}</span>}
                   </button>
                 );
               })}
             </div>
 
-            <div className="mt-4 p-3 bg-slate-50 rounded-lg">
+            <div className="p-3 bg-slate-50 rounded-lg">
               <div className="flex justify-around items-center text-center">
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground">Total</p>
-                  <p className="text-xl font-bold">{totalPoints}</p>
+                  <p className="text-xs font-medium text-gray-700">Total</p>
+                  <p className="text-lg font-bold">{totalPoints}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground">Target</p>
-                  <p className="text-xl font-bold">{gameSettings.targetScore}</p>
+                  <p className="text-xs font-medium text-gray-700">Target</p>
+                  <p className="text-lg font-bold">{gameSettings.targetScore}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground">4Points</p>
-                  <p className={`text-xl font-bold ${fourPointsEarned >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <p className="text-xs font-medium text-gray-700">4Points</p>
+                  <p className={`text-lg font-bold ${fourPointsEarned >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                     {fourPointsEarned >= 0 ? '+' : ''}{fourPointsEarned}
                   </p>
                 </div>
@@ -502,7 +502,7 @@ export default function GamePage() {
           </CardContent>
         </Card>
         
-        <div className="max-w-md mx-auto w-full mt-4 space-y-2">
+        <div className="max-w-sm mx-auto w-full mt-4 space-y-2">
           {gameSettings.holes === 18 && currentNine === "front" && frontNineCompleted && (
              <AlertDialog>
               <AlertDialogTrigger asChild>
