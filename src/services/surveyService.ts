@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 // Constants
@@ -192,7 +191,15 @@ export const surveyService = {
       if (!data) {
         return null;
       }
-      const responses: SurveyResponse[] = data;
+
+      // Use a more specific type for the analytics data
+      const responses: Array<{
+        completed: boolean;
+        drop_off_step: number | null;
+        question_1_answer: string | null;
+        question_2_answer: string | null;
+        question_3_answer: string | null;
+      }> = data;
 
       const total_started = responses.length;
       const total_completed = responses.filter((r) => r.completed).length;
