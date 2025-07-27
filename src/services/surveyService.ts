@@ -98,6 +98,24 @@ export const surveyService = {
 
   async startSurvey(sessionId: string, userId?: string): Promise<string | null> {
     try {
+      // First check if a survey response already exists for this session
+      const { data: existingResponse, error: checkError } = await supabase
+        .from('survey_responses')
+        .select('id')
+        .eq('session_id', sessionId)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error('Error checking existing survey:', checkError);
+        return null;
+      }
+
+      // If response already exists, return its ID
+      if (existingResponse) {
+        return existingResponse.id;
+      }
+
+      // Create new survey response
       const insertData: {
         session_id: string;
         started_at: string;
@@ -115,13 +133,9 @@ export const surveyService = {
         insertData.user_id = userId;
       }
 
-      // Use upsert instead of insert to handle duplicates automatically
       const { data, error } = await supabase
         .from('survey_responses')
-        .upsert(insertData, { 
-          onConflict: 'session_id',
-          ignoreDuplicates: false 
-        })
+        .insert([insertData])
         .select('id')
         .single();
 
