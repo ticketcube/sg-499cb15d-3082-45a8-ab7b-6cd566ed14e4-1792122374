@@ -92,38 +92,40 @@ export default function SurveyPage() {
   if (isCompleting) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-start justify-center pt-8 p-4">
-        <Card className="max-w-md mx-auto">
-          <CardContent className="p-8 text-center space-y-6">
-            <div className="relative w-32 h-32 mx-auto">
-              <Image
-                src="/full-4unders-logo-mddg489f.png"
-                alt="4Under Club Logo"
-                fill
-                className="object-contain"
-              />
-            </div>
-            <div className="space-y-4">
-              <h1 className="text-2xl font-bold text-green-700">
-                Join Now and Play 4Points!
-              </h1>
-              <p className="text-gray-600">
-                Thank you for your interest! Get started now or sign in if you're already a member.
-              </p>
-              <div className="space-y-3">
-                <Button
-                  onClick={() => router.push('/auth/register')}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white text-lg py-3"
-                >
-                  Get Started
-                </Button>
-                <Button
-                  onClick={() => router.push('/auth/login')}
-                  variant="outline"
-                  className="w-full text-lg py-3"
-                >
-                  Member Login
-                </Button>
+        <Card className="w-full max-w-md mx-auto min-h-[600px]">
+          <CardContent className="p-8 text-center space-y-6 flex flex-col justify-between min-h-[552px]">
+            <div className="space-y-6">
+              <div className="relative w-24 h-24 mx-auto">
+                <Image
+                  src="/full-4unders-logo-mddg489f.png"
+                  alt="4Under Club Logo"
+                  fill
+                  className="object-contain"
+                />
               </div>
+              <div className="space-y-4">
+                <h1 className="text-2xl font-bold text-green-700">
+                  Join Now and Play 4Points!
+                </h1>
+                <p className="text-gray-600">
+                  Thank you for your interest! Get started now or sign in if you're already a member.
+                </p>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <Button
+                onClick={() => router.push('/auth/register')}
+                className="w-full bg-green-600 hover:bg-green-700 text-white text-lg py-3"
+              >
+                Get Started
+              </Button>
+              <Button
+                onClick={() => router.push('/auth/login')}
+                variant="outline"
+                className="w-full text-lg py-3"
+              >
+                Member Login
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -134,41 +136,43 @@ export default function SurveyPage() {
   if (currentStep === 0 && answers.length === 0) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-start justify-center pt-8 p-4">
-        <Card className="max-w-md mx-auto">
-          <CardContent className="p-8 text-center space-y-6">
-            <div className="relative w-32 h-32 mx-auto">
-              <Image
-                src="/full-4unders-logo-mddg489f.png"
-                alt="4Under Club Logo"
-                fill
-                className="object-contain"
-              />
-            </div>
-            <div className="space-y-4">
-              <h1 className="text-2xl font-bold text-green-700">
-                Do you want to play golf in under 4 hours?
-              </h1>
-              <p className="text-lg text-gray-700">
-                The 4Under Club is open to anyone who wants to play golf, in less than 4 hours.
-              </p>
-              <p className="text-lg font-medium text-green-600">
-                What's our secret? Join us to find out.
-              </p>
-              <div className="space-y-3">
-                <Button
-                  onClick={() => setCurrentStep(1)}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white text-lg py-6"
-                >
-                  Let's Get Started
-                </Button>
-                <Button
-                  onClick={() => router.push('/auth/login')}
-                  variant="outline"
-                  className="w-full text-lg py-3"
-                >
-                  Member Login
-                </Button>
+        <Card className="w-full max-w-md mx-auto min-h-[600px]">
+          <CardContent className="p-8 text-center space-y-6 flex flex-col justify-between min-h-[552px]">
+            <div className="space-y-6">
+              <div className="relative w-24 h-24 mx-auto">
+                <Image
+                  src="/full-4unders-logo-mddg489f.png"
+                  alt="4Under Club Logo"
+                  fill
+                  className="object-contain"
+                />
               </div>
+              <div className="space-y-4">
+                <h1 className="text-2xl font-bold text-green-700">
+                  Do you want to play golf in under 4 hours?
+                </h1>
+                <p className="text-lg text-gray-700">
+                  The 4Under Club is open to anyone who wants to play golf, in less than 4 hours.
+                </p>
+                <p className="text-lg font-medium text-green-600">
+                  What's our secret? Join us to find out.
+                </p>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <Button
+                onClick={() => setCurrentStep(1)}
+                className="w-full bg-green-600 hover:bg-green-700 text-white text-lg py-6"
+              >
+                Let's Get Started
+              </Button>
+              <Button
+                onClick={() => router.push('/auth/login')}
+                variant="outline"
+                className="w-full text-lg py-3"
+              >
+                Member Login
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -180,28 +184,30 @@ export default function SurveyPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-start justify-center pt-8 p-4">
-      <Card className="max-w-md mx-auto">
-        <CardContent className="p-6 space-y-6">
-          <div className="space-y-2">
-            <Progress value={progressPercentage} className="w-full h-2" />
-            <p className="text-sm text-gray-500 text-center">
-              Question {currentStep} of {surveyQuestions.length}
-            </p>
-          </div>
+      <Card className="w-full max-w-md mx-auto min-h-[600px]">
+        <CardContent className="p-6 space-y-6 flex flex-col justify-between min-h-[552px]">
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <Progress value={progressPercentage} className="w-full h-2" />
+              <p className="text-sm text-gray-500 text-center">
+                Question {currentStep} of {surveyQuestions.length}
+              </p>
+            </div>
 
-          <div className="relative w-24 h-24 mx-auto">
-            <Image
-              src="/full-4unders-logo-mddg489f.png"
-              alt="4Under Club Logo"
-              fill
-              className="object-contain"
-            />
-          </div>
+            <div className="relative w-24 h-24 mx-auto">
+              <Image
+                src="/full-4unders-logo-mddg489f.png"
+                alt="4Under Club Logo"
+                fill
+                className="object-contain"
+              />
+            </div>
 
-          <div className="text-center space-y-4">
-            <h2 className="text-xl font-bold text-gray-800">
-              {currentQuestion.question}
-            </h2>
+            <div className="text-center space-y-4">
+              <h2 className="text-xl font-bold text-gray-800">
+                {currentQuestion.question}
+              </h2>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
