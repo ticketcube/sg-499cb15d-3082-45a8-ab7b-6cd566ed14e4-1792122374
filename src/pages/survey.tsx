@@ -84,9 +84,6 @@ export default function SurveyPage() {
       if (responseId) {
         await surveyService.completeSurvey(responseId);
       }
-      setTimeout(() => {
-        router.push('/');
-      }, 2000);
     }
   };
 
