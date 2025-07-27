@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export interface SurveyResponse {
@@ -40,6 +39,15 @@ interface SurveyInsertData {
   drop_off_step: number;
   user_agent: string | null;
   user_id?: string;
+}
+
+interface SurveyUpdateData {
+  question_1_answer?: string;
+  question_2_answer?: string;
+  question_3_answer?: string;
+  completed?: boolean;
+  completed_at?: string;
+  drop_off_step?: number;
 }
 
 export const surveyService = {
@@ -112,7 +120,7 @@ export const surveyService = {
 
   async updateSurveyResponse(
     responseId: string, 
-    updates: Partial<SurveyResponse>
+    updates: SurveyUpdateData
   ): Promise<boolean> {
     try {
       const { error } = await supabase
