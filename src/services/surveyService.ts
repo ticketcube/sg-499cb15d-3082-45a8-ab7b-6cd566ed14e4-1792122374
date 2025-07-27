@@ -1,9 +1,9 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export interface SurveyResponse {
   id: string;
   session_id: string;
+  user_id?: string;
   question_1_answer?: string;
   question_2_answer?: string;
   question_3_answer?: string;
@@ -33,6 +33,27 @@ export interface SurveyAnalytics {
 }
 
 export const surveyService = {
+  async checkIfSurveyCompleted(userId: string): Promise<boolean> {
+    try {
+      const { data, error } = await supabase
+        .from('survey_responses')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('completed', true)
+        .limit(1);
+
+      if (error) {
+        console.error('Error checking survey completion status:', error);
+        return false;
+      }
+
+      return data !== null && data.length > 0;
+    } catch (error) {
+      console.error('Error in checkIfSurveyCompleted:', error);
+      return false;
+    }
+  },
+
   async isSurveyEnabled(): Promise<boolean> {
     try {
       const { data, error } = await supabase
@@ -53,15 +74,26 @@ export const surveyService = {
     }
   },
 
-  async startSurvey(sessionId: string): Promise<string | null> {
+  async startSurvey(sessionId: string, userId?: string): Promise<string | null> {
     try {
+      const insertData: {
+        session_id: string;
+        user_id?: string;
+        drop_off_step: number;
+        user_agent: string | null;
+      } = {
+        session_id: sessionId,
+        drop_off_step: 1,
+        user_agent: typeof window !== 'undefined' ? window.navigator.userAgent : null,
+      };
+
+      if (userId) {
+        insertData.user_id = userId;
+      }
+
       const { data, error } = await supabase
         .from('survey_responses')
-        .insert([{
-          session_id: sessionId,
-          drop_off_step: 1,
-          user_agent: typeof window !== 'undefined' ? window.navigator.userAgent : null
-        }])
+        .insert([insertData])
         .select('id')
         .single();
 
