@@ -1,5 +1,5 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -9,10 +9,29 @@ import Image from 'next/image';
 type ViewMode = 'home' | 'how-it-works' | 'game-rules';
 
 export default function HomePage() {
+  const router = useRouter();
   const { user, loading } = useAuth();
   const [currentView, setCurrentView] = useState<ViewMode>('home');
 
+  // Redirect unauthenticated users to survey
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/survey');
+    }
+  }, [loading, user, router]);
+
   if (loading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="w-8 h-8 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Show loading while redirecting unauthenticated users
+  if (!user) {
     return (
       <Layout>
         <div className="flex items-center justify-center min-h-screen">
