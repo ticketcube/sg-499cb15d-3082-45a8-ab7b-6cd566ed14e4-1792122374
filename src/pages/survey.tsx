@@ -91,7 +91,7 @@ export default function SurveyPage() {
 
   if (isCompleting) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-start justify-center pt-8 p-4">
         <Card className="max-w-md mx-auto">
           <CardContent className="p-8 text-center space-y-6">
             <div className="relative w-32 h-32 mx-auto">
@@ -133,7 +133,7 @@ export default function SurveyPage() {
 
   if (currentStep === 0 && answers.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-start justify-center pt-8 p-4">
         <Card className="max-w-md mx-auto">
           <CardContent className="p-8 text-center space-y-6">
             <div className="relative w-32 h-32 mx-auto">
@@ -179,7 +179,7 @@ export default function SurveyPage() {
   const currentQuestion = surveyQuestions[currentStep - 1];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-start justify-center pt-8 p-4">
       <Card className="max-w-md mx-auto">
         <CardContent className="p-6 space-y-6">
           <div className="space-y-2">
