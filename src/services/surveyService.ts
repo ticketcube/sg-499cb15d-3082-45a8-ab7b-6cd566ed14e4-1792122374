@@ -98,23 +98,6 @@ export const surveyService = {
 
   async startSurvey(sessionId: string, userId?: string): Promise<string | null> {
     try {
-      // Check for duplicate session_id
-      const { data: existingSession, error: checkError } = await supabase
-        .from('survey_responses')
-        .select('id')
-        .eq('session_id', sessionId)
-        .limit(1);
-
-      if (checkError) {
-        console.error('Error checking for duplicate session:', checkError);
-        return null;
-      }
-
-      if (existingSession && existingSession.length > 0) {
-        console.warn('Session ID already exists, returning existing ID:', sessionId);
-        return existingSession[0].id;
-      }
-
       const insertData: {
         session_id: string;
         started_at: string;
@@ -132,25 +115,19 @@ export const surveyService = {
         insertData.user_id = userId;
       }
 
+      // Use upsert instead of insert to handle duplicates automatically
       const { data, error } = await supabase
         .from('survey_responses')
-        .insert([insertData])
+        .upsert(insertData, { 
+          onConflict: 'session_id',
+          ignoreDuplicates: false 
+        })
         .select('id')
         .single();
 
       if (error) {
-        // Handle duplicate key error specifically
-        if (error.code === '23505') { // PostgreSQL unique violation error code
-          console.warn('Duplicate session detected, attempting to retrieve existing:', sessionId);
-          const { data: existingData } = await supabase
-            .from('survey_responses')
-            .select('id')
-            .eq('session_id', sessionId)
-            .limit(1)
-            .single();
-          return existingData?.id || null;
-        }
-        throw error;
+        console.error('Error starting survey:', error);
+        return null;
       }
       
       return data.id;
