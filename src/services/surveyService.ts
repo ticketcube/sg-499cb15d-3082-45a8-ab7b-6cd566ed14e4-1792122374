@@ -21,7 +21,10 @@ type SurveyAnswers = {
 
 export type SurveyResponse = SurveyResponseBase & SurveyAnswers;
 
-export type SurveyUpdatePayload = Partial<SurveyAnswers> & {
+export type SurveyUpdatePayload = {
+  question_1_answer?: string;
+  question_2_answer?: string;
+  question_3_answer?: string;
   drop_off_step?: number;
 };
 
