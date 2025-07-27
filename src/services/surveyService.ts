@@ -1,20 +1,29 @@
 
-import { supabase } from "@/integrations/supabase/client";
+    import { supabase } from "@/integrations/supabase/client";
 
-export interface SurveyResponse {
+type SurveyResponseBase = {
   id: string;
   session_id: string;
   user_id?: string;
-  question_1_answer?: string;
-  question_2_answer?: string;
-  question_3_answer?: string;
   completed: boolean;
   started_at: string;
   completed_at?: string;
   ip_address?: string;
   user_agent?: string;
   drop_off_step?: number;
-}
+};
+
+type SurveyAnswers = {
+  question_1_answer?: string;
+  question_2_answer?: string;
+  question_3_answer?: string;
+};
+
+export type SurveyResponse = SurveyResponseBase & SurveyAnswers;
+
+export type SurveyUpdatePayload = Partial<SurveyAnswers> & {
+  drop_off_step?: number;
+};
 
 export interface SurveyAnalytics {
   total_started: number;
@@ -27,9 +36,9 @@ export interface SurveyAnalytics {
     completed: number;
   };
   responses_by_answer: {
-    question_1: { [key: string]: number };
-    question_2: { [key: string]: number };
-    question_3: { [key: string]: number };
+    question_1: Record<string, number>;
+    question_2: Record<string, number>;
+    question_3: Record<string, number>;
   };
 }
 
@@ -77,7 +86,12 @@ export const surveyService = {
 
   async startSurvey(sessionId: string, userId?: string): Promise<string | null> {
     try {
-      const insertData: any = {
+      const insertData: {
+        session_id: string;
+        drop_off_step: number;
+        user_agent: string | null;
+        user_id?: string;
+      } = {
         session_id: sessionId,
         drop_off_step: 1,
         user_agent: typeof window !== 'undefined' ? window.navigator.userAgent : null,
@@ -101,7 +115,7 @@ export const surveyService = {
     }
   },
 
-  async updateSurveyResponse(responseId: string, updates: any): Promise<boolean> {
+  async updateSurveyResponse(responseId: string, updates: SurveyUpdatePayload): Promise<boolean> {
     try {
       const { error } = await supabase
         .from('survey_responses')
@@ -137,25 +151,26 @@ export const surveyService = {
 
   async getSurveyAnalytics(): Promise<SurveyAnalytics | null> {
     try {
-      const { data: responses, error } = await supabase
+      const { data, error } = await supabase
         .from('survey_responses')
         .select('*');
 
       if (error) throw error;
       
-      if (!responses) {
+      if (!data) {
         return null;
       }
+      const responses: SurveyResponse[] = data;
 
       const total_started = responses.length;
-      const total_completed = responses.filter((r: any) => r.completed).length;
+      const total_completed = responses.filter((r) => r.completed).length;
       const completion_rate = total_started > 0 ? (total_completed / total_started) * 100 : 0;
 
       const dropOffCounts = {
-        question_1: responses.filter((r: any) => r.drop_off_step === 1).length,
-        question_2: responses.filter((r: any) => r.drop_off_step === 2).length,
-        question_3: responses.filter((r: any) => r.drop_off_step === 3).length,
-        completed: responses.filter((r: any) => r.drop_off_step === 4).length,
+        question_1: responses.filter((r) => r.drop_off_step === 1 && !r.completed).length,
+        question_2: responses.filter((r) => r.drop_off_step === 2 && !r.completed).length,
+        question_3: responses.filter((r) => r.drop_off_step === 3 && !r.completed).length,
+        completed: total_completed,
       };
 
       const drop_off_rates = {
@@ -166,12 +181,12 @@ export const surveyService = {
       };
 
       const responses_by_answer = {
-        question_1: {} as { [key: string]: number },
-        question_2: {} as { [key: string]: number },
-        question_3: {} as { [key: string]: number },
+        question_1: {} as Record<string, number>,
+        question_2: {} as Record<string, number>,
+        question_3: {} as Record<string, number>,
       };
 
-      responses.forEach((response: any) => {
+      responses.forEach((response) => {
         if (response.question_1_answer) {
           responses_by_answer.question_1[response.question_1_answer] = 
             (responses_by_answer.question_1[response.question_1_answer] || 0) + 1;
@@ -234,3 +249,4 @@ export const surveyService = {
 };
 
 export default surveyService;
+  
