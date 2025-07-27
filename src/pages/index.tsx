@@ -101,142 +101,138 @@ export default function HomePage() {
   );
 
   const renderHowItWorksView = () => (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <div className="px-4 py-6 flex-grow">
+    <div className="bg-gray-50 flex flex-col">
+      <div className="px-4 py-4">
         <div className="max-w-sm mx-auto">
-          <div className="flex flex-col items-center text-center space-y-3 mb-6">
+          <div className="flex flex-col items-center text-center space-y-2 mb-4">
             <h2 className="text-xl font-bold tracking-tighter">How It Works</h2>
-            <p className="text-base text-muted-foreground">
+            <p className="text-base text-gray-700">
               Golf 4Points makes scoring simple and rewarding
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 mb-6">
-            <div className="flex items-center space-x-4 bg-white p-4 rounded-xl shadow-sm">
-              <div className="p-3 bg-green-100 rounded-full min-w-fit">
-                <span className="text-green-700 font-bold text-lg">1</span>
+          <div className="grid grid-cols-1 gap-3 mb-4">
+            <div className="flex items-center space-x-3 bg-white p-3 rounded-xl shadow-sm">
+              <div className="p-2 bg-green-100 rounded-full min-w-fit">
+                <span className="text-green-700 font-bold text-base">1</span>
               </div>
               <div className="flex flex-col items-start text-left">
-                <h3 className="text-base font-bold">Select Course & Tees</h3>
-                <p className="text-sm text-muted-foreground">
+                <h3 className="text-sm font-bold">Select Course & Tees</h3>
+                <p className="text-xs text-gray-700">
                   Choose your course and enter GHIN or average score
                 </p>
               </div>
             </div>
             
-            <div className="flex items-center space-x-4 bg-white p-4 rounded-xl shadow-sm">
-              <div className="p-3 bg-blue-100 rounded-full min-w-fit">
-                <span className="text-blue-700 font-bold text-lg">2</span>
+            <div className="flex items-center space-x-3 bg-white p-3 rounded-xl shadow-sm">
+              <div className="p-2 bg-blue-100 rounded-full min-w-fit">
+                <span className="text-blue-700 font-bold text-base">2</span>
               </div>
               <div className="flex flex-col items-start text-left">
-                <h3 className="text-base font-bold">Tap to Score Each Hole</h3>
-                <p className="text-sm text-muted-foreground">
+                <h3 className="text-sm font-bold">Tap to Score Each Hole</h3>
+                <p className="text-xs text-gray-700">
                   Simple tapping interface for quick scoring
                 </p>
               </div>
             </div>
             
-            <div className="flex items-center space-x-4 bg-white p-4 rounded-xl shadow-sm">
-              <div className="p-3 bg-red-100 rounded-full min-w-fit">
-                <span className="text-red-700 font-bold text-lg">3</span>
+            <div className="flex items-center space-x-3 bg-white p-3 rounded-xl shadow-sm">
+              <div className="p-2 bg-red-100 rounded-full min-w-fit">
+                <span className="text-red-700 font-bold text-base">3</span>
               </div>
               <div className="flex flex-col items-start text-left">
-                <h3 className="text-base font-bold">Earn Points</h3>
-                <p className="text-sm text-muted-foreground">
+                <h3 className="text-sm font-bold">Earn Points</h3>
+                <p className="text-xs text-gray-700">
                   Points based on performance vs. your target
                 </p>
               </div>
             </div>
             
-            <div className="flex items-center space-x-4 bg-white p-4 rounded-xl shadow-sm">
-              <div className="p-3 bg-purple-100 rounded-full min-w-fit">
-                <span className="text-purple-700 font-bold text-lg">4</span>
+            <div className="flex items-center space-x-3 bg-white p-3 rounded-xl shadow-sm">
+              <div className="p-2 bg-purple-100 rounded-full min-w-fit">
+                <span className="text-purple-700 font-bold text-base">4</span>
               </div>
               <div className="flex flex-col items-start text-left">
-                <h3 className="text-base font-bold">Compete & Win</h3>
-                <p className="text-sm text-muted-foreground">
+                <h3 className="text-sm font-bold">Compete & Win</h3>
+                <p className="text-xs text-gray-700">
                   Climb leaderboards and earn rewards
                 </p>
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <div className="px-4 pb-8">
-        <div className="flex flex-col w-full gap-3 max-w-sm mx-auto">
-          <Link href="/game" className="w-full">
-            <Button size="lg" className="w-full h-12 text-base rounded-xl bg-green-600 hover:bg-green-700">
-              Start Game
+          <div className="flex flex-col w-full gap-3">
+            <Link href="/game" className="w-full">
+              <Button size="lg" className="w-full h-12 text-base rounded-xl bg-green-600 hover:bg-green-700">
+                Start Game
+              </Button>
+            </Link>
+            <Button 
+              size="lg" 
+              className="w-full h-12 text-base rounded-xl bg-green-600 hover:bg-green-700"
+              onClick={() => setCurrentView('game-rules')}
+            >
+              Game Rules
             </Button>
-          </Link>
-          <Button 
-            size="lg" 
-            className="w-full h-12 text-base rounded-xl bg-green-600 hover:bg-green-700"
-            onClick={() => setCurrentView('game-rules')}
-          >
-            Game Rules
-          </Button>
+          </div>
         </div>
       </div>
     </div>
   );
 
   const renderGameRulesView = () => (
-    <div className="min-h-screen bg-white flex flex-col">
-      <div className="px-4 py-6 flex-grow">
+    <div className="bg-white flex flex-col">
+      <div className="px-4 py-4">
         <div className="max-w-sm mx-auto">
-          <div className="flex flex-col items-center text-center space-y-3 mb-6">
+          <div className="flex flex-col items-center text-center space-y-2 mb-4">
             <h2 className="text-xl font-bold tracking-tighter">Game Rules</h2>
-            <p className="text-base text-muted-foreground">
+            <p className="text-base text-gray-700">
               Simple scoring that makes every hole count
             </p>
           </div>
 
-          <div className="space-y-4 mb-6">
-            <div className="bg-gray-50 p-4 rounded-xl">
-              <h3 className="text-lg font-bold mb-3">Points Per Score</h3>
-              <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-3 mb-4">
+            <div className="bg-gray-50 p-3 rounded-xl">
+              <h3 className="text-base font-bold mb-2">Points Per Score</h3>
+              <div className="grid grid-cols-2 gap-2">
                 <div className="flex items-center justify-between p-2 bg-green-50 rounded-lg">
-                  <span className="font-medium">Bogey</span>
-                  <span className="text-green-600 font-bold">1 pt</span>
+                  <span className="font-medium text-sm">Bogey</span>
+                  <span className="text-green-600 font-bold text-sm">1 pt</span>
                 </div>
                 <div className="flex items-center justify-between p-2 bg-blue-50 rounded-lg">
-                  <span className="font-medium">Par</span>
-                  <span className="text-blue-600 font-bold">2 pts</span>
+                  <span className="font-medium text-sm">Par</span>
+                  <span className="text-blue-600 font-bold text-sm">2 pts</span>
                 </div>
                 <div className="flex items-center justify-between p-2 bg-red-50 rounded-lg">
-                  <span className="font-medium">Birdie</span>
-                  <span className="text-red-600 font-bold">4 pts</span>
+                  <span className="font-medium text-sm">Birdie</span>
+                  <span className="text-red-600 font-bold text-sm">4 pts</span>
                 </div>
                 <div className="flex items-center justify-between p-2 bg-purple-50 rounded-lg">
-                  <span className="font-medium">Eagle+</span>
-                  <span className="text-purple-600 font-bold">6 pts</span>
+                  <span className="font-medium text-sm">Eagle+</span>
+                  <span className="text-purple-600 font-bold text-sm">6 pts</span>
                 </div>
                 <div className="flex items-center justify-between p-2 bg-gray-100 rounded-lg col-span-2">
-                  <span className="font-medium">Double Bogey +</span>
-                  <span className="text-gray-600 font-bold">0 pts</span>
+                  <span className="font-medium text-sm">Double Bogey +</span>
+                  <span className="text-gray-600 font-bold text-sm">0 pts</span>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <div className="px-4 pb-8">
-        <div className="flex flex-col w-full gap-3 max-w-sm mx-auto">
-          <Link href="/game" className="w-full">
-            <Button size="lg" className="w-full h-12 text-base rounded-xl bg-green-600 hover:bg-green-700">
-              Start Game
+          <div className="flex flex-col w-full gap-3">
+            <Link href="/game" className="w-full">
+              <Button size="lg" className="w-full h-12 text-base rounded-xl bg-green-600 hover:bg-green-700">
+                Start Game
+              </Button>
+            </Link>
+            <Button 
+              size="lg" 
+              className="w-full h-12 text-base rounded-xl bg-green-600 hover:bg-green-700"
+              onClick={() => setCurrentView('how-it-works')}
+            >
+              How It Works
             </Button>
-          </Link>
-          <Button 
-            size="lg" 
-            className="w-full h-12 text-base rounded-xl bg-green-600 hover:bg-green-700"
-            onClick={() => setCurrentView('how-it-works')}
-          >
-            How It Works
-          </Button>
+          </div>
         </div>
       </div>
     </div>
