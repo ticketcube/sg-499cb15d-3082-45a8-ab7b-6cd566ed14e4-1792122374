@@ -27,12 +27,8 @@ export default function MonthlyLeaderboard() {
   }, []);
 
   useEffect(() => {
-    if (user) {
-      loadMonthlyLeaderboard();
-    } else {
-      setLoading(false);
-    }
-  }, [user, loadMonthlyLeaderboard]);
+    loadMonthlyLeaderboard();
+  }, [loadMonthlyLeaderboard]);
 
   const getRankIcon = (rank: number) => {
     switch (rank) {
@@ -60,14 +56,14 @@ export default function MonthlyLeaderboard() {
     }
   };
 
-  if (!user) {
+  if (!user && !loading && leaderboard.length === 0) {
     return (
       <Layout>
         <div className="p-4 flex flex-col items-center justify-center min-h-[60vh]">
           <Card className="max-w-md mx-auto">
             <CardHeader className="text-center">
               <CardTitle>Monthly Leaderboard</CardTitle>
-              <p className="text-muted-foreground">Sign in to access the leaderboard</p>
+              <p className="text-muted-foreground">Sign in to see your rank</p>
             </CardHeader>
             <CardContent className="space-y-4">
               <Link href="/auth/login" className="w-full">
@@ -113,7 +109,7 @@ export default function MonthlyLeaderboard() {
           ) : (
             <div className="space-y-3">
               {leaderboard.map((entry) => (
-                <Card key={entry.id} className={entry.rank <= 3 ? "border-2 border-yellow-200" : ""}>
+                <Card key={entry.id} className={`${entry.rank <= 3 ? "border-2 border-yellow-200" : ""} ${entry.user_id === user?.id ? "bg-blue-50 border-blue-200" : ""}`}>
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -126,20 +122,20 @@ export default function MonthlyLeaderboard() {
                             </Badge>
                           </div>
                           <p className="text-sm text-muted-foreground">
-                            {entry.game_data?.course_name || "Unknown Course"}
+                            {entry.course_name || "Unknown Course"}
                           </p>
                         </div>
                       </div>
                       <div className="text-right">
                         <div className="flex items-center gap-2">
                           <span className="text-lg font-bold text-green-600">
-                            {entry.score}
+                            {entry.total_points}
                           </span>
                           <span className="text-sm text-muted-foreground">pts</span>
                         </div>
-                        {entry.game_data?.four_points_earned !== undefined && (
+                        {entry.four_points_earned !== undefined && (
                           <div className="text-xs text-muted-foreground">
-                            4pts: {entry.game_data.four_points_earned >= 0 ? '+' : ''}{entry.game_data.four_points_earned}
+                            4pts: {entry.four_points_earned >= 0 ? '+' : ''}{entry.four_points_earned}
                           </div>
                         )}
                       </div>
@@ -148,7 +144,6 @@ export default function MonthlyLeaderboard() {
                 </Card>
               ))}
               
-              {/* Start New Game Button */}
               <div className="pt-4">
                 <Link href="/game" className="w-full">
                   <Button size="lg" className="w-full bg-green-600 hover:bg-green-700 text-white">

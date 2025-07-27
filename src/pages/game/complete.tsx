@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -22,62 +23,44 @@ export default function GameCompletePage() {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!gameSettings) {
-        console.log('❌ No game settings found in complete page, redirecting to /game');
+        console.log("❌ No game settings found in complete page, redirecting to /game");
         router.push("/game");
-      } else {
-        console.log('✅ Game settings found in complete page:', gameSettings);
-        console.log('✅ Total points on complete page:', totalPoints);
-        console.log('✅ Four points earned on complete page:', fourPointsEarned);
-        console.log('✅ Hole scores on complete page:', holeScores);
       }
     }, 100);
 
     return () => clearTimeout(timer);
-  }, [gameSettings, totalPoints, fourPointsEarned, holeScores, router]);
+  }, [gameSettings, router]);
 
   const handlePostScore = useCallback(async () => {
     if (!user || !gameSettings) return;
 
     setSubmitting(true);
     try {
-      console.log('🎮 Game data being submitted:', {
-        gameSettings,
-        totalPoints,
-        fourPointsEarned,
-        holeScores,
-      });
-
       const scoreData: GameScoreData = {
         user_id: user.id,
-        score: totalPoints,
-        game_data: {
-          player_name: user.user_metadata?.display_name || "Anonymous Player",
-          course_name: gameSettings.courseName,
-          course_id: gameSettings.courseId,
-          tee_name: gameSettings.teeName,
-          tee_id: gameSettings.teeId,
-          target_score: gameSettings.targetScore,
-          four_points_earned: fourPointsEarned,
-          hole_scores: holeScores.map(s => s.score),
-          game_type: gameSettings.holes as 9 | 18,
-          ghin_handicap: gameSettings.ghinIndex,
-          adjusted_average_score: gameSettings.averageScore,
-        }
+        player_name: user.user_metadata?.display_name || "Anonymous Player",
+        course_name: gameSettings.courseName,
+        course_id: gameSettings.courseId,
+        tee_name: gameSettings.teeName,
+        tee_id: gameSettings.teeId,
+        target_score: gameSettings.targetScore,
+        four_points_earned: fourPointsEarned,
+        total_points: totalPoints,
+        hole_scores: holeScores.map(s => s.score),
+        game_type: gameSettings.holes as 9 | 18,
+        ghin_handicap: gameSettings.ghinIndex,
+        adjusted_average_score: gameSettings.averageScore,
       };
 
-      console.log('📊 Prepared score data:', scoreData);
-      const result = await scoreService.submitScore(scoreData);
-      console.log('✅ Submission result:', result);
+      await scoreService.submitScore(scoreData);
 
       toast({
         title: "Score Posted!",
         description: "Your score has been added to the leaderboard.",
       });
 
-      // Navigate first, then reset the game
       await router.push("/leaderboard/monthly");
       
-      // Reset the game after navigation
       resetGame();
     } catch (error) {
       console.error("❌ Error posting score:", error);
@@ -92,9 +75,8 @@ export default function GameCompletePage() {
   }, [user, gameSettings, totalPoints, fourPointsEarned, holeScores, toast, router, resetGame]);
 
   useEffect(() => {
-    // Check for pending game submission after authentication
     if (user && localStorage.getItem(PENDING_GAME_SUBMISSION_KEY)) {
-      const pendingGame = JSON.parse(localStorage.getItem(PENDING_GAME_SUBMISSION_KEY) || "");
+      const pendingGame = JSON.parse(localStorage.getItem(PENDING_GAME_SUBMISSION_KEY) || "{}");
       if (pendingGame && gameSettings) {
         handlePostScore();
         localStorage.removeItem(PENDING_GAME_SUBMISSION_KEY);
@@ -108,7 +90,6 @@ export default function GameCompletePage() {
   };
 
   const handleEditScore = () => {
-    // Go back to the game page to edit scores
     router.back();
   };
 
@@ -131,7 +112,6 @@ export default function GameCompletePage() {
             href={`/auth/login?redirect=${router.asPath}`} 
             className="flex-1"
             onClick={() => {
-              // Store game state before redirecting
               if (gameSettings) {
                 localStorage.setItem(PENDING_GAME_SUBMISSION_KEY, JSON.stringify({
                   gameSettings,
@@ -148,7 +128,6 @@ export default function GameCompletePage() {
             href={`/auth/register?redirect=${router.asPath}`} 
             className="flex-1"
             onClick={() => {
-              // Store game state before redirecting
               if (gameSettings) {
                 localStorage.setItem(PENDING_GAME_SUBMISSION_KEY, JSON.stringify({
                   gameSettings,
@@ -168,12 +147,11 @@ export default function GameCompletePage() {
 
   const renderPostScoreSection = () => (
     <div className="space-y-4 mb-6">
-      <h3 className="text-lg font-semibold text-center">Ready to Post Your Score?</h3>
-      <Card className="border-2 border-red-200">
+      <Card>
         <CardContent className="p-6 text-center">
           <Trophy className="h-12 w-12 text-red-600 mx-auto mb-4" />
           <p className="text-sm text-muted-foreground mb-4">
-            Add your score to the monthly leaderboard and compete with other players!
+            Submit to the Monthly Leaderboard
           </p>
           <Button
             onClick={handlePostScore}
@@ -215,7 +193,6 @@ export default function GameCompletePage() {
                 </div>
               </div>
               
-              {/* Edit Score Button */}
               <Button 
                 onClick={handleEditScore} 
                 variant="outline" 
