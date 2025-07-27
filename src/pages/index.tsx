@@ -1,48 +1,18 @@
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
+import { useState } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { surveyService } from "@/services/surveyService";
 import Link from "next/link";
 import Image from 'next/image';
 
 type ViewMode = 'home' | 'how-it-works' | 'game-rules';
 
 export default function HomePage() {
-  const router = useRouter();
   const { user, loading } = useAuth();
-  const [checkingSurvey, setCheckingSurvey] = useState(true);
   const [currentView, setCurrentView] = useState<ViewMode>('home');
 
-  useEffect(() => {
-    const checkSurveyStatus = async () => {
-      try {
-        if (!user) {
-          // If no user, redirect to survey (home page)
-          router.push('/survey');
-          return;
-        }
-        
-        const hasCompletedSurvey = await surveyService.checkIfSurveyCompleted(user.id);
-        if (!hasCompletedSurvey) {
-          router.push('/survey');
-          return;
-        }
-      } catch (error) {
-        console.error('Error checking survey status:', error);
-      } finally {
-        setCheckingSurvey(false);
-      }
-    };
-
-    if (!loading) {
-      checkSurveyStatus();
-    }
-  }, [loading, user, router]);
-
-  if (loading || checkingSurvey) {
+  if (loading) {
     return (
       <Layout>
         <div className="flex items-center justify-center min-h-screen">
