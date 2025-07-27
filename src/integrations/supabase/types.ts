@@ -242,7 +242,15 @@ export type Database = {
                     score?: number
                     user_id?: string
                 }
-                Relationships: []
+                Relationships: [
+                    {
+                        foreignKeyName: "game_scores_user_id_fkey"
+                        columns: ["user_id"]
+                        isOneToOne: false
+                        referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    },
+                ]
             }
             games: {
                 Row: {

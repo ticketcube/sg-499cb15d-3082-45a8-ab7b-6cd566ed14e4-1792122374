@@ -1,39 +1,59 @@
+
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
+
+type GameRow = Database['public']['Tables']['games']['Row'];
+type GameInsert = Database['public']['Tables']['games']['Insert'];
 
 export interface GameScoreData {
-  user_id: string;
-  score: number;
-  game_data: {
-    player_name: string;
-    course_name: string;
-    course_id: string;
-    tee_name: string;
-    tee_id: string;
-    target_score: number;
-    four_points_earned: number;
-    hole_scores: number[];
-    game_type: 9 | 18;
-    ghin_handicap?: number;
-    adjusted_average_score?: number;
-  };
+  player_name: string;
+  course_name: string;
+  course_id: string;
+  tee_name: string;
+  tee_id: string;
+  target_score: number;
+  four_points_earned: number;
+  total_points: number;
+  hole_scores: number[];
+  game_type: 9 | 18;
+  ghin_handicap?: number;
+  adjusted_average_score?: number;
+  user_id?: string;
 }
 
 export interface LeaderboardEntry {
   id: string;
-  user_id: string;
-  score: number;
-  game_data: GameScoreData["game_data"];
-  created_at: string;
+  user_id: string | null;
   player_name: string;
+  course_name: string;
+  total_points: number;
+  four_points_earned: number;
+  created_at: string | null;
   rank: number;
 }
 
 export const scoreService = {
   async submitScore(scoreData: GameScoreData) {
     try {
+      const gameInsert: GameInsert = {
+        player_name: scoreData.player_name,
+        course_name: scoreData.course_name,
+        course_id: scoreData.course_id,
+        tee_name: scoreData.tee_name,
+        tee_id: scoreData.tee_id,
+        target_score: scoreData.target_score,
+        four_points_earned: scoreData.four_points_earned,
+        total_points: scoreData.total_points,
+        hole_scores: scoreData.hole_scores,
+        game_type: scoreData.game_type,
+        ghin_handicap: scoreData.ghin_handicap,
+        adjusted_average_score: scoreData.adjusted_average_score,
+        user_id: scoreData.user_id,
+      };
+
       const { data, error } = await supabase
-        .from('game_scores')
-        .insert([scoreData])
+        .from('games')
+        .insert([gameInsert])
         .select()
         .single();
 
@@ -61,18 +81,20 @@ export const scoreService = {
       endOfMonth.setHours(23, 59, 59, 999);
 
       const { data, error } = await supabase
-        .from('game_scores')
+        .from('games')
         .select(`
           id,
           user_id,
-          score,
-          game_data,
+          player_name,
+          course_name,
+          total_points,
+          four_points_earned,
           created_at,
-          profiles!inner(display_name)
+          profiles(display_name)
         `)
         .gte('created_at', startOfMonth.toISOString())
         .lte('created_at', endOfMonth.toISOString())
-        .order('score', { ascending: false });
+        .order('total_points', { ascending: false });
 
       if (error) {
         console.error('Error fetching monthly leaderboard:', error);
@@ -82,33 +104,27 @@ export const scoreService = {
       // Group by user and get their best score
       const userBestScores: { [key: string]: LeaderboardEntry } = {};
 
-      data?.forEach((entry: {
-        id: string;
-        user_id: string;
-        score: number;
-        game_data: GameScoreData["game_data"];
-        created_at: string;
-        profiles: { display_name: string } | null;
-      }) => {
-        const userId = entry.user_id;
-        const playerName = entry.profiles?.display_name || entry.game_data?.player_name || "Anonymous";
+      data?.forEach((entry) => {
+        const userId = entry.user_id || `guest_${entry.player_name}`;
+        const playerName = entry.profiles?.display_name || entry.player_name;
         
-        if (!userBestScores[userId] || entry.score > userBestScores[userId].score) {
+        if (!userBestScores[userId] || entry.total_points > userBestScores[userId].total_points) {
           userBestScores[userId] = {
             id: entry.id,
-            user_id: userId,
-            score: entry.score,
-            game_data: entry.game_data,
-            created_at: entry.created_at,
+            user_id: entry.user_id,
             player_name: playerName,
+            course_name: entry.course_name,
+            total_points: entry.total_points,
+            four_points_earned: entry.four_points_earned,
+            created_at: entry.created_at,
             rank: 0, // Will be set below
           };
         }
       });
 
-      // Convert to array and sort by score
+      // Convert to array and sort by total_points
       const sortedEntries = Object.values(userBestScores)
-        .sort((a, b) => b.score - a.score)
+        .sort((a, b) => b.total_points - a.total_points)
         .map((entry, index) => ({
           ...entry,
           rank: index + 1,
@@ -124,7 +140,7 @@ export const scoreService = {
   async getUserScores(userId: string) {
     try {
       const { data, error } = await supabase
-        .from('game_scores')
+        .from('games')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
