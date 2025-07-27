@@ -220,6 +220,30 @@ export type Database = {
                 }
                 Relationships: []
             }
+            game_scores: {
+                Row: {
+                    created_at: string
+                    game_data: Json | null
+                    id: string
+                    score: number
+                    user_id: string
+                }
+                Insert: {
+                    created_at?: string
+                    game_data?: Json | null
+                    id?: string
+                    score: number
+                    user_id: string
+                }
+                Update: {
+                    created_at?: string
+                    game_data?: Json | null
+                    id?: string
+                    score?: number
+                    user_id?: string
+                }
+                Relationships: []
+            }
             games: {
                 Row: {
                     adjusted_average_score: number | null
