@@ -247,9 +247,8 @@ export default function HomePage() {
             </Button>
           </Link>
           <Button 
-            variant="outline" 
             size="lg" 
-            className="w-full h-12 text-base rounded-xl"
+            className="w-full h-12 text-base rounded-xl bg-green-600 hover:bg-green-700" className="w-full h-12 text-base rounded-xl bg-green-600 hover:bg-green-700"
             onClick={() => setCurrentView('how-it-works')}
           >
             How It Works
