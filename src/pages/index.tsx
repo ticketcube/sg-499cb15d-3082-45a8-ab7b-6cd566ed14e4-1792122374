@@ -219,24 +219,6 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-
-            <div className="bg-gray-50 p-4 rounded-xl">
-              <h3 className="text-lg font-bold mb-3">Daily Rewards</h3>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span>1st Place</span>
-                  <span className="font-semibold text-green-600">18 pts</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span>2nd Place</span>
-                  <span className="font-semibold text-blue-600">10 pts</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span>3rd Place</span>
-                  <span className="font-semibold text-purple-600">8 pts</span>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
