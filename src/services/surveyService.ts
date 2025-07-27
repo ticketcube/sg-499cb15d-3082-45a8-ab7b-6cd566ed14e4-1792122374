@@ -111,7 +111,7 @@ export const surveyService = {
       }
 
       if (existingSession && existingSession.length > 0) {
-        console.warn('Session ID already exists:', sessionId);
+        console.warn('Session ID already exists, returning existing ID:', sessionId);
         return existingSession[0].id;
       }
 
@@ -138,7 +138,21 @@ export const surveyService = {
         .select('id')
         .single();
 
-      if (error) throw error;
+      if (error) {
+        // Handle duplicate key error specifically
+        if (error.code === '23505') { // PostgreSQL unique violation error code
+          console.warn('Duplicate session detected, attempting to retrieve existing:', sessionId);
+          const { data: existingData } = await supabase
+            .from('survey_responses')
+            .select('id')
+            .eq('session_id', sessionId)
+            .limit(1)
+            .single();
+          return existingData?.id || null;
+        }
+        throw error;
+      }
+      
       return data.id;
     } catch (error) {
       console.error('Error starting survey:', error);

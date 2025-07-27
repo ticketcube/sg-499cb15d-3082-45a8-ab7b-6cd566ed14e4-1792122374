@@ -35,16 +35,26 @@ export default function SurveyPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<string[]>([]);
   const [responseId, setResponseId] = useState<string | null>(null);
-  const [sessionId] = useState(() => Math.random().toString(36).substring(7));
+  const [sessionId] = useState(() => {
+    // Generate a more unique session ID with timestamp + random
+    const timestamp = Date.now().toString(36);
+    const random = Math.random().toString(36).substring(2, 15);
+    return `${timestamp}-${random}`;
+  });
   const [isCompleting, setIsCompleting] = useState(false);
 
   useEffect(() => {
     const initSurvey = async () => {
+      // Prevent multiple initializations
+      if (responseId) return;
+      
       const id = await surveyService.startSurvey(sessionId);
-      setResponseId(id);
+      if (id) {
+        setResponseId(id);
+      }
     };
     initSurvey();
-  }, [sessionId]);
+  }, [sessionId, responseId]);
 
   const handleAnswer = async (answer: string) => {
     if (typeof window.navigator.vibrate === "function") {
