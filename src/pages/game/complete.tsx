@@ -3,15 +3,13 @@ import { useState, useEffect, useCallback } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Trophy, DollarSign, Users, Gift, Calendar, Edit } from "lucide-react";
+import { Trophy, Users, Edit } from "lucide-react";
 import { useRouter } from "next/router";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGame } from "@/contexts/GameContext";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
-import { gameService } from "@/services/gameService";
-import { GameScore } from "@/types";
+import { scoreService, GameScoreData } from "@/services/scoreService";
 
 const PENDING_GAME_SUBMISSION_KEY = "pendingGameSubmission";
 
@@ -23,7 +21,6 @@ export default function GameCompletePage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    // Add a small delay to ensure context is loaded before checking
     const timer = setTimeout(() => {
       if (!gameSettings) {
         console.log('❌ No game settings found in complete page, redirecting to /game');
@@ -39,7 +36,7 @@ export default function GameCompletePage() {
     return () => clearTimeout(timer);
   }, [gameSettings, totalPoints, fourPointsEarned, holeScores, router]);
 
-  const handleSubmitToMonthly = useCallback(async () => {
+  const handlePostScore = useCallback(async () => {
     if (!user || !gameSettings) return;
 
     setSubmitting(true);
@@ -51,36 +48,31 @@ export default function GameCompletePage() {
         holeScores,
       });
 
-      // Calculate hole categories from hole scores
-      const holeCategories = gameService.calculateHoleCategories(holeScores, gameSettings.par);
-
-      const gameScoreData: GameScore = {
-        userId: user.id,
-        playerName: user.user_metadata?.display_name || "Anonymous Player",
-        courseId: gameSettings.courseId,
-        courseName: gameSettings.courseName,
-        teeId: gameSettings.teeId,
-        teeName: gameSettings.teeName,
-        ghinHandicap: gameSettings.ghinIndex,
-        adjustedAverageScore: gameSettings.averageScore,
-        targetScore: gameSettings.targetScore,
-        totalPoints: totalPoints,
-        fourPointsEarned: fourPointsEarned,
-        holeScores: holeScores,
-        holeCategories: holeCategories,
-        timestamp: Date.now(),
-        validated: true,
-        leaderboardType: "monthly",
-        gameType: gameSettings.holes as 9 | 18,
+      const scoreData: GameScoreData = {
+        user_id: user.id,
+        score: totalPoints,
+        game_data: {
+          player_name: user.user_metadata?.display_name || "Anonymous Player",
+          course_name: gameSettings.courseName,
+          course_id: gameSettings.courseId,
+          tee_name: gameSettings.teeName,
+          tee_id: gameSettings.teeId,
+          target_score: gameSettings.targetScore,
+          four_points_earned: fourPointsEarned,
+          hole_scores: holeScores,
+          game_type: gameSettings.holes as 9 | 18,
+          ghin_handicap: gameSettings.ghinIndex,
+          adjusted_average_score: gameSettings.averageScore,
+        }
       };
 
-      console.log('📊 Prepared game score ', gameScoreData);
-      const result = await gameService.submitGameScore(gameScoreData);
+      console.log('📊 Prepared score data:', scoreData);
+      const result = await scoreService.submitScore(scoreData);
       console.log('✅ Submission result:', result);
 
       toast({
-        title: "Score submitted!",
-        description: "Your score has been added to the monthly leaderboard.",
+        title: "Score Posted!",
+        description: "Your score has been added to the leaderboard.",
       });
 
       // Navigate first, then reset the game
@@ -89,11 +81,11 @@ export default function GameCompletePage() {
       // Reset the game after navigation
       resetGame();
     } catch (error) {
-      console.error("❌ Error submitting to monthly leaderboard:", error);
+      console.error("❌ Error posting score:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to submit score. Please try again.",
+        description: "Failed to post score. Please try again.",
       });
     } finally {
       setSubmitting(false);
@@ -105,73 +97,11 @@ export default function GameCompletePage() {
     if (user && localStorage.getItem(PENDING_GAME_SUBMISSION_KEY)) {
       const pendingGame = JSON.parse(localStorage.getItem(PENDING_GAME_SUBMISSION_KEY) || "");
       if (pendingGame && gameSettings) {
-        handleSubmitToMonthly();
+        handlePostScore();
         localStorage.removeItem(PENDING_GAME_SUBMISSION_KEY);
       }
     }
-  }, [user, gameSettings, handleSubmitToMonthly]);
-
-  const handleSubmitToDaily = async () => {
-    if (!user || !gameSettings) return;
-
-    setSubmitting(true);
-    try {
-      const paymentSuccess = await simulatePayment();
-
-      if (paymentSuccess) {
-        // Calculate hole categories from hole scores
-        const holeCategories = gameService.calculateHoleCategories(holeScores, gameSettings.par);
-
-        const gameScoreData: GameScore = {
-          userId: user.id,
-          playerName: user.user_metadata?.display_name || "Anonymous Player",
-          courseId: gameSettings.courseId,
-          courseName: gameSettings.courseName,
-          teeId: gameSettings.teeId,
-          teeName: gameSettings.teeName,
-          ghinHandicap: gameSettings.ghinIndex,
-          adjustedAverageScore: gameSettings.averageScore,
-          targetScore: gameSettings.targetScore,
-          totalPoints: totalPoints,
-          fourPointsEarned: fourPointsEarned,
-          holeScores: holeScores,
-          holeCategories: holeCategories,
-          timestamp: Date.now(),
-          validated: true,
-          leaderboardType: "daily",
-          paidEntry: true,
-          gameType: gameSettings.holes as 9 | 18,
-        };
-
-        await gameService.submitGameScore(gameScoreData);
-
-        toast({
-          title: "Payment successful!",
-          description: "Your score has been added to the daily prizes leaderboard.",
-        });
-
-        // Navigate first, then reset the game
-        await router.push("/leaderboard/daily");
-        
-        // Reset the game after navigation
-        resetGame();
-      }
-    } catch (error) {
-      console.error("Error submitting to daily prizes:", error);
-      toast({
-        variant: "destructive",
-        title: "Payment failed",
-        description: "Payment could not be processed. Please try again.",
-      });
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const simulatePayment = async (): Promise<boolean> => {
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    return true;
-  };
+  }, [user, gameSettings, handlePostScore]);
 
   const handleNewGame = () => {
     resetGame();
@@ -195,7 +125,7 @@ export default function GameCompletePage() {
       <CardContent className="p-4 text-center">
         <Users className="h-8 w-8 text-gray-400 mx-auto mb-2" />
         <p className="text-sm text-muted-foreground mb-3">
-          Sign in or create an account to submit your score.
+          Sign in or create an account to post your score.
         </p>
         <div className="flex flex-col gap-2">
           <Link 
@@ -237,50 +167,22 @@ export default function GameCompletePage() {
     </Card>
   );
 
-  const renderLeaderboardOptions = () => (
+  const renderPostScoreSection = () => (
     <div className="space-y-4 mb-6">
-      <h3 className="text-lg font-semibold text-center">Submit Your Score</h3>
-      <Card className="border-2 border-blue-200">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-blue-600" />
-              <span className="font-semibold">Monthly Leaderboard</span>
-            </div>
-            <Badge className="bg-green-100 text-green-800">FREE</Badge>
-          </div>
-          <p className="text-sm text-muted-foreground mb-3">
-            Compete with players all month long. Track your progress and climb the rankings!
+      <h3 className="text-lg font-semibold text-center">Ready to Post Your Score?</h3>
+      <Card className="border-2 border-red-200">
+        <CardContent className="p-6 text-center">
+          <Trophy className="h-12 w-12 text-red-600 mx-auto mb-4" />
+          <p className="text-sm text-muted-foreground mb-4">
+            Add your score to the monthly leaderboard and compete with other players!
           </p>
           <Button
-            onClick={handleSubmitToMonthly}
+            onClick={handlePostScore}
             disabled={submitting}
-            className="w-full"
-            variant="outline"
+            size="lg"
+            className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 text-lg"
           >
-            {submitting ? "Submitting..." : "Submit to Monthly"}
-          </Button>
-        </CardContent>
-      </Card>
-      <Card className="border-2 border-yellow-200">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-yellow-600" />
-              <span className="font-semibold">Daily Prizes</span>
-            </div>
-            <Badge className="bg-yellow-100 text-yellow-800">$1</Badge>
-          </div>
-          <p className="text-sm text-muted-foreground mb-3">
-            Enter today's prize competition! Winners receive cash prizes and bonus points.
-          </p>
-          <div className="flex items-center gap-2 mb-3 text-xs text-muted-foreground">
-            <Gift className="h-4 w-4" />
-            <span>1st: $50 • 2nd: $25 • 3rd: $10</span>
-          </div>
-          <Button onClick={handleSubmitToDaily} disabled={submitting} className="w-full">
-            <DollarSign className="h-4 w-4 mr-2" />
-            {submitting ? "Processing..." : "Enter Daily Prizes - $1"}
+            {submitting ? "POSTING..." : "POST SCORE"}
           </Button>
         </CardContent>
       </Card>
@@ -327,15 +229,15 @@ export default function GameCompletePage() {
             </CardContent>
           </Card>
 
-          {user ? renderLeaderboardOptions() : renderAuthPrompt()}
+          {user ? renderPostScoreSection() : renderAuthPrompt()}
 
           <div className="space-y-2 mt-6">
             <Button onClick={handleNewGame} variant="outline" size="lg" className="w-full">
               Play Another Round
             </Button>
-            <Link href="/leaderboard/daily" className="block">
+            <Link href="/leaderboard/monthly" className="block">
               <Button variant="ghost" size="lg" className="w-full">
-                View Leaderboards
+                View Leaderboard
               </Button>
             </Link>
           </div>

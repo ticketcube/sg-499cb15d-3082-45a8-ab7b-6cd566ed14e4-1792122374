@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -6,66 +7,18 @@ import { Badge } from "@/components/ui/badge";
 import { Trophy, Medal, Award, Crown, Calendar } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { gameService } from "@/services/gameService";
-import { Game } from "@/types";
-
-interface MonthlyLeaderboardEntry {
-  id: string;
-  playerName: string;
-  totalPoints: number;
-  gamesPlayed: number;
-  averageScore: number;
-  rank: number;
-}
+import { scoreService, LeaderboardEntry } from "@/services/scoreService";
 
 export default function MonthlyLeaderboard() {
-  const [leaderboard, setLeaderboard] = useState<MonthlyLeaderboardEntry[]>([]);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
   const loadMonthlyLeaderboard = useCallback(async () => {
     setLoading(true);
     try {
-      const monthlyGames: Game[] = await gameService.getMonthlyLeaderboard();
-
-      const playerStats: { [key: string]: MonthlyLeaderboardEntry } = {};
-
-      monthlyGames.forEach((game: Game) => {
-        const userId = game.user_id;
-        if (!userId) return;
-
-        const playerName = game.profiles?.display_name || game.player_name;
-
-        if (!playerStats[userId]) {
-          playerStats[userId] = {
-            id: userId,
-            playerName: playerName || "Anonymous",
-            totalPoints: 0,
-            gamesPlayed: 0,
-            averageScore: 0,
-            rank: 0,
-          };
-        }
-
-        playerStats[userId].totalPoints += game.total_points;
-        playerStats[userId].gamesPlayed += 1;
-      });
-
-      const sortedPlayers = Object.values(playerStats)
-        .map((player) => ({
-          ...player,
-          averageScore:
-            player.gamesPlayed > 0
-              ? player.totalPoints / player.gamesPlayed
-              : 0,
-        }))
-        .sort((a, b) => b.totalPoints - a.totalPoints)
-        .map((player, index) => ({
-          ...player,
-          rank: index + 1,
-        }));
-
-      setLeaderboard(sortedPlayers);
+      const entries = await scoreService.getMonthlyLeaderboard();
+      setLeaderboard(entries);
     } catch (error) {
       console.error("Error loading monthly leaderboard:", error);
     } finally {
@@ -114,7 +67,7 @@ export default function MonthlyLeaderboard() {
           <Card className="max-w-md mx-auto">
             <CardHeader className="text-center">
               <CardTitle>Monthly Leaderboard</CardTitle>
-              <p className="text-muted-foreground">Sign in to access the monthly leaderboard</p>
+              <p className="text-muted-foreground">Sign in to access the leaderboard</p>
             </CardHeader>
             <CardContent className="space-y-4">
               <Link href="/auth/login" className="w-full">
@@ -135,16 +88,9 @@ export default function MonthlyLeaderboard() {
       <div className="p-4">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold mb-2">TOTAL POINTS LEADERS</h1>
-            <p className="text-muted-foreground">This month's top point earners.</p>
-            <Badge variant="outline" className="mt-2 border-green-400 bg-green-50 text-green-800">Free to Enter</Badge>
-          </div>
-
-          <div className="flex gap-2 mb-6">
-            <Link href="/leaderboard/daily" className="flex-1">
-              <Button variant="outline" className="w-full">4Points Daily Leaderboard</Button>
-            </Link>
-            <Button className="flex-1">Total Points Leaderboard</Button>
+            <h1 className="text-2xl font-bold mb-2">MONTHLY LEADERBOARD</h1>
+            <p className="text-muted-foreground">This month's top performers based on best score.</p>
+            <Badge variant="outline" className="mt-2 border-green-400 bg-green-50 text-green-800">Free to Play</Badge>
           </div>
 
           {loading ? (
@@ -157,7 +103,7 @@ export default function MonthlyLeaderboard() {
             <Card>
               <CardContent className="p-6 text-center">
                 <Trophy className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No games this month</h3>
+                <h3 className="text-lg font-semibold mb-2">No scores this month</h3>
                 <p className="text-muted-foreground mb-4">Be the first to play and claim the top spot!</p>
                 <Link href="/game">
                   <Button>Start Playing</Button>
@@ -174,23 +120,28 @@ export default function MonthlyLeaderboard() {
                         {getRankIcon(entry.rank)}
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-semibold">{entry.playerName}</span>
+                            <span className="font-semibold">{entry.player_name}</span>
                             <Badge className={getRankBadgeColor(entry.rank)}>
                               #{entry.rank}
                             </Badge>
                           </div>
                           <p className="text-sm text-muted-foreground">
-                            {entry.gamesPlayed} games • Avg: {entry.averageScore.toFixed(1)}
+                            {entry.game_data?.course_name || "Unknown Course"}
                           </p>
                         </div>
                       </div>
                       <div className="text-right">
                         <div className="flex items-center gap-2">
                           <span className="text-lg font-bold text-green-600">
-                            {entry.totalPoints}
+                            {entry.score}
                           </span>
                           <span className="text-sm text-muted-foreground">pts</span>
                         </div>
+                        {entry.game_data?.four_points_earned !== undefined && (
+                          <div className="text-xs text-muted-foreground">
+                            4pts: {entry.game_data.four_points_earned >= 0 ? '+' : ''}{entry.game_data.four_points_earned}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </CardContent>
