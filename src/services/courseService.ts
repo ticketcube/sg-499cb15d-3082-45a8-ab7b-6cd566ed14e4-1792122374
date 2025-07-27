@@ -11,12 +11,12 @@ export const courseService = {
         name,
         par,
         holes,
-        course_tees (
-          id,
-          name,
-          color,
-          slope_rating,
-          course_rating
+        course_tees!course_tees_course_id_fkey (
+            id,
+            name,
+            color,
+            slope_rating,
+            course_rating
         )
       `);
 
