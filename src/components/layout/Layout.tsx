@@ -1,8 +1,10 @@
+
 import { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import Link from "next/link";
+import Image from "next/image";
 import { LogIn, LogOut, User } from "lucide-react";
 
 interface LayoutProps {
@@ -22,8 +24,16 @@ export function Layout({ children }: LayoutProps) {
       <nav className="bg-white border-b border-gray-200 px-4 py-3">
         <div className="flex justify-between items-center">
           <div className="flex items-center">
-            <Link href="/" className="text-lg font-bold text-red-600">
-              Golf4Points
+            <Link href="/" className="flex items-center">
+              <div className="relative h-8 w-8">
+                <Image
+                  src="/4logo.png"
+                  alt="4Points Logo"
+                  fill
+                  className="object-contain"
+                  priority
+                />
+              </div>
             </Link>
           </div>
           
@@ -34,7 +44,7 @@ export function Layout({ children }: LayoutProps) {
             ) : user ? (
               <div className="flex items-center gap-2">
                 <Link href="/profile">
-                  <Button variant="ghost" size="sm" className="gap-2">
+                  <Button variant="ghost" size="sm" className="gap-2 text-red-800 hover:text-red-900 hover:bg-red-50">
                     <User className="h-4 w-4" />
                     Profile
                   </Button>
@@ -43,7 +53,7 @@ export function Layout({ children }: LayoutProps) {
                   variant="ghost" 
                   size="sm" 
                   onClick={handleSignOut}
-                  className="gap-2"
+                  className="gap-2 text-red-800 hover:text-red-900 hover:bg-red-50"
                 >
                   <LogOut className="h-4 w-4" />
                   Logout
@@ -51,7 +61,7 @@ export function Layout({ children }: LayoutProps) {
               </div>
             ) : (
               <Link href="/auth/login">
-                <Button variant="ghost" size="sm" className="gap-2">
+                <Button variant="ghost" size="sm" className="gap-2 text-red-800 hover:text-red-900 hover:bg-red-50">
                   <LogIn className="h-4 w-4" />
                   Login
                 </Button>
