@@ -121,12 +121,14 @@ export default function SurveyPage() {
               </div>
             </div>
             <div className="space-y-3">
-              <Button
-                onClick={() => router.push('/auth/register')}
-                className="w-full bg-green-600 hover:bg-green-700 text-white text-lg py-3"
-              >
-                Get Started
-              </Button>
+              <div className="w-full max-w-xs mx-auto">
+                <Button
+                  onClick={() => router.push('/auth/register')}
+                  className="aspect-square w-full bg-green-600 hover:bg-green-700 text-white text-xl font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center min-h-[120px]"
+                >
+                  Get Started
+                </Button>
+              </div>
               <Button
                 onClick={() => router.push('/auth/login')}
                 variant="outline"

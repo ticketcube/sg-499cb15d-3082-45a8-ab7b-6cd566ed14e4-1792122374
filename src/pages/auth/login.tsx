@@ -1,5 +1,5 @@
+
 import { useState } from "react";
-import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -51,55 +51,53 @@ export default function LoginPage() {
   };
 
   return (
-    <Layout>
-      <div className="p-4 flex flex-col items-center justify-center min-h-[60vh]">
-        <Card className="max-w-md mx-auto w-full">
-          <CardHeader className="text-center">
-            <CardTitle>Sign In</CardTitle>
-            <p className="text-muted-foreground">Enter your credentials to access leaderboards</p>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-              
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Signing In..." : "Sign In"}
-              </Button>
-            </form>
-            
-            <div className="mt-4 text-center">
-              <p className="text-sm text-muted-foreground">
-                Don't have an account?{" "}
-                <Link href="/auth/register" className="text-primary hover:underline">
-                  Create one
-                </Link>
-              </p>
+    <div className="p-4 flex flex-col items-center justify-center min-h-[60vh]">
+      <Card className="max-w-md mx-auto w-full">
+        <CardHeader className="text-center">
+          <CardTitle>Sign In</CardTitle>
+          <p className="text-muted-foreground">Enter your credentials to access leaderboards</p>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
             </div>
-          </CardContent>
-        </Card>
-      </div>
-    </Layout>
+            
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Signing In..." : "Sign In"}
+            </Button>
+          </form>
+          
+          <div className="mt-4 text-center">
+            <p className="text-sm text-muted-foreground">
+              Don't have an account?{" "}
+              <Link href="/auth/register" className="text-primary hover:underline">
+                Create one
+              </Link>
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,7 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center h-screen">
         <div className="w-8 h-8 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
       </div>
     );
@@ -30,14 +31,14 @@ export default function HomePage() {
   // Show loading while redirecting unauthenticated users
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center h-screen">
         <div className="w-8 h-8 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
       </div>
     );
   }
 
   const renderHomeView = () => (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="bg-white flex flex-col h-full">
       <section className='py-8 px-4 flex-grow'>
         <div className='flex flex-col items-center text-center space-y-6 max-w-sm mx-auto'>
           <Link href="/game">
@@ -96,7 +97,7 @@ export default function HomePage() {
   );
 
   const renderHowItWorksView = () => (
-    <div className="bg-gray-50 flex flex-col">
+    <div className="bg-gray-50 flex flex-col h-full">
       <div className="px-4 py-4">
         <div className="max-w-sm mx-auto">
           <div className="flex flex-col items-center text-center space-y-2 mb-4">
@@ -176,7 +177,7 @@ export default function HomePage() {
   );
 
   const renderGameRulesView = () => (
-    <div className="bg-white flex flex-col">
+    <div className="bg-white flex flex-col h-full">
       <div className="px-4 py-4">
         <div className="max-w-sm mx-auto">
           <div className="flex flex-col items-center text-center space-y-2 mb-4">

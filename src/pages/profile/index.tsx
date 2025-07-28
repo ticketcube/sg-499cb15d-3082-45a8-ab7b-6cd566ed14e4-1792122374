@@ -1,5 +1,5 @@
+
 import { useState, useEffect, useCallback } from "react";
-import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -125,11 +125,9 @@ export default function ProfilePage() {
 
   if (loading || isLoading) {
     return (
-      <Layout>
-        <div className="flex justify-center items-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-        </div>
-      </Layout>
+      <div className="flex justify-center items-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+      </div>
     );
   }
 
@@ -138,135 +136,133 @@ export default function ProfilePage() {
   }
 
   return (
-    <Layout>
-      <div className="py-8 px-4 max-w-6xl mx-auto">
-        {/* Profile Header */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>My Profile</span>
-              {!isEditing && (
+    <div className="py-8 px-4 max-w-6xl mx-auto">
+      {/* Profile Header */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>My Profile</span>
+            {!isEditing && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditing(true)}
+                className="gap-2"
+              >
+                <Edit2 className="h-4 w-4" />
+                Edit
+              </Button>
+            )}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <label className="text-sm font-medium text-gray-700">Email</label>
+            <p className="text-gray-900">{user.email}</p>
+          </div>
+          
+          <div>
+            <label className="text-sm font-medium text-gray-700">Display Name</label>
+            {isEditing ? (
+              <div className="flex gap-2 mt-1">
+                <Input
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="Enter display name"
+                />
+                <Button
+                  size="sm"
+                  onClick={handleSaveProfile}
+                  disabled={isSaving || !displayName.trim()}
+                  className="gap-2"
+                >
+                  <Save className="h-4 w-4" />
+                  {isSaving ? "Saving..." : "Save"}
+                </Button>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setIsEditing(true)}
+                  onClick={handleCancelEdit}
                   className="gap-2"
                 >
-                  <Edit2 className="h-4 w-4" />
-                  Edit
-                </Button>
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="text-sm font-medium text-gray-700">Email</label>
-              <p className="text-gray-900">{user.email}</p>
-            </div>
-            
-            <div>
-              <label className="text-sm font-medium text-gray-700">Display Name</label>
-              {isEditing ? (
-                <div className="flex gap-2 mt-1">
-                  <Input
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                    placeholder="Enter display name"
-                  />
-                  <Button
-                    size="sm"
-                    onClick={handleSaveProfile}
-                    disabled={isSaving || !displayName.trim()}
-                    className="gap-2"
-                  >
-                    <Save className="h-4 w-4" />
-                    {isSaving ? "Saving..." : "Save"}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleCancelEdit}
-                    className="gap-2"
-                  >
-                    <X className="h-4 w-4" />
-                    Cancel
-                  </Button>
-                </div>
-              ) : (
-                <p className="text-gray-900">
-                  {profile?.display_name || user.email?.split("@")[0] || "Not set"}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-700">Total Points</label>
-              <p className="text-2xl font-bold text-green-600">
-                {pastRounds.reduce((total, round) => total + (round.total_points || 0), 0)}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Past Rounds */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Past Rounds ({pastRounds.length})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {pastRounds.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <p>No rounds played yet.</p>
-                <Button className="mt-4" onClick={() => router.push("/game")}>
-                  Play Your First Round
+                  <X className="h-4 w-4" />
+                  Cancel
                 </Button>
               </div>
             ) : (
-              <div className="space-y-4">
-                {pastRounds.map((round) => (
-                  <Card key={round.id}>
-                    <CardContent className="p-4">
-                      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-center">
-                        <div className="md:col-span-2">
-                          <h3 className="font-semibold">{round.course_name}</h3>
-                          <p className="text-sm text-muted-foreground">{round.tee_name} Tees</p>
-                        </div>
-                        
+              <p className="text-gray-900">
+                {profile?.display_name || user.email?.split("@")[0] || "Not set"}
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-gray-700">Total Points</label>
+            <p className="text-2xl font-bold text-green-600">
+              {pastRounds.reduce((total, round) => total + (round.total_points || 0), 0)}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Past Rounds */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Past Rounds ({pastRounds.length})</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {pastRounds.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <p>No rounds played yet.</p>
+              <Button className="mt-4" onClick={() => router.push("/game")}>
+                Play Your First Round
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {pastRounds.map((round) => (
+                <Card key={round.id}>
+                  <CardContent className="p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-center">
+                      <div className="md:col-span-2">
+                        <h3 className="font-semibold">{round.course_name}</h3>
+                        <p className="text-sm text-muted-foreground">{round.tee_name} Tees</p>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">{formatDate(round.created_at)}</span>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <Badge variant="outline">{getScoreDisplay(round)}</Badge>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <Target className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">Target: {round.target_score}</span>
+                      </div>
+                      
+                      <div className="flex items-center justify-between space-x-4">
                         <div className="flex items-center space-x-2">
-                          <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">{formatDate(round.created_at)}</span>
+                          <Trophy className="h-4 w-4 text-yellow-600" />
+                          <span className="text-sm font-medium">{round.total_points} pts</span>
                         </div>
-                        
                         <div className="flex items-center space-x-2">
-                          <Badge variant="outline">{getScoreDisplay(round)}</Badge>
-                        </div>
-                        
-                        <div className="flex items-center space-x-2">
-                          <Target className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">Target: {round.target_score}</span>
-                        </div>
-                        
-                        <div className="flex items-center justify-between space-x-4">
-                          <div className="flex items-center space-x-2">
-                            <Trophy className="h-4 w-4 text-yellow-600" />
-                            <span className="text-sm font-medium">{round.total_points} pts</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <TrendingUp className={`h-4 w-4 ${round.four_points_earned >= 0 ? 'text-green-600' : 'text-red-600'}`} />
-                            <span className={`text-sm font-medium ${round.four_points_earned >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                              {round.four_points_earned >= 0 ? '+' : ''}{round.four_points_earned}
-                            </span>
-                          </div>
+                          <TrendingUp className={`h-4 w-4 ${round.four_points_earned >= 0 ? 'text-green-600' : 'text-red-600'}`} />
+                          <span className={`text-sm font-medium ${round.four_points_earned >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {round.four_points_earned >= 0 ? '+' : ''}{round.four_points_earned}
+                          </span>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </Layout>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }

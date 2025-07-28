@@ -1,5 +1,5 @@
+
 import { useState, useEffect, useCallback } from "react";
-import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -457,7 +457,7 @@ export default function GamePage() {
     }
 
     return (
-      <div className="p-3 pt-4 pb-6 flex flex-col min-h-screen">
+      <div className="p-3 pt-4 pb-6 flex flex-col">
         <Card className="max-w-sm mx-auto w-full">
           <CardHeader className="text-center pb-3">
             <CardTitle className="text-lg">{gameSettings.courseName}</CardTitle>
@@ -538,10 +538,8 @@ export default function GamePage() {
   };
   
   return (
-    <Layout>
-      <div className="bg-white min-h-screen flex flex-col">
-        {gameMode === "setup" ? renderSetupUI() : renderPlayUI()}
-      </div>
-    </Layout>
+    <div className="bg-white flex flex-col">
+      {gameMode === "setup" ? renderSetupUI() : renderPlayUI()}
+    </div>
   );
 }
