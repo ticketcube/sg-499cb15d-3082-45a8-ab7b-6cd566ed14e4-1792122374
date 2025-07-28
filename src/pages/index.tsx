@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
@@ -22,22 +21,18 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <Layout>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="w-8 h-8 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
-        </div>
-      </Layout>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-8 h-8 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
+      </div>
     );
   }
 
   // Show loading while redirecting unauthenticated users
   if (!user) {
     return (
-      <Layout>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="w-8 h-8 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
-        </div>
-      </Layout>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-8 h-8 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
+      </div>
     );
   }
 
@@ -239,10 +234,10 @@ export default function HomePage() {
   );
 
   return (
-    <Layout>
+    <>
       {currentView === 'home' && renderHomeView()}
       {currentView === 'how-it-works' && renderHowItWorksView()}
       {currentView === 'game-rules' && renderGameRulesView()}
-    </Layout>
+    </>
   );
 }

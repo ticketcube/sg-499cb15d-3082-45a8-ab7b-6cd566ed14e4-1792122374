@@ -1,224 +1,177 @@
-
-import { useState, useEffect, useCallback } from "react";
-import { Layout } from "@/components/layout/Layout";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trophy, Users, Edit } from "lucide-react";
-import { useRouter } from "next/router";
-import { useAuth } from "@/contexts/AuthContext";
-import { useGame } from "@/contexts/GameContext";
-import { useToast } from "@/hooks/use-toast";
-import Link from "next/link";
-import { scoreService, GameScoreData } from "@/services/scoreService";
-
-const PENDING_GAME_SUBMISSION_KEY = "pendingGameSubmission";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { gameService } from '@/services/gameService';
+import { Game } from '@/types';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Terminal } from 'lucide-react';
 
 export default function GameCompletePage() {
   const router = useRouter();
   const { user } = useAuth();
-  const { gameSettings, totalPoints, fourPointsEarned, holeScores, resetGame } = useGame();
-  const { toast } = useToast();
-  const [submitting, setSubmitting] = useState(false);
+  const { gameId } = router.query;
+  const { source } = router.query; // for survey completion flow
+  const [game, setGame] = useState<Game | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!gameSettings) {
-        console.log("❌ No game settings found in complete page, redirecting to /game");
-        router.push("/game");
+    const fetchGame = async () => {
+      if (typeof gameId !== 'string') {
+        if (source !== 'survey') {
+          setError("No game ID provided.");
+        }
+        setLoading(false);
+        return;
       }
-    }, 100);
 
-    return () => clearTimeout(timer);
-  }, [gameSettings, router]);
-
-  const handlePostScore = useCallback(async () => {
-    if (!user || !gameSettings) return;
-
-    setSubmitting(true);
-    try {
-      const scoreData: GameScoreData = {
-        user_id: user.id,
-        player_name: user.user_metadata?.display_name || "Anonymous Player",
-        course_name: gameSettings.courseName,
-        course_id: gameSettings.courseId,
-        tee_name: gameSettings.teeName,
-        tee_id: gameSettings.teeId,
-        target_score: gameSettings.targetScore,
-        four_points_earned: fourPointsEarned,
-        total_points: totalPoints,
-        hole_scores: holeScores.map(s => s.score),
-        game_type: gameSettings.holes as 9 | 18,
-        ghin_handicap: gameSettings.ghinIndex,
-        adjusted_average_score: gameSettings.averageScore,
-      };
-
-      await scoreService.submitScore(scoreData);
-
-      toast({
-        title: "Score Posted!",
-        description: "Your score has been added to the leaderboard.",
-      });
-
-      await router.push("/leaderboard/monthly");
-      
-      resetGame();
-    } catch (error) {
-      console.error("❌ Error posting score:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to post score. Please try again.",
-      });
-    } finally {
-      setSubmitting(false);
-    }
-  }, [user, gameSettings, totalPoints, fourPointsEarned, holeScores, toast, router, resetGame]);
-
-  useEffect(() => {
-    if (user && localStorage.getItem(PENDING_GAME_SUBMISSION_KEY)) {
-      const pendingGame = JSON.parse(localStorage.getItem(PENDING_GAME_SUBMISSION_KEY) || "{}");
-      if (pendingGame && gameSettings) {
-        handlePostScore();
-        localStorage.removeItem(PENDING_GAME_SUBMISSION_KEY);
+      try {
+        setLoading(true);
+        const fetchedGame = await gameService.getGameById(gameId);
+        setGame(fetchedGame);
+      } catch (err) {
+        console.error("Failed to fetch game:", err);
+        if (err instanceof Error) {
+            setError(err.message);
+        } else {
+            setError("An unknown error occurred.");
+        }
+      } finally {
+        setLoading(false);
       }
+    };
+
+    if (user && gameId) {
+      fetchGame();
+    } else if (source === 'survey') {
+      setLoading(false);
+    } else if (!user) {
+        // wait for user context to load
     }
-  }, [user, gameSettings, handlePostScore]);
+    else {
+      setLoading(false);
+    }
+  }, [user, gameId, source]);
 
-  const handleNewGame = () => {
-    resetGame();
-    router.push("/game");
-  };
+  const isFromSurvey = source === 'survey';
 
-  const handleEditScore = () => {
-    router.back();
-  };
-
-  if (!gameSettings) {
-    return null;
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8 flex flex-col items-center">
+        <Card className="w-full max-w-2xl p-6 md:p-10">
+          <CardHeader>
+            <Skeleton className="h-10 w-3/4 mx-auto" />
+            <Skeleton className="h-6 w-full mt-2 mx-auto" />
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4 md:gap-8 text-center">
+              <div>
+                <Skeleton className="h-6 w-1/2 mx-auto" />
+                <Skeleton className="h-12 w-1/4 mx-auto mt-2" />
+              </div>
+              <div>
+                <Skeleton className="h-6 w-1/2 mx-auto" />
+                <Skeleton className="h-12 w-1/4 mx-auto mt-2" />
+              </div>
+              <div>
+                <Skeleton className="h-6 w-1/2 mx-auto" />
+                <Skeleton className="h-12 w-1/4 mx-auto mt-2" />
+              </div>
+              <div>
+                <Skeleton className="h-6 w-1/2 mx-auto" />
+                <Skeleton className="h-12 w-1/4 mx-auto mt-2" />
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter className="flex flex-col gap-4 mt-6">
+            <Skeleton className="h-10 w-48 mx-auto" />
+            <Skeleton className="h-10 w-48 mx-auto" />
+          </CardFooter>
+        </Card>
+      </div>
+    );
   }
 
-  const renderAuthPrompt = () => (
-    <Card className="mb-6">
-      <CardHeader className="text-center">
-        <CardTitle>Almost there!</CardTitle>
-      </CardHeader>
-      <CardContent className="p-4 text-center">
-        <Users className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-        <p className="text-sm text-muted-foreground mb-3">
-          Sign in or create an account to post your score.
-        </p>
-        <div className="flex flex-col gap-2">
-          <Link 
-            href={`/auth/login?redirect=${router.asPath}`} 
-            className="flex-1"
-            onClick={() => {
-              if (gameSettings) {
-                localStorage.setItem(PENDING_GAME_SUBMISSION_KEY, JSON.stringify({
-                  gameSettings,
-                  totalPoints,
-                  fourPointsEarned,
-                  holeScores,
-                }));
-              }
-            }}
-          >
-            <Button variant="outline" className="w-full">Sign In</Button>
-          </Link>
-          <Link 
-            href={`/auth/register?redirect=${router.asPath}`} 
-            className="flex-1"
-            onClick={() => {
-              if (gameSettings) {
-                localStorage.setItem(PENDING_GAME_SUBMISSION_KEY, JSON.stringify({
-                  gameSettings,
-                  totalPoints,
-                  fourPointsEarned,
-                  holeScores,
-                }));
-              }
-            }}
-          >
-            <Button className="w-full">Register</Button>
-          </Link>
+  if (error) {
+    return (
+        <div className="container mx-auto px-4 py-8">
+            <Alert variant="destructive">
+                <Terminal className="h-4 w-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>
+                    {error}
+                </AlertDescription>
+            </Alert>
         </div>
-      </CardContent>
-    </Card>
-  );
+    )
+  }
 
-  const renderPostScoreSection = () => (
-    <div className="space-y-4 mb-6">
-      <Card>
-        <CardContent className="p-6 text-center">
-          <Trophy className="h-12 w-12 text-red-600 mx-auto mb-4" />
-          <p className="text-sm text-muted-foreground mb-4">
-            Submit to the Monthly Leaderboard
-          </p>
-          <Button
-            onClick={handlePostScore}
-            disabled={submitting}
-            size="lg"
-            className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 text-lg"
-          >
-            {submitting ? "POSTING..." : "POST SCORE"}
-          </Button>
-        </CardContent>
+  return (
+    <div className="container mx-auto px-4 py-8 flex flex-col items-center text-center">
+      <Card className="w-full max-w-2xl p-6 md:p-10">
+        <CardHeader>
+          <CardTitle className="text-3xl md:text-4xl font-bold">
+            {isFromSurvey ? "You're All Set!" : "Round Complete!"}
+          </CardTitle>
+          <CardDescription className="text-lg md:text-xl text-muted-foreground mt-2">
+            {isFromSurvey
+              ? "Thank you for completing the survey. Your personalized experience is ready."
+              : "Great job on finishing your round. Here's your summary."}
+          </CardDescription>
+        </CardHeader>
+        
+        {!isFromSurvey && game && (
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4 md:gap-8 text-center mt-6">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Course</p>
+                <p className="text-2xl font-bold">{game.course_name || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Total Points</p>
+                <p className="text-2xl font-bold">{game.total_points}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">4 Points Earned</p>
+                <p className="text-2xl font-bold">{game.four_points_earned}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Date</p>
+                <p className="text-2xl font-bold">{new Date(game.created_at).toLocaleDateString()}</p>
+              </div>
+            </div>
+            <div className="mt-8">
+                <h3 className="text-xl font-semibold mb-4">Next Steps</h3>
+                <p className="text-muted-foreground">
+                    You can view your detailed game summary, check out the leaderboards, or start a new round.
+                </p>
+            </div>
+          </CardContent>
+        )}
+
+        <CardFooter className="flex flex-col items-center justify-center gap-4 mt-6">
+          {isFromSurvey ? (
+            <Button 
+              onClick={() => router.push('/game')} 
+              className="h-40 w-40 text-2xl font-bold whitespace-normal text-center rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              Get Started
+            </Button>
+          ) : (
+            <>
+              {gameId && <Button onClick={() => router.push(`/game/summary?gameId=${gameId}`)}>View Detailed Summary</Button>}
+              <Button onClick={() => router.push('/game')}>Play Another Round</Button>
+              <Button variant="outline" onClick={() => router.push('/leaderboard/monthly')}>
+                View Leaderboard
+              </Button>
+            </>
+          )}
+        </CardFooter>
       </Card>
     </div>
   );
-
-  return (
-    <Layout>
-      <div className="p-4">
-        <div className="max-w-md mx-auto">
-          <Card className="mb-6">
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl">Game Complete!</CardTitle>
-              <p className="text-muted-foreground">{gameSettings.courseName}</p>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-3 gap-4 text-center mb-4">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Points</p>
-                  <p className="text-2xl font-bold">{totalPoints}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Target</p>
-                  <p className="text-2xl font-bold">{gameSettings.targetScore}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">4Points</p>
-                  <p className={`text-2xl font-bold ${fourPointsEarned >= 0 ? "text-green-600" : "text-red-600"}`}>
-                    {fourPointsEarned >= 0 ? "+" : ""}{fourPointsEarned}
-                  </p>
-                </div>
-              </div>
-              
-              <Button 
-                onClick={handleEditScore} 
-                variant="outline" 
-                size="sm" 
-                className="w-full gap-2"
-              >
-                <Edit className="h-4 w-4" />
-                Edit Score
-              </Button>
-            </CardContent>
-          </Card>
-
-          {user ? renderPostScoreSection() : renderAuthPrompt()}
-
-          <div className="space-y-2 mt-6">
-            <Button onClick={handleNewGame} variant="outline" size="lg" className="w-full">
-              Play Another Round
-            </Button>
-            <Link href="/leaderboard/monthly" className="block">
-              <Button variant="ghost" size="lg" className="w-full">
-                View Leaderboard
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-    </Layout>
-  );
 }
+    

@@ -138,5 +138,19 @@ export const gameService = {
     }
     return (data as unknown as Game[]) || [];
   },
+
+  async getGameById(gameId: string): Promise<Game> {
+    const { data, error } = await supabase
+      .from("games")
+      .select("*, profiles(display_name)")
+      .eq("id", gameId)
+      .single();
+
+    if (error) {
+      console.error("Error fetching game by ID:", error);
+      throw error;
+    }
+    return data as unknown as Game;
+  },
 };
   
