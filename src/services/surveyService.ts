@@ -99,13 +99,14 @@ export const surveyService = {
   async startSurvey(sessionId: string, userId?: string): Promise<string | null> {
     try {
       // First check if a survey response already exists for this session
+      // Use maybeSingle() instead of single() to handle no rows gracefully
       const { data: existingResponse, error: checkError } = await supabase
         .from('survey_responses')
         .select('id')
         .eq('session_id', sessionId)
-        .single();
+        .maybeSingle();
 
-      if (checkError && checkError.code !== 'PGRST116') {
+      if (checkError) {
         console.error('Error checking existing survey:', checkError);
         return null;
       }
@@ -140,6 +141,18 @@ export const surveyService = {
         .single();
 
       if (error) {
+        // If we get a duplicate key error, try to fetch the existing record
+        if (error.code === '23505') {
+          const { data: existingData, error: fetchError } = await supabase
+            .from('survey_responses')
+            .select('id')
+            .eq('session_id', sessionId)
+            .maybeSingle();
+          
+          if (!fetchError && existingData) {
+            return existingData.id;
+          }
+        }
         console.error('Error starting survey:', error);
         return null;
       }

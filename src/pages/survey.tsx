@@ -42,19 +42,27 @@ export default function SurveyPage() {
     return `${timestamp}-${random}`;
   });
   const [isCompleting, setIsCompleting] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(false);
 
   useEffect(() => {
     const initSurvey = async () => {
       // Prevent multiple initializations
-      if (responseId) return;
+      if (responseId || isInitializing) return;
       
-      const id = await surveyService.startSurvey(sessionId);
-      if (id) {
-        setResponseId(id);
+      setIsInitializing(true);
+      try {
+        const id = await surveyService.startSurvey(sessionId);
+        if (id) {
+          setResponseId(id);
+        }
+      } catch (error) {
+        console.error('Failed to initialize survey:', error);
+      } finally {
+        setIsInitializing(false);
       }
     };
     initSurvey();
-  }, [sessionId, responseId]);
+  }, [sessionId, responseId, isInitializing]);
 
   const handleAnswer = async (answer: string) => {
     if (typeof window.navigator.vibrate === "function") {
