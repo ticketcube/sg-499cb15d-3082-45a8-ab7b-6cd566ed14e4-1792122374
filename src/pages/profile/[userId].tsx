@@ -92,7 +92,6 @@ export default function PublicProfilePage() {
   }
 
   return (
-    <Layout>
       <div className="py-8 px-4 max-w-4xl mx-auto">
         {/* Public Profile Header */}
         <Card className="mb-6">
@@ -160,6 +159,5 @@ export default function PublicProfilePage() {
           </CardContent>
         </Card>
       </div>
-    </Layout>
   );
 }
