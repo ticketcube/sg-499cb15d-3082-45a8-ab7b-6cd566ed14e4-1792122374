@@ -12,26 +12,47 @@ export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
 
   useEffect(() => {
-    const handleRouteChangeStart = () => {
-      window.scrollTo(0, 0);
+    // Disable browser restoration so it doesn't fight our scroll
+    let prev: ScrollRestoration | undefined;
+    if ("scrollRestoration" in window.history) {
+      prev = window.history.scrollRestoration;
+      window.history.scrollRestoration = "manual";
+    }
+
+    const docEl = document.documentElement;
+    const prevScrollBehavior = docEl.style.scrollBehavior;
+    const disableSmooth = () => { docEl.style.scrollBehavior = "auto"; };
+    const restoreSmooth = () => { docEl.style.scrollBehavior = prevScrollBehavior; };
+
+    const scrollTopNextFrame = () => {
+      requestAnimationFrame(() => {
+        disableSmooth();
+        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+        setTimeout(restoreSmooth, 50);
+      });
     };
 
     const handleRouteChangeComplete = () => {
-      setTimeout(() => {
-        window.scrollTo(0, 0);
-      }, 0);
+      // Strip hash to prevent auto-anchor jump on first paint
+      if (location.hash) {
+        history.replaceState(null, "", location.pathname + location.search);
+      }
+      scrollTopNextFrame();
     };
 
-    router.events.on('routeChangeStart', handleRouteChangeStart);
-    router.events.on('routeChangeComplete', handleRouteChangeComplete);
+    router.events.on("routeChangeComplete", handleRouteChangeComplete);
+    router.events.on("hashChangeComplete", handleRouteChangeComplete);
 
-    window.scrollTo(0, 0);
+    // Handle initial load
+    handleRouteChangeComplete();
 
     return () => {
-      router.events.off('routeChangeStart', handleRouteChangeStart);
-      router.events.off('routeChangeComplete', handleRouteChangeComplete);
+      router.events.off("routeChangeComplete", handleRouteChangeComplete);
+      router.events.off("hashChangeComplete", handleRouteChangeComplete);
+      if (prev) window.history.scrollRestoration = prev;
+      restoreSmooth();
     };
-  }, [router.events]);
+  }, [router]);
 
   return (
     <AuthProvider>
