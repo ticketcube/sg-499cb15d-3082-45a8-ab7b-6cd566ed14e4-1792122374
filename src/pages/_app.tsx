@@ -10,30 +10,51 @@ import { useEffect } from 'react'
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
 
+
   useEffect(() => {
-    const handleRouteChangeStart = () => {
-      // Scroll to top immediately when route change starts
-      window.scrollTo(0, 0);
+    // Disable browser restoration so it doesn't fight our scroll
+    let prev: string | undefined;
+    if ("scrollRestoration" in window.history) {
+      prev = window.history.scrollRestoration;
+      window.history.scrollRestoration = "manual";
+    }
+
+    const docEl = document.documentElement;
+    const prevScrollBehavior = docEl.style.scrollBehavior;
+    const disableSmooth = () => { docEl.style.scrollBehavior = "auto"; };
+    const restoreSmooth = () => { docEl.style.scrollBehavior = prevScrollBehavior; };
+
+    const scrollTopNextFrame = () => {
+      requestAnimationFrame(() => {
+        disableSmooth();
+        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+        setTimeout(restoreSmooth, 50);
+      });
     };
 
     const handleRouteChangeComplete = () => {
-      // Ensure we're at the top after route change completes
-      setTimeout(() => {
-        window.scrollTo(0, 0);
-      }, 0);
+      // Strip hash to prevent auto-anchor jump on first paint
+      if (location.hash) {
+        history.replaceState(null, "", location.pathname + location.search);
+      }
+      scrollTopNextFrame();
     };
 
-    router.events.on('routeChangeStart', handleRouteChangeStart);
-    router.events.on('routeChangeComplete', handleRouteChangeComplete);
+    router.events.on("routeChangeComplete", handleRouteChangeComplete);
+    router.events.on("hashChangeComplete", handleRouteChangeComplete);
 
-    // On initial load, scroll to top as well
-    window.scrollTo(0, 0);
+    // Handle initial load
+    handleRouteChangeComplete();
 
     return () => {
-      router.events.off('routeChangeStart', handleRouteChangeStart);
-      router.events.off('routeChangeComplete', handleRouteChangeComplete);
+      router.events.off("routeChangeComplete", handleRouteChangeComplete);
+      router.events.off("hashChangeComplete", handleRouteChangeComplete);
+      if (prev) window.history.scrollRestoration = prev;
+      restoreSmooth();
     };
-  }, [router.events]);
+  }, [router]);
+
+  
 
   return (
     <AuthProvider>
