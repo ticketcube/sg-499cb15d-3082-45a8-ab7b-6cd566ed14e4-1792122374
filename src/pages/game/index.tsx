@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/router";
 import { useGame } from "@/contexts/GameContext";
-import { scoreOptions, Course, GameSettings } from "@/types";
+import { useAuth } from "@/contexts/AuthContext";
+import { scoreOptions, Course, GameSettings, GameScore } from "@/types";
 import { courseService } from "@/services/courseService";
 import { gameService } from "@/services/gameService";
 import { useToast } from "@/hooks/use-toast";
@@ -24,6 +24,7 @@ import {
 
 export default function GamePage() {
   const router = useRouter();
+  const { user } = useAuth();
   const { 
     gameSettings, 
     setGameSettings,
@@ -40,6 +41,7 @@ export default function GamePage() {
   
   const [gameMode, setGameMode] = useState<'setup' | 'play'>('setup');
   const [setupStep, setSetupStep] = useState<'course' | 'tee'>('course');
+  const [submittingGame, setSubmittingGame] = useState(false);
   
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -214,8 +216,16 @@ export default function GamePage() {
     console.log('Hole Scores:', holeScores);
     console.log('Current Nine:', currentNine);
     
-    if (!gameSettings) {
-      console.log('❌ No game settings - redirecting to setup');
+    if (!gameSettings || !user) {
+      console.log('❌ No game settings or user - redirecting to setup');
+      if (!user) {
+        toast({
+          variant: 'destructive',
+          title: 'Authentication Required',
+          description: 'Please sign in to complete your game'
+        });
+        router.push('/auth/login');
+      }
       return;
     }
 
@@ -257,12 +267,66 @@ export default function GamePage() {
     console.log('Final Can Complete:', canComplete);
 
     if (canComplete) {
-      console.log('✅ NAVIGATING TO /game/complete');
+      console.log('✅ SUBMITTING GAME TO DATABASE');
       try {
-        await router.push("/game/complete");
-        console.log('✅ Navigation completed successfully');
+        setSubmittingGame(true);
+        
+        // Calculate hole categories
+        const holeCategories = gameService.calculateHoleCategories(
+          holeScores.filter(s => s.points >= 0),
+          gameSettings.par
+        );
+
+        // Get user display name from user metadata or email
+        const displayName = user.user_metadata?.display_name || 
+                           user.user_metadata?.full_name || 
+                           user.email?.split('@')[0] || 
+                           'Anonymous';
+
+        // Build GameScore object
+        const gameScore: GameScore = {
+          userId: user.id,
+          playerName: displayName,
+          courseId: gameSettings.courseId,
+          courseName: gameSettings.courseName,
+          teeId: gameSettings.teeId,
+          teeName: gameSettings.teeName,
+          ghinHandicap: gameSettings.ghinIndex,
+          adjustedAverageScore: gameSettings.averageScore,
+          targetScore: gameSettings.targetScore,
+          totalPoints: totalPoints,
+          fourPointsEarned: fourPointsEarned,
+          holeScores: holeScores.filter(s => s.points >= 0),
+          holeCategories: holeCategories,
+          timestamp: Date.now(),
+          validated: false,
+          leaderboardType: "monthly", // Default to monthly leaderboard
+          paidEntry: false,
+          gameType: gameSettings.holes as 9 | 18
+        };
+
+        console.log('📝 Submitting game score:', gameScore);
+
+        // Submit to database
+        const submittedGame = await gameService.submitGameScore(gameScore);
+        
+        console.log('✅ Game submitted successfully with ID:', submittedGame.id);
+        
+        // Navigate to completion page with the game ID
+        await router.push(`/game/complete?gameId=${submittedGame.id}`);
+        
+        // Reset the game context after successful submission
+        resetGame();
+        
+        console.log('✅ Navigation and cleanup completed successfully');
       } catch (error) {
-        console.error('❌ Navigation failed:', error);
+        console.error('❌ Error submitting game:', error);
+        setSubmittingGame(false);
+        toast({
+          variant: 'destructive',
+          title: 'Submission Failed',
+          description: 'Failed to save your game. Please try again.'
+        });
       }
     } else {
       console.log('❌ Game not complete yet - showing toast');
@@ -524,8 +588,13 @@ export default function GamePage() {
           )}
           
           {showCompleteButton && (
-            <Button onClick={handleCompleteGame} size="lg" className="w-full">
-              Complete Game
+            <Button 
+              onClick={handleCompleteGame} 
+              size="lg" 
+              className="w-full"
+              disabled={submittingGame}
+            >
+              {submittingGame ? "Saving Game..." : "Complete Game"}
             </Button>
           )}
           
