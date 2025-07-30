@@ -80,7 +80,6 @@ export default function MonthlyLeaderboard() {
   }
 
   return (
-    <Layout>
       <div className="p-4">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-6">
@@ -187,6 +186,5 @@ export default function MonthlyLeaderboard() {
           </Card>
         </div>
       </div>
-    </Layout>
   );
 }
