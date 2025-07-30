@@ -18,7 +18,13 @@ export function Layout({ children }: LayoutProps) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div
+      className="flex flex-col bg-white min-h-[100dvh]"
+      style={{
+        paddingTop: "env(safe-area-inset-top)",
+        paddingBottom: "env(safe-area-inset-bottom)",
+      }}
+    >
       {/* Top Navigation Bar */}
       <nav className="bg-white border-b border-gray-200 px-4 py-3">
         <div className="flex justify-between items-center">
@@ -69,7 +75,8 @@ export function Layout({ children }: LayoutProps) {
         </div>
       </nav>
 
-      <main className="flex-grow flex flex-col overflow-x-hidden">
+      {/* min-h-0 avoids flex children forcing extra height on mobile */}
+      <main className="flex-grow flex flex-col overflow-x-hidden min-h-0">
         {children}
       </main>
     </div>
