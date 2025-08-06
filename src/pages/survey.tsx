@@ -162,7 +162,8 @@ export default function SurveyPage() {
                   Do you want to play golf in under 4 hours?
                 </h1>
                 <p className="text-lg text-gray-700">
-                  The 4Under Club is open to anyone who wants to play 18 holes in under 4 hours (or under 2 hours for 9 holes)!
+                  The 4Under Club is open to anyone who wants to play 18 holes in under 4 hours. </p?
+                <p>(Under 2 hours for 9 holes!)
                 </p>
                 <p className="text-lg font-medium text-green-600">
                   What's our secret? Join us to find out.
