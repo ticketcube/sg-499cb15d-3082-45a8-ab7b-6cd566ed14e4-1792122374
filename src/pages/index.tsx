@@ -226,13 +226,13 @@ export default function HomePage() {
                     <div className="flex flex-col items-center text-center space-y-2 mb-4">
                         <h2 className="text-xl font-bold tracking-tighter">Club Game</h2>
                         <p className="text-base text-gray-700">
-                           We Golf For Points No Strokes
+                           We Golf 4 Points Not Strokes
                         </p>
                     </div>
 
                     <div className="space-y-3 mb-4">
                         <div className="bg-gray-50 p-3 rounded-xl">
-                            <h3 className="text-base font-bold mb-2">Points Per Score</h3>
+                            <h3 className="text-base font-bold mb-2">Points Are Earned Every Hole</h3>
                             <div className="grid grid-cols-2 gap-2">
                                 <div className="flex items-center justify-between p-2 bg-green-50 rounded-lg">
                                     <span className="font-medium text-sm">Bogey</span>
@@ -255,6 +255,14 @@ export default function HomePage() {
                                     <span className="text-gray-600 font-bold text-sm">0 pts</span>
                                 </div>
                             </div>
+                        </div>
+                        <div className="bg-gray-50 p-3 rounded-xl">
+                            <h3 className="text-base font-bold mb-2">We Compete Against Our Targets</h3>
+
+
+
+
+                            
                         </div>
                     </div>
                     <div className="flex flex-col items-center space-y-3 mt-4">
