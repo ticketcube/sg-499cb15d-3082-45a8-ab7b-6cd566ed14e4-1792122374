@@ -177,7 +177,7 @@ export default function HomePage() {
                                 <div className="flex flex-col items-start text-left">
                                     <h3 className="text-sm font-bold">We Golf For Points, Not Strokes</h3>
                                     <p className="text-xs text-gray-700">
-                                        For almost 200 years, golf has used a points based, not stroke play, scoring method that is fast and fun.  We play a modified version of this "Stableford" scoring system.  And we own the game.
+                                        Members play a points based, not stroke based, scoring method that is fast and fun. And we own the game.
                                     </p>
                                 </div>
                             </div>
