@@ -84,31 +84,35 @@ export default function HomePage() {
                     </div>
 
 
-                    <div className="flex gap-3 w-full max-w-xs mb-4">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="flex-1 text-sm text-white bg-green-600 hover:bg-green-700"
-                            onClick={() => setCurrentView('how-it-works')}
-                        >
-                            Club Rules
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="flex-1 text-sm text-white bg-green-600 hover:bg-green-700"
-                            onClick={() => setCurrentView('game-rules')}
-                        >
-                            Club Game
-                        </Button>
-                    </div>
-                    <Link href="/game">
-                        <div className="bg-red-600 text-white rounded-2xl px-4 py-2 shadow-lg hover:shadow-xl transition-shadow cursor-pointer hover:bg-red-700 inline-block">
-                            <h1 className="text-xl font-bold">
-                                Tap To Start Game!
-                            </h1>
+                    <div className="flex flex-col items-center space-y-3 mt-4">
+                        <div className="flex gap-3 w-full max-w-xs">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="flex-1 text-sm text-white bg-green-600 hover:bg-green-700"
+                                onClick={() => setCurrentView('how-it-works')}
+                            >
+                                Club Rules
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="flex-1 text-sm text-white bg-green-600 hover:bg-green-700"
+                                onClick={() => setCurrentView('game-rules')}
+                            >
+                                Club Game
+                            </Button>
                         </div>
-                    </Link>
+
+                        <Link href="/game">
+                            <div className="bg-red-600 text-white rounded-2xl px-4 py-2 shadow-lg hover:shadow-xl transition-shadow cursor-pointer hover:bg-red-700 inline-block">
+                                <h1 className="text-xl font-bold">
+                                    Tap To Start Game!
+                                </h1>
+                            </div>
+                        </Link>
+                    </div>
+
 
 
                 </div>
@@ -179,38 +183,40 @@ export default function HomePage() {
                             </div>
                         </div>
 
-                        <div className="div className=" flex gap-3 w-full max-w-xs mb-4">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="flex-1 text-sm text-white bg-green-600 hover:bg-green-700"
-                            onClick={() => setCurrentView('how-it-works')}
-                        >
-                            Club Rules
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="flex-1 text-sm text-white bg-green-600 hover:bg-green-700"
-                            onClick={() => setCurrentView('game-rules')}
-                        >
-                            Club Game
-                        </Button>
-                    </div>
+                        <div className="flex flex-col items-center space-y-3 mt-4">
+                            <div className="flex gap-3 w-full max-w-xs">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="flex-1 text-sm text-white bg-green-600 hover:bg-green-700"
+                                    onClick={() => setCurrentView('how-it-works')}
+                                >
+                                    Club Rules
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="flex-1 text-sm text-white bg-green-600 hover:bg-green-700"
+                                    onClick={() => setCurrentView('game-rules')}
+                                >
+                                    Club Game
+                                </Button>
+                            </div>
 
-                    <Link href="/game">
-                        <div className="bg-red-600 text-white rounded-2xl px-4 py-2 shadow-lg hover:shadow-xl transition-shadow cursor-pointer hover:bg-red-700 inline-block">
-                            <h1 className="text-xl font-bold">
-                                Tap To Start Game!
-                            </h1>
+                            <Link href="/game">
+                                <div className="bg-red-600 text-white rounded-2xl px-4 py-2 shadow-lg hover:shadow-xl transition-shadow cursor-pointer hover:bg-red-700 inline-block">
+                                    <h1 className="text-xl font-bold">
+                                        Tap To Start Game!
+                                    </h1>
+                                </div>
+                            </Link>
                         </div>
-                    </Link>
+
+                    </div>
                 </div>
+            </section>
         </div>
-                </div >
-            </section >
-        </div >
-       
+
     );
 
     const renderGameRulesView = () => (
