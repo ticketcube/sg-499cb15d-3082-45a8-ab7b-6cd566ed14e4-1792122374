@@ -159,7 +159,7 @@ export default function SurveyPage() {
               </div>
               <div className="space-y-4">
                 <h1 className="text-2xl font-bold text-green-700">
-                  Do you want to play golf in under 4 hours?
+                  Do you want to play fast, fun and fair golf in under 4 hours?
                 </h1>
                 <p className="text-lg text-gray-700">
                   The 4Under Club is open to anyone who wants to play 18 holes in under 4 hours. </p>
