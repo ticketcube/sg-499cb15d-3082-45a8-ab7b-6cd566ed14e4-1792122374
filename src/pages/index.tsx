@@ -107,15 +107,14 @@ export default function HomePage() {
 
 
                     <Link href="/game">
-                    
-                        <div className="space-y-3">
-                            <Button
-                                onClick={() => setCurrentStep(1)}
-                                className="w-full bg-green-600 hover:bg-green-700 text-white text-lg py-6"
-                            >
-                                TAP TO START GAME
-                            </Button>
-                         
+                        <div className='bg-white border-2 border-gray-200 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow cursor-pointer hover:border-green-300'>
+                            <div className='flex flex-col items-center space-y-4'>
+                                <div className='relative h-16 w-auto'>
+                                </div>
+                                <h1 className="text-xl font-bold text-red-600">
+                                    Tap To Start Game!
+                                </h1>
+                            </div>
                         </div>
                     </Link>
 
