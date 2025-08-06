@@ -224,9 +224,9 @@ export default function HomePage() {
             <div className="px-4 py-4">
                 <div className="max-w-sm mx-auto">
                     <div className="flex flex-col items-center text-center space-y-2 mb-4">
-                        <h2 className="text-xl font-bold tracking-tighter">Game Rules</h2>
+                        <h2 className="text-xl font-bold tracking-tighter">Club Game</h2>
                         <p className="text-base text-gray-700">
-                            Simple scoring that makes every hole count
+                           We Golf For Points No Strokes
                         </p>
                     </div>
 
