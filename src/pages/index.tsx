@@ -108,15 +108,20 @@ export default function HomePage() {
 
                     <Link href="/game">
                     
-                        <div className="w-full bg-green-600 hover:bg-green-700 text-white text-lg py-6"
-'>
-                            <div className='flex flex-col items-center space-y-4'>
-                                <div className='relative h-16 w-auto'>
-                                </div>
-                                <h1 className="text-xl font-bold text-red-600">
-                                    Tap To Start Game!
-                                </h1>
-                            </div>
+                        <div className="space-y-3">
+                            <Button
+                                onClick={() => setCurrentStep(1)}
+                                className="w-full bg-green-600 hover:bg-green-700 text-white text-lg py-6"
+                            >
+                                TAP TO START GAME
+                            </Button>
+                            <Button
+                                onClick={() => router.push('/game')}
+                                variant="outline"
+                                className="w-full text-lg py-3"
+                            >
+                                Member Login
+                            </Button>
                         </div>
                     </Link>
 
