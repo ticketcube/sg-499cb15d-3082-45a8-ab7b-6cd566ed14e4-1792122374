@@ -83,7 +83,7 @@ export default function MonthlyLeaderboard() {
       <div className="p-4">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold mb-2">MONTHLY LEADERBOARD</h1>
+            <h1 className="text-2xl font-bold mb-2">4POINTS LEADERBOARD</h1>
             <p className="text-muted-foreground">This month's top performers based on best score.</p>
             <Badge variant="outline" className="mt-2 border-green-400 bg-green-50 text-green-800">Free to Play</Badge>
           </div>
