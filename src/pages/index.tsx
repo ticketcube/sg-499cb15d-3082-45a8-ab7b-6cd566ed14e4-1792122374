@@ -107,12 +107,12 @@ export default function HomePage() {
 
 
                    <Link href="/game">
-  <div className="bg-red-600 text-white rounded-2xl px-4 py-2 shadow-lg hover:shadow-xl transition-shadow cursor-pointer hover:bg-red-700 inline-block">
-    <h1 className="text-xl font-bold">
-      Tap To Start Game!
-    </h1>
-  </div>
-</Link>
+                     <div className="bg-red-600 text-white rounded-2xl px-4 py-2 shadow-lg hover:shadow-xl transition-shadow cursor-pointer hover:bg-red-700 inline-block">
+                      <h1 className="text-xl font-bold">
+                       Tap To Start Game!
+                         </h1>
+                     </div>
+                    </Link>
 
 
                 </div>
@@ -201,22 +201,10 @@ export default function HomePage() {
                     </div>
 
                     <Link href="/game">
-                        <div className='bg-white border-2 border-gray-200 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow cursor-pointer hover:border-green-300'>
-                            <div className='flex flex-col items-center space-y-4'>
-                                <div className='relative h-16 w-auto'>
-                                    <Image
-                                        src='/4points-m91nnzka.png'
-                                        alt='4Points Logo'
-                                        width={64}
-                                        height={64}
-                                        className='h-full w-auto'
-                                        priority
-                                    />
-                                </div>
-                                <h1 className="text-xl font-bold text-red-600">
-                                    Tap To Start Game!
-                                </h1>
-                            </div>
+                        <div className="bg-red-600 text-white rounded-2xl px-4 py-2 shadow-lg hover:shadow-xl transition-shadow cursor-pointer hover:bg-red-700 inline-block">
+                            <h1 className="text-xl font-bold">
+                                Tap To Start Game!
+                            </h1>
                         </div>
                     </Link>
                 </div>
@@ -280,6 +268,13 @@ export default function HomePage() {
                         >
                             Club Game
                         </Button>
+                        <Link href="/game">
+                            <div className="bg-red-600 text-white rounded-2xl px-4 py-2 shadow-lg hover:shadow-xl transition-shadow cursor-pointer hover:bg-red-700 inline-block">
+                                <h1 className="text-xl font-bold">
+                                    Tap To Start Game!
+                                </h1>
+                            </div>
+                        </Link>
                     </div>
                 </div>
             </div>
