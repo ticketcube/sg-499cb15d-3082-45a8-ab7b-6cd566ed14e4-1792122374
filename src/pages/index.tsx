@@ -40,6 +40,20 @@ export default function HomePage() {
     const renderHomeView = () => (
         <div className="bg-white flex flex-col h-full">
             <section className='py-8 px-4 flex-grow'>
+
+                <div className="space-y-4">
+                    <h1 className="text-2xl font-bold text-green-700">
+                        Club Misson
+                    </h1>
+                    <p className="text-lg text-gray-700">
+                        The 4Under Club guarantees fast and fun rounds of golf by solving the two problems that slow down pace of play.
+                    </p>
+                    <p className="text-lg font-medium text-green-600">
+                        1. It only takes one slow golfer to bottleneck an entire course.<br></br>
+                        2. Blow up holes ruin scores, attitudes and pace of play.
+                    </p>
+                </div>
+
                 <div className='flex flex-col items-center text-center space-y-6 max-w-sm mx-auto'>
 
 
@@ -50,7 +64,7 @@ export default function HomePage() {
                             className="flex-1 text-sm text-gray-900 font-medium"
                             onClick={() => setCurrentView('how-it-works')}
                         >
-                            How It Works
+                            Our Secret
                         </Button>
                         <Button
                             variant="outline"
@@ -58,7 +72,7 @@ export default function HomePage() {
                             className="flex-1 text-sm text-gray-900 font-medium"
                             onClick={() => setCurrentView('game-rules')}
                         >
-                            Game Rules
+                            Our Game
                         </Button>
                     </div>
 
