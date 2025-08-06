@@ -57,10 +57,22 @@ export default function HomePage() {
                         <p className="text-lg text-gray-700">
                             The 4Under Club guarantees fast and fun rounds of golf by solving the two problems that slow down pace of play.
                         </p>
-                        <p className="text-lg justify-between p-2 font-medium text-green-600 text-left">
+                        <p className="text-lg font-medium text-green-600 text-left">
                             1. It only takes one slow golfer to bottleneck an entire course.<br></br><br></br>
                             2. Blow up holes ruin scores, attitudes and pace of play.
                         </p>
+                        <div className="flex items-center space-x-3 bg-white p-3 rounded-xl shadow-sm">
+                            <div className="p-2 bg-green-100 rounded-full min-w-fit">
+                                <span className="text-green-700 font-bold text-base">1</span>
+                            </div>
+                            <div className="flex flex-col items-start text-left">
+                                <h3 className="text-sm font-bold">All It Takes Is One </h3>
+                                <p className="text-xs text-gray-700">
+                                    It only takes one slow golfer to bottleneck an entire course.  If we all have the same mission, there will be no bottlenecks.
+                                </p>
+                            </div>
+                        </div>
+
                     </div>
 
 
