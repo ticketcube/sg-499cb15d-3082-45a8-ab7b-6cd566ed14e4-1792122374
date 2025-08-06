@@ -58,7 +58,7 @@ export default function HomePage() {
                             The 4Under Club guarantees fast and fun rounds of golf by solving the two problems that slow down pace of play.
                         </p>
                         <p className="text-lg font-medium text-green-600 text-left">
-                            1. It only takes one slow golfer to bottleneck an entire course.<br></br>
+                            1. It only takes one slow golfer to bottleneck an entire course.<br></br><br></br>
                             2. Blow up holes ruin scores, attitudes and pace of play.
                         </p>
                     </div>
@@ -115,9 +115,9 @@ export default function HomePage() {
             <div className="px-4 py-4">
                 <div className="max-w-sm mx-auto">
                     <div className="flex flex-col items-center text-center space-y-2 mb-4">
-                        <h2 className="text-xl font-bold tracking-tighter">How It Works</h2>
+                        <h2 className="text-xl font-bold tracking-tighter">Club Rules</h2>
                         <p className="text-base text-gray-700">
-                            Golf 4Points makes scoring simple and rewarding
+                            The only requirement to join the 4Unders is that you agree to play and support our mission to play 18 holes of golf in under 4 hours.
                         </p>
                     </div>
 
@@ -127,9 +127,9 @@ export default function HomePage() {
                                 <span className="text-green-700 font-bold text-base">1</span>
                             </div>
                             <div className="flex flex-col items-start text-left">
-                                <h3 className="text-sm font-bold">Select Course & Tees</h3>
+                                <h3 className="text-sm font-bold">Our Mission is Our Responsibility</h3>
                                 <p className="text-xs text-gray-700">
-                                    Choose your course and enter GHIN or average score
+                                    Enforcement of pace of play is up to members, not marshals or other players.  If we all have the same mission, there will be no bottlenecks.
                                 </p>
                             </div>
                         </div>
@@ -139,9 +139,9 @@ export default function HomePage() {
                                 <span className="text-blue-700 font-bold text-base">2</span>
                             </div>
                             <div className="flex flex-col items-start text-left">
-                                <h3 className="text-sm font-bold">Tap to Score Each Hole</h3>
+                                <h3 className="text-sm font-bold">Ready Golf Is Respectful Golf</h3>
                                 <p className="text-xs text-gray-700">
-                                    Simple tapping interface for quick scoring
+                                    Walking to an open tee box while a member is still lining up a putt for bogey is expected and polite.
                                 </p>
                             </div>
                         </div>
@@ -151,9 +151,9 @@ export default function HomePage() {
                                 <span className="text-red-700 font-bold text-base">3</span>
                             </div>
                             <div className="flex flex-col items-start text-left">
-                                <h3 className="text-sm font-bold">Earn Points</h3>
+                                <h3 className="text-sm font-bold">Fast and Fun Golf is NOT Speed Golf</h3>
                                 <p className="text-xs text-gray-700">
-                                    Points based on performance vs. your target
+                                    Playing 18 holes of golf in under 4 hours is not Speed Golf.  There is plenty of time for talking on tee boxes, checking on side bets and getting another beverage.
                                 </p>
                             </div>
                         </div>
@@ -163,9 +163,9 @@ export default function HomePage() {
                                 <span className="text-purple-700 font-bold text-base">4</span>
                             </div>
                             <div className="flex flex-col items-start text-left">
-                                <h3 className="text-sm font-bold">Compete & Win</h3>
+                                <h3 className="text-sm font-bold">We Golf For Points, Not Strokes</h3>
                                 <p className="text-xs text-gray-700">
-                                    Climb leaderboards and earn rewards
+                                    For almost 200 years, golf has used a points based, not stroke play, scoring method that is fast and fun.  We play a modified version of this "Stableford" scoring system.  And we own the game.
                                 </p>
                             </div>
                         </div>
