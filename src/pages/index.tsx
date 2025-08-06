@@ -115,13 +115,7 @@ export default function HomePage() {
                             >
                                 TAP TO START GAME
                             </Button>
-                            <Button
-                                onClick={() => router.push('/game')}
-                                variant="outline"
-                                className="w-full text-lg py-3"
-                            >
-                                Member Login
-                            </Button>
+                         
                         </div>
                     </Link>
 
