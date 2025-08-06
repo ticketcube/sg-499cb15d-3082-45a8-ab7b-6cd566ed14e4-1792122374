@@ -224,7 +224,14 @@ export default function HomePage() {
             <div className="px-4 py-4">
                 <div className="max-w-sm mx-auto">
                     <div className="flex flex-col items-center text-center space-y-2 mb-4">
-                        <h2 className="text-xl font-bold tracking-tighter">Club Game</h2>
+                        <div className="relative w-24 h-24 mx-auto">
+                            <Image
+                                src="/4points-m91nnzka.png"
+                                alt="4Under Club Logo"
+                                fill
+                                className="object-contain"
+                            />
+                        </div> 
                         <p className="text-base text-gray-700">
                            We Golf 4 Points Not Strokes
                         </p>
