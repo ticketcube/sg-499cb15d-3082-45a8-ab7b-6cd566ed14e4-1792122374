@@ -89,7 +89,7 @@ export default function HomePage() {
                             <Button
                                 variant="outline"
                                 size="sm"
-                                className="flex-1 text-sm text-white bg-green-600 hover:bg-green-700"
+                                className="bg-green-600 text-white rounded-2xl px-4 py-2 shadow-lg hover:shadow-xl transition-shadow cursor-pointer hover:bg-red-700 inline-block"
                                 onClick={() => setCurrentView('how-it-works')}
                             >
                                 Club Rules
