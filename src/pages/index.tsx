@@ -189,9 +189,9 @@ export default function HomePage() {
                                     variant="outline"
                                     size="sm"
                                     className="flex-1 text-sm text-white bg-green-600 hover:bg-green-700"
-                                    onClick={() => setCurrentView('how-it-works')}
+                                    onClick={() => setCurrentView('home')}
                                 >
-                                    Club Rules
+                                    Club Mission
                                 </Button>
                                 <Button
                                     variant="outline"
