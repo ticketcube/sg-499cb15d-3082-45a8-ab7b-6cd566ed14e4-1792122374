@@ -68,7 +68,7 @@ export default function HomePage() {
                         <Button
                             variant="outline"
                             size="sm"
-                            className="flex-1 text-sm bg-green-600 hover:bg-green-700"
+                            className="flex-1 text-sm text-white bg-green-600 hover:bg-green-700"
                             onClick={() => setCurrentView('how-it-works')}
                         >
                             Club Rules
