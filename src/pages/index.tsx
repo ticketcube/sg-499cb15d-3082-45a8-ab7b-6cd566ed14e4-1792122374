@@ -271,7 +271,7 @@ export default function HomePage() {
                                 variant="outline"
                                 size="sm"
                                 className="flex-1 text-sm text-white bg-green-600 hover:bg-green-700"
-                                onClick={() => setCurrentView('club-rules')}
+                                onClick={() => setCurrentView('game-rules')}
                             >
                                 Club Rules
                             </Button>
