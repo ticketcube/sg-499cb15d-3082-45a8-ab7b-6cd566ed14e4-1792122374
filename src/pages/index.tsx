@@ -84,7 +84,7 @@ export default function HomePage() {
                     </div>
 
 
-                    <div className="flex gap-3 w-full max-w-xs">
+                    <div className="flex gap-3 w-full max-w-xs mb-4">
                         <Button
                             variant="outline"
                             size="sm"
@@ -102,9 +102,6 @@ export default function HomePage() {
                             Club Game
                         </Button>
                     </div>
-
-
-
                     <Link href="/game">
                         <div className="bg-red-600 text-white rounded-2xl px-4 py-2 shadow-lg hover:shadow-xl transition-shadow cursor-pointer hover:bg-red-700 inline-block">
                             <h1 className="text-xl font-bold">
