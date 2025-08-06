@@ -85,7 +85,7 @@ export default function MonthlyLeaderboard() {
           <div className="text-center mb-6">
                   <div className="relative w-24 h-24 mx-auto">
                       <Image
-                          src="/4points-m91nnzka.png"
+                          src="public/4points-m91nnzka.png"
                           alt="4Under Club Logo"
                           fill
                           className="object-contain"
