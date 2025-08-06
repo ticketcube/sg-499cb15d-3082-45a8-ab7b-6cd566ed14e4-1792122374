@@ -122,6 +122,8 @@ export default function HomePage() {
 
     const renderHowItWorksView = () => (
         <div className="bg-gray-50 flex flex-col h-full">
+            <section className='py-8 px-4 flex-grow'>
+
             <div className="px-4 py-4">
                 <div className="max-w-sm mx-auto">
                     <div className="flex flex-col items-center text-center space-y-2 mb-4">
@@ -211,6 +213,7 @@ export default function HomePage() {
                 </div>
             </div>
         </div>
+        </section>
     );
 
     const renderGameRulesView = () => (
