@@ -40,10 +40,15 @@ export default function HomePage() {
     const renderHomeView = () => (
         <div className="bg-white flex flex-col h-full">
             <section className='py-8 px-4 flex-grow'>
-
-
-
                 <div className='flex flex-col items-center text-center space-y-6 max-w-sm mx-auto'>
+                    <div className="relative w-24 h-24 mx-auto">
+                        <Image
+                            src="/full-4unders-logo-mddg489f.png"
+                            alt="4Under Club Logo"
+                            fill
+                            className="object-contain"
+                        />
+                    </div>
 
                     <div className="space-y-4">
                         <h1 className="text-2xl font-bold text-green-700">
@@ -63,10 +68,10 @@ export default function HomePage() {
                         <Button
                             variant="outline"
                             size="sm"
-                            className="flex-1 text-sm text-gray-900 font-medium"
+                            className="flex-1 text-sm bg-green-600 hover:bg-green-700"
                             onClick={() => setCurrentView('how-it-works')}
                         >
-                            Our Secret
+                            Club Rules
                         </Button>
                         <Button
                             variant="outline"
@@ -74,7 +79,7 @@ export default function HomePage() {
                             className="flex-1 text-sm text-gray-900 font-medium"
                             onClick={() => setCurrentView('game-rules')}
                         >
-                            Our Game
+                            Club Game
                         </Button>
                     </div>
 
