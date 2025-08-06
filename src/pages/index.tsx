@@ -259,7 +259,29 @@ export default function HomePage() {
                         <div className="bg-gray-50 p-3 rounded-xl">
                             <h3 className="text-base font-bold mb-2">We Compete Against Our Targets</h3>
 
+                            <div className="flex items-center space-x-3 bg-white p-3 rounded-xl shadow-sm">
+                                <div className="p-2 bg-green-100 rounded-full min-w-fit">
+                                    <span className="text-green-700 font-bold text-base">1</span>
+                                </div>
+                                <div className="flex flex-col items-start text-left">
+                                    <h3 className="text-sm font-bold">Your 4Points Target</h3>
+                                    <p className="text-xs text-gray-700">
+                                       Your 4Points target is calcuated by either (a) average of your last 3 4Points Total Score or (b) 36 - Your GHIN Handicap.
+                                    </p>
+                                </div>
+                            </div>
 
+                            <div className="flex items-center space-x-3 bg-white p-3 rounded-xl shadow-sm">
+                                <div className="p-2 bg-green-100 rounded-full min-w-fit">
+                                    <span className="text-green-700 font-bold text-base">2</span>
+                                </div>
+                                <div className="flex flex-col items-start text-left">
+                                    <h3 className="text-sm font-bold">Winner Is Golfer Who Plays Their Best </h3>
+                                    <p className="text-xs text-gray-700">
+                                       Your Total Points scored minus your 4Poinst Target is your 4points Score.  Highest Score Wins.
+                                    </p>
+                                </div>
+                            </div>
 
 
                             
