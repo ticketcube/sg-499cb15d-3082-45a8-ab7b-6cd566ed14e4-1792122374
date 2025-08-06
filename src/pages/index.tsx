@@ -57,7 +57,7 @@ export default function HomePage() {
                         <p className="text-lg text-gray-700">
                             The 4Under Club guarantees fast and fun rounds of golf by solving the two problems that slow down pace of play.
                         </p>
-                        <p className="text-lg font-medium text-green-600 text-left">
+                        <p className="text-lg justify-between p-2 font-medium text-green-600 text-left">
                             1. It only takes one slow golfer to bottleneck an entire course.<br></br><br></br>
                             2. Blow up holes ruin scores, attitudes and pace of play.
                         </p>
