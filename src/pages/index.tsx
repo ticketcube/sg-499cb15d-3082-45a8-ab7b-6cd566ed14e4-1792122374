@@ -214,8 +214,7 @@ export default function HomePage() {
                 </div>
             </div>
         </div>
-    </div >
-  );
+    );
 
     const renderGameRulesView = () => (
         <div className="bg-white flex flex-col h-full">
