@@ -62,7 +62,7 @@ export default function MonthlyLeaderboard() {
         <div className="p-4 flex flex-col items-center justify-center min-h-[60vh]">
           <Card className="max-w-md mx-auto">
             <CardHeader className="text-center">
-              <CardTitle>Monthly Leaderboard</CardTitle>
+              <CardTitle>4Points Leaderboard</CardTitle>
               <p className="text-muted-foreground">Sign in to see your rank</p>
             </CardHeader>
             <CardContent className="space-y-4">
