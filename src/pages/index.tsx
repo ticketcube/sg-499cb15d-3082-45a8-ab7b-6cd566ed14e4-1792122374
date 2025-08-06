@@ -192,24 +192,30 @@ export default function HomePage() {
                         </div>
                     </div>
 
-                    <div className="flex flex-col w-full gap-3">
-                        <Link href="/game" className="w-full">
-                            <Button size="lg" className="w-full h-12 text-base rounded-xl bg-green-600 hover:bg-green-700">
-                                Start Game
-                            </Button>
-                        </Link>
+                    <div className="flex gap-3 w-full max-w-xs">
                         <Button
-                            size="lg"
-                            className="w-full h-12 text-base rounded-xl bg-green-600 hover:bg-green-700"
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 text-sm text-white bg-green-600 hover:bg-green-700"
+                            onClick={() => setCurrentView('how-it-works')}
+                        >
+                            Club Rules
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 text-sm text-white bg-green-600 hover:bg-green-700"
                             onClick={() => setCurrentView('game-rules')}
                         >
-                            Game Rules
+                            Club Game
                         </Button>
                     </div>
+
                 </div>
             </div>
         </div>
-    );
+    </div >
+  );
 
     const renderGameRulesView = () => (
         <div className="bg-white flex flex-col h-full">
@@ -250,18 +256,22 @@ export default function HomePage() {
                         </div>
                     </div>
 
-                    <div className="flex flex-col w-full gap-3">
-                        <Link href="/game" className="w-full">
-                            <Button size="lg" className="w-full h-12 text-base rounded-xl bg-green-600 hover:bg-green-700">
-                                Start Game
-                            </Button>
-                        </Link>
+                    <div className="flex gap-3 w-full max-w-xs">
                         <Button
-                            size="lg"
-                            className="w-full h-12 text-base rounded-xl bg-green-600 hover:bg-green-700"
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 text-sm text-white bg-green-600 hover:bg-green-700"
                             onClick={() => setCurrentView('how-it-works')}
                         >
-                            How It Works
+                            Club Rules
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 text-sm text-white bg-green-600 hover:bg-green-700"
+                            onClick={() => setCurrentView('game-rules')}
+                        >
+                            Club Game
                         </Button>
                     </div>
                 </div>
