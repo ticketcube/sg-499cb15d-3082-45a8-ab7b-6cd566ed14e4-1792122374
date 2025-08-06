@@ -57,16 +57,13 @@ export default function HomePage() {
                         <p className="text-lg text-gray-700">
                             The 4Under Club guarantees fast and fun rounds of golf by solving the two problems that slow down pace of play.
                         </p>
-                        <p className="text-lg font-medium text-green-600 text-left">
-                            1. It only takes one slow golfer to bottleneck an entire course.<br></br><br></br>
-                            2. Blow up holes ruin scores, attitudes and pace of play.
-                        </p>
+
                         <div className="flex items-center space-x-3 bg-white p-3 rounded-xl shadow-sm">
                             <div className="p-2 bg-green-100 rounded-full min-w-fit">
                                 <span className="text-green-700 font-bold text-base">1</span>
                             </div>
                             <div className="flex flex-col items-start text-left">
-                                <h3 className="text-sm font-bold">All It Takes Is One </h3>
+                                <h3 className="text-sm font-bold">All It Takes Is One Slow Golfer</h3>
                                 <p className="text-xs text-gray-700">
                                     It only takes one slow golfer to bottleneck an entire course.  If we all have the same mission, there will be no bottlenecks.
                                 </p>
@@ -74,53 +71,66 @@ export default function HomePage() {
                         </div>
 
                     </div>
-
-
-                    <div className="flex gap-3 w-full max-w-xs">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="flex-1 text-sm text-white bg-green-600 hover:bg-green-700"
-                            onClick={() => setCurrentView('how-it-works')}
-                        >
-                            Club Rules
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="flex-1 text-sm text-white bg-green-600 hover:bg-green-700"
-                            onClick={() => setCurrentView('game-rules')}
-                        >
-                            Club Game
-                        </Button>
+                    <div className="flex items-center space-x-3 bg-white p-3 rounded-xl shadow-sm">
+                        <div className="p-2 bg-green-100 rounded-full min-w-fit">
+                            <span className="text-green-700 font-bold text-base">2</span>
+                        </div>
+                        <div className="flex flex-col items-start text-left">
+                            <h3 className="text-sm font-bold">All It Takes Is One Bad Hole </h3>
+                            <p className="text-xs text-gray-700">
+                                Blow up holes ruin scores, attitudes and pace of play.
+                            </p>
+                        </div>
                     </div>
 
-
-
-                    <Link href="/game">
-                        <div className='bg-white border-2 border-gray-200 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow cursor-pointer hover:border-green-300'>
-                            <div className='flex flex-col items-center space-y-4'>
-                                <div className='relative h-16 w-auto'>
-                                    <Image
-                                        src='/4points-m91nnzka.png'
-                                        alt='4Points Logo'
-                                        width={64}
-                                        height={64}
-                                        className='h-full w-auto'
-                                        priority
-                                    />
-                                </div>
-                                <h1 className="text-xl font-bold text-red-600">
-                                    Tap To Start Game!
-                                </h1>
-                            </div>
-                        </div>
-                    </Link>
-
                 </div>
-            </section>
+
+
+                <div className="flex gap-3 w-full max-w-xs">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 text-sm text-white bg-green-600 hover:bg-green-700"
+                        onClick={() => setCurrentView('how-it-works')}
+                    >
+                        Club Rules
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 text-sm text-white bg-green-600 hover:bg-green-700"
+                        onClick={() => setCurrentView('game-rules')}
+                    >
+                        Club Game
+                    </Button>
+                </div>
+
+
+
+                <Link href="/game">
+                    <div className='bg-white border-2 border-gray-200 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow cursor-pointer hover:border-green-300'>
+                        <div className='flex flex-col items-center space-y-4'>
+                            <div className='relative h-16 w-auto'>
+                                <Image
+                                    src='/4points-m91nnzka.png'
+                                    alt='4Points Logo'
+                                    width={64}
+                                    height={64}
+                                    className='h-full w-auto'
+                                    priority
+                                />
+                            </div>
+                            <h1 className="text-xl font-bold text-red-600">
+                                Tap To Start Game!
+                            </h1>
+                        </div>
+                    </div>
+                </Link>
+
         </div>
-    );
+      </section >
+    </div >
+  );
 
     const renderHowItWorksView = () => (
         <div className="bg-gray-50 flex flex-col h-full">
