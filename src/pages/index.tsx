@@ -129,7 +129,7 @@ export default function HomePage() {
                         <div className="flex flex-col items-center text-center space-y-2 mb-4">
                             <h2 className="text-xl font-bold tracking-tighter">Club Rules</h2>
                             <p className="text-base text-gray-700">
-                                The only requirement to join the 4Unders is that you agree to play and support our mission to play 18 holes of golf in under 4 hours.
+                                Members play 18 holes of golf in under 4 hours and under 2 hours for 9 holes.
                             </p>
                         </div>
 
