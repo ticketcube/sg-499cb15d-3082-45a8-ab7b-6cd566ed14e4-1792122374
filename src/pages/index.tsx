@@ -107,7 +107,7 @@ export default function HomePage() {
 
 
                     <Link href="/game">
-                        <div className='bg-white border-2 border-gray-200 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow cursor-pointer hover:border-green-300'>
+                        <div className='bg-white border-2 border-gray-200 rounded-2xl p-2 shadow-lg hover:shadow-xl transition-shadow cursor-pointer hover:border-green-300'>
                             <div className='flex flex-col items-center space-y-4'>
                                 <div className='relative h-16 w-auto'>
                                 </div>
