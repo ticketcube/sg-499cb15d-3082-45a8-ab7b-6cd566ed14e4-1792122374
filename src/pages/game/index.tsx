@@ -366,14 +366,7 @@ export default function GamePage() {
     setGhinIndex("");
     setAverageScore("");
   };
-    <div className="relative w-24 h-24 mx-auto">
-        <Image
-            src="/full-4unders-logo-mddg489f.png"
-            alt="4Under Club Logo"
-            fill
-            className="object-contain"
-        />
-    </div>
+  
   const renderSetupUI = () => (
     <div className="p-4 pt-6">
       <Card className="max-w-md mx-auto w-full">
