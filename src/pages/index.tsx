@@ -51,13 +51,13 @@ export default function HomePage() {
                     </div>
 
                     <div className="space-y-4">
-                        <h1 className="text-2xl font-bold text-green-700">
+                        <h1 className="text-2xl font-bold text-green-700 text-center">
                             Club Misson
                         </h1>
                         <p className="text-lg text-gray-700">
                             The 4Under Club guarantees fast and fun rounds of golf by solving the two problems that slow down pace of play.
                         </p>
-                        <p className="text-lg font-medium text-green-600">
+                        <p className="text-lg font-medium text-green-600 text-left">
                             1. It only takes one slow golfer to bottleneck an entire course.<br></br>
                             2. Blow up holes ruin scores, attitudes and pace of play.
                         </p>
@@ -76,20 +76,14 @@ export default function HomePage() {
                         <Button
                             variant="outline"
                             size="sm"
-                            className="flex-1 text-sm text-gray-900 font-medium"
+                            className="flex-1 text-sm text-white bg-green-600 hover:bg-green-700"
                             onClick={() => setCurrentView('game-rules')}
                         >
                             Club Game
                         </Button>
                     </div>
 
-                    <div className="w-full max-w-xs">
-                        <Link href="/leaderboard/monthly" className="w-full">
-                            <Button size="sm" className="w-full text-sm rounded-lg bg-green-600 hover:bg-green-700">
-                                View Leaderboards
-                            </Button>
-                        </Link>
-                    </div>
+
 
                     <Link href="/game">
                         <div className='bg-white border-2 border-gray-200 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow cursor-pointer hover:border-green-300'>
@@ -105,15 +99,12 @@ export default function HomePage() {
                                     />
                                 </div>
                                 <h1 className="text-xl font-bold text-red-600">
-                                    Tap To Play!
+                                    Tap To Start Game!
                                 </h1>
                             </div>
                         </div>
                     </Link>
 
-                    <p className="text-base text-gray-600 font-medium">
-                        Tap the Square to Start Playing Now!
-                    </p>
                 </div>
             </section>
         </div>
