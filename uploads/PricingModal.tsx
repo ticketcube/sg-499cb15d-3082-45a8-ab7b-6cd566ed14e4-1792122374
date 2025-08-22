@@ -41,97 +41,7 @@ export function PricingModal({ isOpen, onClose, cubeId }: PricingModalProps) {
     const { user } = useAuth();
     const router = useRouter();
 
-    const handleSelectTier = async (tier: (typeof tiers)[0]) => {
-        if (!cubeId || !user) {
-            toast({
-                variant: "destructive",
-                title: "Error",
-                description: "You must be logged in and have a cube selected.",
-            });
-            return;
-        }
-
-        setIsLoading(tier.name);
-
-        // Free Tier Logic
-        if (!tier.priceId) {
-            try {
-                await ticketCubeService.secureTicketCube(cubeId, user.auth_id);
-                toast({
-                    title: "Cube Secured!",
-                    description: "Your TicketCube has been secured with the Free plan.",
-                });
-                onClose();
-                router.push('/my-cubes'); // Changed from '/ticketcube' to '/my-cubes'
-            } catch (error) {
-                toast({
-                    variant: "destructive",
-                    title: "Error",
-                    description: "Failed to secure your cube. Please try again.",
-                });
-            } finally {
-                setIsLoading(null);
-            }
-            return;
-        }
-
-        // Paid Tier Logic
-        try {
-            console.log('Attempting to create Stripe session:', {
-                priceId: tier.priceId,
-                cubeId: cubeId,
-                userId: user.auth_id
-            });
-
-            const response = await fetch('/api/stripe/checkout-session', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    priceId: tier.priceId,
-                    cubeId: cubeId,
-                    userId: user.auth_id, // Use auth_id instead of numeric id
-                }),
-            });
-
-            console.log('Raw response:', {
-                status: response.status,
-                statusText: response.statusText,
-                headers: Object.fromEntries(response.headers.entries())
-            });
-
-            // Check if response is actually JSON before trying to parse
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                const textResponse = await response.text();
-                console.error('Non-JSON response received:', textResponse);
-                throw new Error(`Server returned ${response.status}: ${response.statusText}. Expected JSON but got ${contentType}`);
-            }
-
-            const data = await response.json();
-            console.log('Stripe API response:', { status: response.status, data });
-
-            if (!response.ok) {
-                console.error('Stripe checkout session failed:', data);
-                throw new Error(data.error || 'Something went wrong');
-            }
-
-            console.log('Redirecting to Stripe checkout:', data.url);
-            // Redirect to Stripe Checkout
-            window.location.href = data.url;
-
-        } catch (error) {
-            console.error('Payment error:', error);
-            const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
-            toast({
-                variant: "destructive",
-                title: "Payment Error",
-                description: `Failed to initiate payment. ${errorMessage}`,
-            });
-            setIsLoading(null);
-        }
-    };
+   
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -139,7 +49,7 @@ export function PricingModal({ isOpen, onClose, cubeId }: PricingModalProps) {
                 <DialogHeader>
                     <DialogTitle className="text-2xl text-center">Secure Your TicketCube™</DialogTitle>
                     <DialogDescription className="text-center">
-                        Choose a plan to secure your cube and unlock its full potential.
+                       Current Games Available For Booking
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-8">
