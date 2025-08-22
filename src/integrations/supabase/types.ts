@@ -7,7 +7,7 @@ export type Json =
     | Json[]
 
 export type Database = {
-    // Allows to automatically instanciate createClient with right options
+    // Allows to automatically instantiate createClient with right options
     // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
     __InternalSupabase: {
         PostgrestVersion: "12.2.3 (519615d)"
@@ -22,10 +22,10 @@ export type Database = {
         Functions: {
             graphql: {
                 Args: {
+                    extensions?: Json
                     operationName?: string
                     query?: string
                     variables?: Json
-                    extensions?: Json
                 }
                 Returns: Json
             }
@@ -242,15 +242,7 @@ export type Database = {
                     score?: number
                     user_id?: string
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "game_scores_user_id_fkey"
-                        columns: ["user_id"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["id"]
-                    },
-                ]
+                Relationships: []
             }
             games: {
                 Row: {
@@ -438,18 +430,21 @@ export type Database = {
                     created_at: string | null
                     display_name: string | null
                     id: string
+                    member_cat: string | null
                     updated_at: string | null
                 }
                 Insert: {
                     created_at?: string | null
                     display_name?: string | null
                     id: string
+                    member_cat?: string | null
                     updated_at?: string | null
                 }
                 Update: {
                     created_at?: string | null
                     display_name?: string | null
                     id?: string
+                    member_cat?: string | null
                     updated_at?: string | null
                 }
                 Relationships: []
