@@ -35,9 +35,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log('API Route - Received request:', { priceId, cubeId, userId });
 
     // Validate required parameters
-    if (!priceId || !cubeId || !userId) {
-      console.error('Missing parameters:', { priceId: !!priceId, cubeId: !!cubeId, userId: !!userId });
-      return res.status(400).json({ error: 'Missing required parameters: priceId, cubeId, and userId are required.' });
+    if (!priceId || !userId) {
+      console.error('Missing parameters:', { priceId: !!priceId, userId: !!userId });
+      return res.status(400).json({ error: 'Missing required parameters: priceId and userId are required.' });
     }
 
     // Validate environment variables
@@ -51,26 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(500).json({ error: 'Database not configured properly' });
     }
 
-    console.log('Checking cube ownership:', { cubeId, userId });
-    
-    const { data: cubeData, error: cubeError } = await supabaseAdmin
-      .from('ticketcubes')
-      .select('id, user_id, title')
-      .eq('id', cubeId)
-      .eq('user_id', userId)
-      .single();
-
-    if (cubeError) {
-      console.error('Database error when checking cube ownership:', cubeError);
-      return res.status(500).json({ error: 'Database error: ' + cubeError.message });
-    }
-
-    if (!cubeData) {
-      console.error('Cube not found or user mismatch:', { cubeId, userId });
-      return res.status(404).json({ error: 'Cube not found or you do not have permission to access it.' });
-    }
-
-    console.log('Cube ownership verified:', cubeData);
+   
 
     // Get the domain from environment or fallback to localhost for development
     const domain = process.env.NEXT_PUBLIC_APP_URL || 
@@ -92,9 +73,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       success_url: `${domain}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${domain}/payment/cancel`,
       metadata: {
-        cube_id: cubeId,
         user_id: userId,
-        cube_title: cubeData.title || 'TicketCube'
       },
     });
 
