@@ -40,7 +40,7 @@ export default function PaymentSuccessPage() {
                             See You on August 31!
                         </p>
                        
-                        <Link href="/my-cubes" passHref>
+                        <Link href="/profile" passHref>
                             <Button className="w-full">
                                 Go to My Profile
                             </Button>
