@@ -22,44 +22,18 @@ interface PricingModalProps {
 }
 
 // IMPORTANT: Replace these with your actual Price IDs from your Stripe dashboard
-const PRO_PRICE_ID = process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID || 'price_...';
-const COLLECTOR_PRICE_ID = process.env.NEXT_PUBLIC_STRIPE_COLLECTOR_PRICE_ID || 'price_...';
+const AUG31_4U_PRICE_ID = process.env.NEXT_PUBLIC_STRIPE_AUG31_4U_PRICE_ID || 'price_...';
 
 const tiers = [
     {
-        name: "Free",
-        price: "$0",
-        description: "Secure your cube as-is.",
+        name: "August 31",
+        price: "$35",
+        description: "4Unders Club",
         features: [
-            "Secures existing cube design",
-            "No future updates enabled",
-            "No engagement features",
+            "Fun, Fast and Fair Golf
         ],
         priceId: null,
-    },
-    {
-        name: "Pro",
-        price: "$25",
-        description: "For those who want to evolve their cube.",
-        features: [
-            "Secures existing cube",
-            "Allows 3 cube updates",
-            "Gift 1 copy to a friend",
-        ],
-        priceId: PRO_PRICE_ID,
-    },
-    {
-        name: "Collector",
-        price: "$50",
-        description: "The ultimate cube experience.",
-        features: [
-            "Secures existing cube",
-            "Unlimited cube updates",
-            "Gift up to 5 copies",
-            "Minted to Sui Blockchain as TCUBE",
-        ],
-        priceId: COLLECTOR_PRICE_ID,
-    },
+    }
 ];
 
 export function PricingModal({ isOpen, onClose, cubeId }: PricingModalProps) {
