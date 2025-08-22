@@ -13,7 +13,7 @@ export default function PaymentSuccessPage() {
     const { session_id } = router.query;
 
     useEffect(() => {
-        // Redirect to cubes page after 3 seconds
+        // Redirect to games page after 3 seconds
         const timer = setTimeout(() => {
             router.push('/my-cubes'); // Changed from '/profile' to '/my-cubes'
         }, 3000);
@@ -37,14 +37,12 @@ export default function PaymentSuccessPage() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <p className="text-muted-foreground">
-                            Thank you for your purchase! Your TicketCube has been upgraded. You'll be able to see the new features on your profile page.
+                            See You on August 31!
                         </p>
-                        <p className="text-sm text-muted-foreground">
-                            A confirmation has been sent to your email. Your secure cube is waiting for you!
-                        </p>
+                       
                         <Link href="/my-cubes" passHref>
                             <Button className="w-full">
-                                Go to My Cubes
+                                Go to My Profile
                             </Button>
                         </Link>
                     </CardContent>
