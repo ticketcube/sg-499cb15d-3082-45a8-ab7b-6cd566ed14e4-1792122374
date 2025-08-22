@@ -24,7 +24,7 @@ export default function PaymentSuccessPage() {
     return (
         <>
             <Head>
-                <title>Payment Successful - OTWChart</title>
+                <title>Payment Successful</title>
             </Head>
             <Navbar />
             <main className="container mx-auto flex min-h-[80vh] items-center justify-center px-4">
