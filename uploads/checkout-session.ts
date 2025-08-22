@@ -54,11 +54,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
    
 
     // Get the domain from environment or fallback to localhost for development
-    const domain = process.env.NEXT_PUBLIC_APP_URL || 
-                   process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 
-                   'http://localhost:3000';
-    
-    console.log('Creating Stripe session with domain:', domain);
+      const domain = process.env.NEXT_PUBLIC_APP_URL
+          || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+
 
     // Create a Checkout Session
     const session = await stripe.checkout.sessions.create({
