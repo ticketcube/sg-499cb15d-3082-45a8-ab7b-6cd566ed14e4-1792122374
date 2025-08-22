@@ -10,7 +10,7 @@ export default function PaymentCancelPage() {
     return (
         <>
             <Head>
-                <title>Payment Canceled - OTWChart</title>
+                <title>Payment Canceled </title>
             </Head>
             <Navbar />
             <main className="container mx-auto flex min-h-[80vh] items-center justify-center px-4">
@@ -26,12 +26,12 @@ export default function PaymentCancelPage() {
                             Your payment process was canceled. You have not been charged.
                         </p>
                         <CardDescription>
-                            If you'd like to try again, you can return to the cube creation page and select a plan.
+                           
                         </CardDescription>
                         <div className="flex gap-4 pt-2">
-                            <Link href="/ticketcube" passHref className="flex-1">
+                            <Link href="/profile" passHref className="flex-1">
                                 <Button variant="outline" className="w-full">
-                                    Back to Cube Creator
+                                    Back to profile
                                 </Button>
                             </Link>
                             <Link href="/" passHref className="flex-1">
