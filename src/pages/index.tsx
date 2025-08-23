@@ -1,4 +1,5 @@
 
+        
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { Button } from "@/components/ui/button";
@@ -42,7 +43,7 @@ const surveyQuestions: SurveyQuestion[] = [
 
 export default function HomePage() {
     const router = useRouter();
-    const { user, profile, loading } = useAuth();
+    const { user, profile, loading, register } = useAuth();
     const [currentView, setCurrentView] = useState<ViewMode>('home');
     const [price, setPrice] = useState<StripePrice | null>(null);
     const [priceLoading, setPriceLoading] = useState(true);
@@ -171,7 +172,6 @@ export default function HomePage() {
         setRegistrationLoading(true);
         
         try {
-            const { register } = useAuth();
             await register(email, password, displayName);
             toast({
                 title: "Success!",
