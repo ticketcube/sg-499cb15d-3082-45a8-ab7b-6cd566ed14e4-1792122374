@@ -548,6 +548,38 @@ export type Database = {
                 }
                 Relationships: []
             }
+            waitlist: {
+                Row: {
+                    avail_1: string
+                    avail_2: string | null
+                    avail_3: string | null
+                    created_at: string
+                    id: string
+                }
+                Insert: {
+                    avail_1: string
+                    avail_2?: string | null
+                    avail_3?: string | null
+                    created_at?: string
+                    id: string
+                }
+                Update: {
+                    avail_1?: string
+                    avail_2?: string | null
+                    avail_3?: string | null
+                    created_at?: string
+                    id?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "waitlist_id_fkey"
+                        columns: ["id"]
+                        isOneToOne: true
+                        referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
         }
         Views: {
             [_ in never]: never
