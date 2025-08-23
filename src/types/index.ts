@@ -73,14 +73,11 @@ export interface Profile {
 
 export interface StripePrice {
   id: string;
-  stripe_price_id: string;
+  price_id: string;
   product_name: string;
-  unit_amount: number;
-  currency: string;
   member_cat: string;
   active: boolean;
   created_at: string;
-  updated_at: string;
 }
 
 export type Game = Database["public"]["Tables"]["games"]["Row"] & {
