@@ -3,19 +3,11 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { supabase } from "@/integrations/supabase/client";
 import { Session, User } from "@supabase/supabase-js";
 import { signUp as supabaseSignUp, signIn as supabaseSignIn, signOut as supabaseSignOut } from "@/services/supabase";
-
-interface UserProfile {
-  id: string;
-  display_name: string | null;
-  member_cat: string | null;
-  created_at: string | null;
-  updated_at: string | null;
-}
+import { Profile } from "@/types";
 
 interface AuthContextType {
   user: User | null;
-    profile: UserProfile | null;
-    member_cat: UserProfile | null;
+  profile: Profile | null;
   session: Session | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<{ user: User | null; session: Session | null; }>;
@@ -26,8 +18,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
-    profile: null,
-  member_cat: null,
+  profile: null,
   session: null,
   loading: true,
   login: async () => ({ user: null, session: null }),
@@ -38,7 +29,7 @@ const AuthContext = createContext<AuthContextType>({
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -55,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return null;
       }
 
-      return data as UserProfile;
+      return data as Profile;
     } catch (error) {
       console.error('Error in fetchUserProfile:', error);
       return null;
