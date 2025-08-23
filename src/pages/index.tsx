@@ -202,11 +202,57 @@ export default function HomePage() {
 
     const accessLevel = getUserAccessLevel();
 
+    const [paymentLoading, setPaymentLoading] = useState(false);
+
     const handlePayment = async () => {
-        if (!user || !price) return;
-        // Payment integration will be handled by existing Stripe API
-        // For now, this is a placeholder - actual implementation would create checkout session
-        console.log("Payment integration needed here");
+        if (!user || !price) {
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: "Please ensure you're logged in and try again."
+            });
+            return;
+        }
+
+        setPaymentLoading(true);
+        
+        try {
+            // Call the checkout session API with the price from database
+            const response = await fetch('/api/stripe/checkout-session', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    priceId: price.price_id,
+                    userId: user.id
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to create checkout session');
+            }
+
+            const { url } = await response.json();
+            
+            if (!url) {
+                throw new Error('No checkout URL received');
+            }
+
+            // Redirect to Stripe Checkout
+            window.location.href = url;
+            
+        } catch (error) {
+            console.error('Payment error:', error);
+            toast({
+                variant: "destructive",
+                title: "Payment Error",
+                description: error instanceof Error ? error.message : "Unable to process payment. Please try again."
+            });
+        } finally {
+            setPaymentLoading(false);
+        }
     };
 
     const handleWaitlist = () => {
@@ -480,9 +526,12 @@ export default function HomePage() {
                             ) : price ? (
                                 <Button
                                     onClick={handlePayment}
-                                    className="w-full bg-green-600 hover:bg-green-700 text-white rounded-2xl px-4 py-3 shadow-lg hover:shadow-xl transition-shadow"
+                                    disabled={paymentLoading}
+                                    className="w-full bg-green-600 hover:bg-green-700 text-white rounded-2xl px-4 py-3 shadow-lg hover:shadow-xl transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    <span className="text-lg font-bold">Join {price.product_name}</span>
+                                    <span className="text-lg font-bold">
+                                        {paymentLoading ? "Processing..." : `Join ${price.product_name}`}
+                                    </span>
                                 </Button>
                             ) : null}
 
