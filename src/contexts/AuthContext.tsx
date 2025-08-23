@@ -14,7 +14,8 @@ interface UserProfile {
 
 interface AuthContextType {
   user: User | null;
-  profile: UserProfile | null;
+    profile: UserProfile | null;
+    member_cat: UserProfile | null;
   session: Session | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<{ user: User | null; session: Session | null; }>;
@@ -25,7 +26,8 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
-  profile: null,
+    profile: null,
+  member_cat: null,
   session: null,
   loading: true,
   login: async () => ({ user: null, session: null }),
