@@ -353,6 +353,13 @@ export default function HomePage() {
                                 >
                                     Let's Get Started
                                 </Button>
+                                <Button
+                                    onClick={() => router.push('/auth/login')}
+                                    variant="outline"
+                                    className="w-full text-lg py-3"
+                                >
+                                    Member Login
+                                </Button>
                             </div>
                         </CardContent>
                     </Card>
