@@ -13,7 +13,7 @@ const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 // Create admin Supabase client with service role key for bypassing RLS
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, // Note: In production, use service role key
+    process.env.SUPABASE_SERVICE_ROLE_KEY!, // Note: In production, use service role key
   {
     auth: {
       autoRefreshToken: false,
