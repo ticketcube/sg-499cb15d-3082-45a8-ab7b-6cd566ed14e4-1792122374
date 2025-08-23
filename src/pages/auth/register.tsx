@@ -48,7 +48,7 @@ export default function RegisterPage() {
         description: "Account created successfully! You can now submit scores and view leaderboards."
       });
       const redirect = router.query.redirect as string | undefined;
-      router.push(redirect || "/");
+      router.push(redirect || "/join-game");
     } catch {
       toast({
         variant: "destructive",
