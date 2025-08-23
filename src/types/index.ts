@@ -71,6 +71,18 @@ export interface Profile {
   created_at: string;
 }
 
+export interface StripePrice {
+  id: string;
+  stripe_price_id: string;
+  product_name: string;
+  unit_amount: number;
+  currency: string;
+  member_cat: string;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export type Game = Database["public"]["Tables"]["games"]["Row"] & {
   profiles: { display_name: string | null } | null;
 };
