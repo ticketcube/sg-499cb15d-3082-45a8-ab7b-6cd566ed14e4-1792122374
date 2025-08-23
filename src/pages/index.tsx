@@ -244,26 +244,73 @@ export default function HomePage() {
                                         Join Now and Play 4Points!
                                     </h1>
                                     <p className="text-gray-600">
-                                        Thank you for your interest! Get started now or sign in if you're already a member.
+                                        Create your account to start competing and view leaderboards.
                                     </p>
                                 </div>
                             </div>
-                            <div className="space-y-3">
-                                <div className="w-full max-w-xs mx-auto">
-                                    <Button
-                                        onClick={() => router.push('/auth/register')}
-                                        className="aspect-square w-full bg-green-600 hover:bg-green-700 text-white text-xl font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center min-h-[120px]"
+                            
+                            {/* Inline Registration Form */}
+                            <div className="space-y-4">
+                                <form onSubmit={handleRegistration} className="space-y-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="displayName" className="text-left block">Golfer Name</Label>
+                                        <Input
+                                            id="displayName"
+                                            type="text"
+                                            placeholder="Enter your golfer name"
+                                            value={displayName}
+                                            onChange={(e) => setDisplayName(e.target.value)}
+                                            required
+                                            className="w-full"
+                                        />
+                                    </div>
+                                    
+                                    <div className="space-y-2">
+                                        <Label htmlFor="email" className="text-left block">Email</Label>
+                                        <Input
+                                            id="email"
+                                            type="email"
+                                            placeholder="Enter your email"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            required
+                                            className="w-full"
+                                        />
+                                    </div>
+                                    
+                                    <div className="space-y-2">
+                                        <Label htmlFor="password" className="text-left block">Password</Label>
+                                        <Input
+                                            id="password"
+                                            type="password"
+                                            placeholder="Min 6 characters"
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            required
+                                            className="w-full"
+                                        />
+                                    </div>
+                                    
+                                    <Button 
+                                        type="submit" 
+                                        className="w-full bg-green-600 hover:bg-green-700 text-white" 
+                                        disabled={registrationLoading}
                                     >
-                                        Get Started
+                                        {registrationLoading ? "Creating Account..." : "Create Account"}
                                     </Button>
+                                </form>
+                                
+                                <div className="text-center">
+                                    <p className="text-sm text-gray-600">
+                                        Already have an account?{" "}
+                                        <button 
+                                            onClick={() => router.push('/auth/login')}
+                                            className="text-green-600 hover:underline font-medium"
+                                        >
+                                            Sign in
+                                        </button>
+                                    </p>
                                 </div>
-                                <Button
-                                    onClick={() => router.push('/auth/login')}
-                                    variant="outline"
-                                    className="w-full text-lg py-3"
-                                >
-                                    Member Login
-                                </Button>
                             </div>
                         </CardContent>
                     </Card>
@@ -305,13 +352,6 @@ export default function HomePage() {
                                     className="w-full bg-green-600 hover:bg-green-700 text-white text-lg py-6"
                                 >
                                     Let's Get Started
-                                </Button>
-                                <Button
-                                    onClick={() => router.push('/auth/login')}
-                                    variant="outline"
-                                    className="w-full text-lg py-3"
-                                >
-                                    Member Login
                                 </Button>
                             </div>
                         </CardContent>
