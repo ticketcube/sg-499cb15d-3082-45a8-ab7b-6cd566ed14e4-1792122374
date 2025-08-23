@@ -4,16 +4,16 @@ import { buffer } from 'micro';
 import Stripe from "stripe";
 import { createClient } from '@supabase/supabase-js';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
     apiVersion: "2025-01-27.acacia",
 });
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET as string;
 
 // Create admin Supabase client with service role key for bypassing RLS
 const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!, // Note: In production, use service role key
+  process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string, // Note: In production, use service role key
   {
     auth: {
       autoRefreshToken: false,
@@ -27,8 +27,6 @@ export const config = {
         bodyParser: false,
     },
 };
-
-const priceId = session?.metadata?.price_id || session?.display_items?.[0]?.price?.id;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method !== 'POST') {
@@ -55,68 +53,55 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (event.type === 'checkout.session.completed') {
         const session = event.data.object as Stripe.Checkout.Session;
+
         const { user_id } = session.metadata || {};
-        const paymentIntentId =
-            typeof session.payment_intent === 'string'
-                ? session.payment_intent
-                : session.payment_intent?.id;
+        const paymentIntentId = typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id;
 
         if (!user_id) {
-            console.error('Missing user_id in session metadata:', session.metadata);
-            return res.status(400).json({ error: 'user_id required' });
+            console.error('Webhook received checkout.session.completed with missing user_id metadata.', { metadata: session.metadata });
+            return res.status(400).json({ error: 'Required user_id metadata is missing.' });
         }
 
-        const { user_id, price_id } = session.metadata || {};
-
-
-        if (!priceId) {
-            console.error('No priceId found for session:', session.id);
-            return res.status(400).json({ error: 'Price ID not found' });
-        }
-
-        // ✅ Lookup mapping in Supabase
-        const { data: mapping, error: mappingError } = await supabaseAdmin
-            .from('stripe_prices')
-            .select('member_cat')
-            .eq('price_id', priceId)
-            .single();
-
-        if (mappingError || !mapping) {
-            console.error('No mapping found for priceId:', priceId, mappingError);
-            return res.status(400).json({ error: 'Unknown product' });
-        }
+        console.log('Processing successful payment for user:', user_id, { paymentIntentId });
 
         try {
-            // ✅ Update the user’s profile dynamically based on DB mapping
+            // Update user's member_cat to indicate they've paid for August 31 game
             const { error } = await supabaseAdmin
                 .from('profiles')
-                .update({
-                    member_cat: mapping.member_cat,
-                    updated_at: new Date().toISOString(),
+                .update({ 
+                    member_cat: 'aug31_paid',
+                    updated_at: new Date().toISOString()
                 })
                 .eq('id', user_id);
 
             if (error) {
                 console.error('Failed to update user profile:', error);
-                return res.status(500).json({ error: 'Failed to update profile' });
+                return res.status(500).json({ error: 'Failed to update user access.' });
             }
 
-            // (Optional) Record payment transaction
-            await supabaseAdmin.from('payment_transactions').insert({
-                user_id,
-                amount: session.amount_total ? session.amount_total / 100 : null,
-                status: 'completed',
-                stripe_payment_intent_id: paymentIntentId,
-                stripe_customer_id: session.customer as string,
-            });
+            // Optional: Record the payment transaction
+            const { error: transactionError } = await supabaseAdmin
+                .from('payment_transactions')
+                .insert({
+                    user_id: user_id,
+                    amount: session.amount_total ? session.amount_total / 100 : 35, // Convert cents to dollars
+                    status: 'completed',
+                    stripe_payment_intent_id: paymentIntentId,
+                    stripe_customer_id: session.customer as string,
+                });
 
-            console.log(`✅ Updated ${user_id} to category ${mapping.member_cat}`);
-        } catch (err) {
-            console.error('Webhook processing error:', err);
-            return res.status(500).json({ error: 'Internal server error' });
+            if (transactionError) {
+                console.error('Failed to record payment transaction:', transactionError);
+                // Don't fail the webhook for this, user access is already granted
+            }
+
+            console.log('Successfully updated user access for August 31 game:', user_id);
+
+        } catch (error) {
+            console.error('Error processing webhook:', error);
+            return res.status(500).json({ error: 'Internal server error while processing payment.' });
         }
     }
-
 
     res.status(200).json({ received: true });
 }

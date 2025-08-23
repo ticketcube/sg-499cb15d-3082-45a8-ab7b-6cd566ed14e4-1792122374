@@ -2,7 +2,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: '2025-01-27.acacia',
 });
 
@@ -45,14 +45,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Stripe price test error:', error);
     
+    const stripeError = error as {
+      message?: string;
+      type?: string;
+      code?: string;
+      param?: string;
+    };
+    
     return res.status(400).json({
-      error: error.message || 'Failed to test price',
-      type: error.type,
-      code: error.code,
-      param: error.param,
+      error: stripeError.message || 'Failed to test price',
+      type: stripeError.type,
+      code: stripeError.code,
+      param: stripeError.param,
       environment: {
         isLiveMode: process.env.STRIPE_SECRET_KEY?.startsWith('sk_live_'),
         isTestMode: process.env.STRIPE_SECRET_KEY?.startsWith('sk_test_'),

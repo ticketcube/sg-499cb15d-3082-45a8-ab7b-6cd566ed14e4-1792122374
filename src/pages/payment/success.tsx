@@ -9,7 +9,6 @@ import Head from 'next/head';
 
 export default function PaymentSuccessPage() {
     const router = useRouter();
-    const { session_id } = router.query;
 
     useEffect(() => {
         // Redirect to homepage after 3 seconds to show the full game access

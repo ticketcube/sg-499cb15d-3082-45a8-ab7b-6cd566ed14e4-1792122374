@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import Link from "next/link";
 import Image from 'next/image';
 import { useToast } from "@/hooks/use-toast";
 
@@ -13,7 +12,7 @@ const AUG31_4U_PRICE_ID = process.env.NEXT_PUBLIC_STRIPE_AUG31_4U_PRICE_ID;
 
 export default function JoinGamePage() {
     const router = useRouter();
-    const { user, loading } = useAuth();
+    const { user } = useAuth();
     const { toast } = useToast();
     const [currentView, setCurrentView] = useState<ViewMode>('home');
     const [isProcessingPayment, setIsProcessingPayment] = useState(false);

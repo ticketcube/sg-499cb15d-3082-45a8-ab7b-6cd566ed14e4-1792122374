@@ -1,29 +1,10 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from "stripe";
-import { createClient } from '@supabase/supabase-js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-01-27.acacia',
 });
-
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  }
-);
-
-const { data: priceData } = await supabase
-    .from("stripe_prices")
-    .select("price_id")
-    .eq("product_name", "Aug31Game")
-    .single();
-
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   res.setHeader('Content-Type', 'application/json');
@@ -63,11 +44,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       priceIdPrefix: priceId.substring(0, 10) + '...'
     });
 
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-      console.error('Supabase configuration missing');
-      return res.status(500).json({ error: 'Database not configured properly' });
-    }
-
     const domain = process.env.NEXT_PUBLIC_APP_URL
         || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
 
@@ -76,14 +52,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
-          { price: priceData.price_id, quantity: 1 }
+        {
+          price: priceId,
+          quantity: 1,
+        },
       ],
       mode: 'payment',
       success_url: `${domain}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${domain}/payment/cancel`,
       metadata: {
-          user_id: userId,
-          price_id: priceIdFromDB,
+        user_id: userId,
       },
     });
 
@@ -101,7 +79,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     if (error instanceof Error) {
       if ('type' in error && 'code' in error) {
-        const stripeError = error as any;
+        const stripeError = error as {
+          type: string;
+          code: string;
+          message: string;
+          param?: string;
+          requestId?: string;
+        };
         console.error('Stripe-specific error details:', { 
           type: stripeError.type, 
           code: stripeError.code, 
