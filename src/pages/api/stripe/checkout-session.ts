@@ -82,7 +82,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       success_url: `${domain}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${domain}/payment/cancel`,
       metadata: {
-        user_id: userId,
+          user_id: userId,
+          price_id: priceIdFromDB,
       },
     });
 
