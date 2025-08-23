@@ -57,7 +57,7 @@ export default function JoinGamePage() {
         {error && <p className="text-red-500">{error}</p>}
         {price && !error && (
             <Button onClick={handleJoin} className="w-full" disabled={!user || authLoading || !price}>
-            {authLoading ? "Loading..." : `Join ${price.product_name} - $${(price.unit_amount / 100).toFixed(2)}`}
+            {authLoading ? "Loading..." : `Join ${price.product_name}`}
             </Button>
         )}
       </div>
