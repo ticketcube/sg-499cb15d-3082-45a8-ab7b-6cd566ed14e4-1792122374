@@ -28,7 +28,7 @@ export const config = {
     },
 };
 
-const AUG31_4U_PRICE_ID = process.env.NEXT_PUBLIC_STRIPE_AUG31_4U_PRICE_ID;
+const priceId = session?.metadata?.price_id || session?.display_items?.[0]?.price?.id;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method !== 'POST') {
