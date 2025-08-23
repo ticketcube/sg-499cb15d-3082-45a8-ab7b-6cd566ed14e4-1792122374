@@ -30,7 +30,7 @@ const tiers = [
         price: "$35",
         description: "4Unders Club",
         features: [
-            "Fun, Fast and Fair Golf
+            "Fun, Fast and Fair Golf"
         ],
         priceId: null,
     }

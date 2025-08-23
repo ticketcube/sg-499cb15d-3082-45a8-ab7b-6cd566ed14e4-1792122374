@@ -164,7 +164,6 @@ export default function HomePage() {
                                 >
                                     Club Mission
                                 </Button>
-                            
                             </div>
 
                             <Link href="https://buy.stripe.com/fZu7sMaJOb3J5qF8kQa3u0f">
@@ -175,11 +174,11 @@ export default function HomePage() {
                                 </div>
                             </Link>
 
+                        </div>
                     </div>
                 </div>
             </section>
         </div>
-
     );
 
     
