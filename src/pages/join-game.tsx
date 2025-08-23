@@ -8,91 +8,103 @@ import { useToast } from "@/hooks/use-toast";
 
 type ViewMode = 'home' | 'how-it-works';
 
-const AUG31_4U_PRICE_ID = process.env.NEXT_PUBLIC_STRIPE_AUG31_4U_PRICE_ID;
-
 export default function JoinGamePage() {
-    const router = useRouter();
-    const { user } = useAuth();
-    const { toast } = useToast();
-    const [currentView, setCurrentView] = useState<ViewMode>('home');
-    const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const router = useRouter();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [currentView, setCurrentView] = useState < ViewMode > ('home');
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
-    const handleJoinGame = async () => {
-        if (!user) {
-            toast({
-                variant: "destructive",
-                title: "Authentication Required",
-                description: "Please log in to join the game."
-            });
-            router.push('/auth/login');
-            return;
-        }
+  const handleJoinGame = async () => {
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "Authentication Required",
+        description: "Please log in to join the game."
+      });
+      router.push('/auth/login');
+      return;
+    }
 
-        if (!AUG31_4U_PRICE_ID) {
-            console.error('AUG31_4U_PRICE_ID is not configured in environment variables');
-            toast({
-                variant: "destructive",
-                title: "Configuration Error",
-                description: "Payment system is not configured properly."
-            });
-            return;
-        }
+    // 🔄 NEW: fetch priceId from Supabase (null safe)
+    const { data: priceRow, error: priceError } = await supabase
+      .from("stripe_prices")
+      .select("price_id")
+      .eq("member_cat", "aug31_paid") // 👈 membership category
+      .maybeSingle(); // ✅ returns null if no row instead of throwing
 
-        console.log('Attempting to create checkout session with:', {
-            priceId: AUG31_4U_PRICE_ID,
-            userId: user.id,
-            environment: process.env.NODE_ENV
+    if (priceError) {
+      console.error("Error fetching Stripe price from DB:", priceError);
+      toast({
+        variant: "destructive",
+        title: "Configuration Error",
+        description: "Could not load payment configuration. Please try again."
+      });
+      return;
+    }
+
+    const priceId = priceRow?.price_id;
+
+    if (!priceId) {
+      console.error("No priceId found in DB for member_cat = aug31_paid");
+      toast({
+        variant: "destructive",
+        title: "Configuration Missing",
+        description: "No product is currently available for this game."
+      });
+      return;
+    }
+
+    console.log("Attempting to create checkout session with:", {
+      priceId,
+      userId: user.id,
+      environment: process.env.NODE_ENV
+    });
+
+    setIsProcessingPayment(true);
+
+    try {
+      const response = await fetch("/api/stripe/checkout-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ priceId, userId: user.id }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error("Checkout session creation failed:", {
+          status: response.status,
+          statusText: response.statusText,
+          error: data.error,
+          priceId
         });
+        throw new Error(data.error || "Failed to create checkout session");
+      }
 
-        setIsProcessingPayment(true);
+      console.log("Checkout session created successfully:", data);
 
-        try {
-            const response = await fetch('/api/stripe/checkout-session', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    priceId: AUG31_4U_PRICE_ID,
-                    userId: user.id,
-                }),
-            });
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL returned");
+      }
+    } catch (error) {
+      console.error("Payment error details:", {
+        error,
+        priceId,
+        message: error instanceof Error ? error.message : "Unknown error"
+      });
+      toast({
+        variant: "destructive",
+        title: "Payment Error",
+        description: error instanceof Error ? error.message : "Failed to process payment. Please try again."
+      });
+    } finally {
+      setIsProcessingPayment(false);
+    }
+  };
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                console.error('Checkout session creation failed:', {
-                    status: response.status,
-                    statusText: response.statusText,
-                    error: data.error,
-                    priceId: AUG31_4U_PRICE_ID
-                });
-                throw new Error(data.error || 'Failed to create checkout session');
-            }
-
-            console.log('Checkout session created successfully:', data);
-
-            // Redirect to Stripe Checkout
-            if (data.url) {
-                window.location.href = data.url;
-            } else {
-                throw new Error('No checkout URL returned');
-            }
-        } catch (error) {
-            console.error('Payment error details:', {
-                error,
-                priceId: AUG31_4U_PRICE_ID,
-                message: error instanceof Error ? error.message : 'Unknown error'
-            });
-            toast({
-                variant: "destructive",
-                title: "Payment Error",
-                description: error instanceof Error ? error.message : "Failed to process payment. Please try again."
-            });
-        } finally {
-            setIsProcessingPayment(false);
-        }
-    };
 
     const renderHomeView = () => (
         <div className="bg-white flex flex-col h-full">
