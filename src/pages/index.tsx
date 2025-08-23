@@ -2,12 +2,15 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { StripePrice } from "@/types";
 import { surveyService, SurveyResponse } from "@/services/surveyService";
+import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import Image from 'next/image';
 
@@ -56,6 +59,13 @@ export default function HomePage() {
     });
     const [isInitializing, setIsInitializing] = useState(false);
     const [showRegistration, setShowRegistration] = useState(false);
+
+    // Registration form state
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [displayName, setDisplayName] = useState("");
+    const [registrationLoading, setRegistrationLoading] = useState(false);
+    const { toast } = useToast();
 
     // Initialize survey for guests
     useEffect(() => {
@@ -133,6 +143,53 @@ export default function HomePage() {
             if (responseId) {
                 await surveyService.completeSurvey(responseId);
             }
+        }
+    };
+
+    // Handle inline registration after survey completion
+    const handleRegistration = async (e: React.FormEvent) => {
+        e.preventDefault();
+        
+        if (!email || !password || !displayName) {
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: "Please fill in all fields"
+            });
+            return;
+        }
+
+        if (password.length < 6) {
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: "Password must be at least 6 characters"
+            });
+            return;
+        }
+
+        setRegistrationLoading(true);
+        
+        try {
+            const { register } = useAuth();
+            await register(email, password, displayName);
+            toast({
+                title: "Success!",
+                description: "Account created successfully! Welcome to the 4Under Club."
+            });
+            
+            // After successful registration, user will be redirected to unpaid member view
+            // The useAuth context will handle the state change automatically
+            
+        } catch (error) {
+            console.error('Registration error:', error);
+            toast({
+                variant: "destructive",
+                title: "Registration Failed",
+                description: "Failed to create account. Please try again."
+            });
+        } finally {
+            setRegistrationLoading(false);
         }
     };
 
@@ -548,14 +605,17 @@ export default function HomePage() {
                                 >
                                     {accessLevel === 'guest' ? 'Welcome' : 'Club Mission'}
                                 </Button>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="flex-1 text-sm text-white bg-green-600 hover:bg-green-700"
-                                    onClick={() => setCurrentView('game-rules')}
-                                >
-                                    Club Game
-                                </Button>
+                                {/* Only show Club Game button for PAID users */}
+                                {accessLevel === 'paid' && (
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="flex-1 text-sm text-white bg-green-600 hover:bg-green-700"
+                                        onClick={() => setCurrentView('game-rules')}
+                                    >
+                                        Club Game
+                                    </Button>
+                                )}
                             </div>
 
                             {accessLevel === 'paid' ? (
@@ -674,6 +734,7 @@ export default function HomePage() {
                             </Button>
                         </div>
                         
+                        {/* Only paid members should see start game button */}
                         {accessLevel === 'paid' ? (
                             <Link href="/leaderboard/monthly">
                                 <div className="bg-red-600 text-white rounded-2xl px-4 py-2 shadow-lg hover:shadow-xl transition-shadow cursor-pointer hover:bg-red-700 inline-block">
