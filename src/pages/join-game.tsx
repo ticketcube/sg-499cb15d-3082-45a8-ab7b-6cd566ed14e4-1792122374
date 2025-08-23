@@ -30,6 +30,7 @@ export default function JoinGamePage() {
         }
 
         if (!AUG31_4U_PRICE_ID) {
+            console.error('AUG31_4U_PRICE_ID is not configured in environment variables');
             toast({
                 variant: "destructive",
                 title: "Configuration Error",
@@ -37,6 +38,12 @@ export default function JoinGamePage() {
             });
             return;
         }
+
+        console.log('Attempting to create checkout session with:', {
+            priceId: AUG31_4U_PRICE_ID,
+            userId: user.id,
+            environment: process.env.NODE_ENV
+        });
 
         setIsProcessingPayment(true);
 
@@ -55,8 +62,16 @@ export default function JoinGamePage() {
             const data = await response.json();
 
             if (!response.ok) {
+                console.error('Checkout session creation failed:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    error: data.error,
+                    priceId: AUG31_4U_PRICE_ID
+                });
                 throw new Error(data.error || 'Failed to create checkout session');
             }
+
+            console.log('Checkout session created successfully:', data);
 
             // Redirect to Stripe Checkout
             if (data.url) {
@@ -65,7 +80,11 @@ export default function JoinGamePage() {
                 throw new Error('No checkout URL returned');
             }
         } catch (error) {
-            console.error('Payment error:', error);
+            console.error('Payment error details:', {
+                error,
+                priceId: AUG31_4U_PRICE_ID,
+                message: error instanceof Error ? error.message : 'Unknown error'
+            });
             toast({
                 variant: "destructive",
                 title: "Payment Error",

@@ -29,7 +29,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const { priceId, userId } = req.body;
 
-    console.log('API Route - Received request:', { priceId, userId });
+    console.log('API Route - Received request:', { 
+      priceId, 
+      userId,
+      nodeEnv: process.env.NODE_ENV,
+      stripeKeyPrefix: process.env.STRIPE_SECRET_KEY?.substring(0, 8) + '...'
+    });
 
     if (!priceId || !userId) {
       console.error('Missing parameters:', { priceId: !!priceId, userId: !!userId });
@@ -41,6 +46,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(500).json({ error: 'Payment system not configured properly' });
     }
 
+    // Log which Stripe environment we're using
+    const isLiveMode = process.env.STRIPE_SECRET_KEY.startsWith('sk_live_');
+    const isTestMode = process.env.STRIPE_SECRET_KEY.startsWith('sk_test_');
+    console.log('Stripe environment check:', { 
+      isLiveMode, 
+      isTestMode, 
+      priceId,
+      priceIdPrefix: priceId.substring(0, 10) + '...'
+    });
+
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
       console.error('Supabase configuration missing');
       return res.status(500).json({ error: 'Database not configured properly' });
@@ -48,6 +63,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const domain = process.env.NEXT_PUBLIC_APP_URL
         || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+
+    console.log('Creating Stripe checkout session with domain:', domain);
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -79,7 +96,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     if (error instanceof Error) {
       if ('type' in error && 'code' in error) {
-        console.error('Stripe-specific error:', { type: error.type, code: (error as any).code, message: error.message });
+        const stripeError = error as any;
+        console.error('Stripe-specific error details:', { 
+          type: stripeError.type, 
+          code: stripeError.code, 
+          message: stripeError.message,
+          param: stripeError.param,
+          requestId: stripeError.requestId
+        });
         return res.status(400).json({ error: `Stripe error: ${error.message}` });
       }
       
