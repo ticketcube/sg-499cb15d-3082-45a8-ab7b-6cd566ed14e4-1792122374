@@ -214,7 +214,7 @@ export default function ProfilePage() {
           {pastRounds.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <p>No rounds played yet.</p>
-              <Button className="mt-4" onClick={() => router.push("/game")}>
+              <Button className="mt-4" onClick={() => router.push("/")}>
                 Play Your First Round
               </Button>
             </div>
