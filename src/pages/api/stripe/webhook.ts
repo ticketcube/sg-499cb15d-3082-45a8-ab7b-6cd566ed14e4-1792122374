@@ -66,9 +66,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return res.status(400).json({ error: 'user_id required' });
         }
 
-        // ✅ Retrieve line items to get the priceId
-        const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 1 });
-        const priceId = lineItems.data[0]?.price?.id;
+        const { user_id, price_id } = session.metadata || {};
+
 
         if (!priceId) {
             console.error('No priceId found for session:', session.id);
