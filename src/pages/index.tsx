@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { Button } from "@/components/ui/button";
@@ -9,15 +10,28 @@ type ViewMode = 'home' | 'how-it-works' | 'game-rules';
 
 export default function HomePage() {
     const router = useRouter();
-    const { user, loading } = useAuth();
-    const [currentView, setCurrentView] = useState < ViewMode > ('home');
+    const { user, profile, loading } = useAuth();
+    const [currentView, setCurrentView] = useState<ViewMode>('home');
 
-    // Redirect unauthenticated users to survey
+    // Redirect logic based on authentication and payment status
     useEffect(() => {
-        if (!loading && !user) {
-            router.push('/survey');
+        if (!loading) {
+            if (!user) {
+                // Unauthenticated users go to survey
+                router.push('/survey');
+                return;
+            }
+            
+            if (user && profile) {
+                // Authenticated users without payment go to join-game
+                if (!profile.member_cat || profile.member_cat !== 'aug31_paid') {
+                    router.push('/join-game');
+                    return;
+                }
+                // Users with aug31_paid status stay on this page (full access)
+            }
         }
-    }, [loading, user, router]);
+    }, [loading, user, profile, router]);
 
     if (loading) {
         return (
@@ -27,8 +41,8 @@ export default function HomePage() {
         );
     }
 
-    // Show loading while redirecting unauthenticated users
-    if (!user) {
+    // Show loading while redirecting
+    if (!user || !profile || profile.member_cat !== 'aug31_paid') {
         return (
             <div className="flex items-center justify-center h-screen">
                 <div className="w-8 h-8 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
@@ -51,7 +65,7 @@ export default function HomePage() {
 
                     <div className="space-y-4">
                         <h1 className="text-2xl font-bold text-green-700 text-center">
-                            Club Misson
+                            Club Mission
                         </h1>
                         <p className="text-lg text-gray-700">
                             The 4Under Club guarantees fast and fun rounds of golf by solving the two problems that slow down pace of play.
@@ -64,7 +78,7 @@ export default function HomePage() {
                             <div className="flex flex-col items-start text-left">
                                 <h3 className="text-sm font-bold">All It Takes Is One Slow Golfer</h3>
                                 <p className="text-xs text-gray-700">
-                                    It only takes one slow golfer to bottleneck an entire course.  If we all have the same mission, there will be no bottlenecks.
+                                    It only takes one slow golfer to bottleneck an entire course. If we all have the same mission, there will be no bottlenecks.
                                 </p>
                             </div>
                         </div>
@@ -74,15 +88,13 @@ export default function HomePage() {
                                 <span className="text-green-700 font-bold text-base">2</span>
                             </div>
                             <div className="flex flex-col items-start text-left">
-                                <h3 className="text-sm font-bold">All It Takes Is One Bad Hole </h3>
+                                <h3 className="text-sm font-bold">All It Takes Is One Bad Hole</h3>
                                 <p className="text-xs text-gray-700">
                                     Blow up holes ruin scores, attitudes and pace of play.
                                 </p>
                             </div>
                         </div>
-
                     </div>
-
 
                     <div className="flex flex-col items-center space-y-3 mt-4">
                         <div className="flex gap-3 w-full max-w-xs">
@@ -112,9 +124,6 @@ export default function HomePage() {
                             </div>
                         </Link>
                     </div>
-
-
-
                 </div>
             </section>
         </div>
@@ -123,7 +132,6 @@ export default function HomePage() {
     const renderHowItWorksView = () => (
         <div className="bg-gray-50 flex flex-col h-full">
             <section className='py-8 px-4 flex-grow'>
-
                 <div className="px-4 py-4">
                     <div className="max-w-sm mx-auto">
                         <div className="flex flex-col items-center text-center space-y-2 mb-4">
@@ -141,7 +149,7 @@ export default function HomePage() {
                                 <div className="flex flex-col items-start text-left">
                                     <h3 className="text-sm font-bold">Our Mission is Our Responsibility</h3>
                                     <p className="text-xs text-gray-700">
-                                        Enforcement of pace of play is up to members, not marshals or other players.  If we all have the same mission, there will be no bottlenecks.
+                                        Enforcement of pace of play is up to members, not marshals or other players. If we all have the same mission, there will be no bottlenecks.
                                     </p>
                                 </div>
                             </div>
@@ -165,7 +173,7 @@ export default function HomePage() {
                                 <div className="flex flex-col items-start text-left">
                                     <h3 className="text-sm font-bold">Fast and Fun Golf is NOT Speed Golf</h3>
                                     <p className="text-xs text-gray-700">
-                                        Playing 18 holes of golf in under 4 hours is not Speed Golf.  There is plenty of time for talking on tee boxes, checking on side bets and getting another beverage.
+                                        Playing 18 holes of golf in under 4 hours is not Speed Golf. There is plenty of time for talking on tee boxes, checking on side bets and getting another beverage.
                                     </p>
                                 </div>
                             </div>
@@ -211,12 +219,10 @@ export default function HomePage() {
                                 </div>
                             </Link>
                         </div>
-
                     </div>
                 </div>
             </section>
         </div>
-
     );
 
     const renderGameRulesView = () => (
@@ -273,7 +279,7 @@ export default function HomePage() {
                                 <div className="flex flex-col items-start text-left">
                                     <h3 className="text-sm font-bold">Your 4Points Target</h3>
                                     <p className="text-xs text-gray-700">
-                                       Your 4Points target is calcuated by either (a) average of your last 3 4Points Total Score or (b) 36 - Your GHIN Handicap.
+                                       Your 4Points target is calculated by either (a) average of your last 3 4Points Total Score or (b) 36 - Your GHIN Handicap.
                                     </p>
                                 </div>
                             </div>
@@ -283,15 +289,12 @@ export default function HomePage() {
                                     <span className="text-green-700 font-bold text-base">2</span>
                                 </div>
                                 <div className="flex flex-col items-start text-left">
-                                    <h3 className="text-sm font-bold">Winner Is Golfer Who Plays Their Best </h3>
+                                    <h3 className="text-sm font-bold">Winner Is Golfer Who Plays Their Best</h3>
                                     <p className="text-xs text-gray-700">
-                                       Your Total Points scored minus your 4Poinst Target is your 4points Score.  Highest Score Wins.
+                                       Your Total Points scored minus your 4Points Target is your 4points Score. Highest Score Wins.
                                     </p>
                                 </div>
                             </div>
-
-
-                            
                         </div>
                     </div>
                     <div className="flex flex-col items-center space-y-3 mt-4">
@@ -313,7 +316,7 @@ export default function HomePage() {
                                 Club Rules
                             </Button>
                         </div>
-                        <Link href="//leaderboard/monthly">
+                        <Link href="/leaderboard/monthly">
                             <div className="bg-red-600 text-white rounded-2xl px-4 py-2 shadow-lg hover:shadow-xl transition-shadow cursor-pointer hover:bg-red-700 inline-block">
                                 <h1 className="text-xl font-bold">
                                     Tap To Start Game!
