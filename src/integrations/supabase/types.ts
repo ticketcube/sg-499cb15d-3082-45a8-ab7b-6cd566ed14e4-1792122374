@@ -449,6 +449,33 @@ export type Database = {
                 }
                 Relationships: []
             }
+            stripe_prices: {
+                Row: {
+                    active: boolean | null
+                    created_at: string | null
+                    id: string
+                    member_cat: string
+                    price_id: string
+                    product_name: string
+                }
+                Insert: {
+                    active?: boolean | null
+                    created_at?: string | null
+                    id?: string
+                    member_cat: string
+                    price_id: string
+                    product_name: string
+                }
+                Update: {
+                    active?: boolean | null
+                    created_at?: string | null
+                    id?: string
+                    member_cat?: string
+                    price_id?: string
+                    product_name?: string
+                }
+                Relationships: []
+            }
             survey_responses: {
                 Row: {
                     completed: boolean
