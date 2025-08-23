@@ -68,8 +68,9 @@ export interface GameScore {
 export interface Profile {
   id: string;
   display_name: string;
-  member_cat: string;
+  member_cat?: string;
   created_at: string;
+  updated_at?: string;
 }
 
 export interface StripePrice {
