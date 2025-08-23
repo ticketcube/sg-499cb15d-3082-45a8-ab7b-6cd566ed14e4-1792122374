@@ -2,7 +2,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { buffer } from 'micro';
 import Stripe from "stripe";
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
     apiVersion: "2025-01-27.acacia",
@@ -10,16 +10,10 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET as string;
 
-// Create admin Supabase client with service role key for bypassing RLS
+// IMPORTANT: Create a Supabase client with the SERVICE ROLE KEY for admin operations
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string, // Note: In production, use service role key
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  }
+  process.env.SUPABASE_SERVICE_ROLE_KEY as string
 );
 
 export const config = {
