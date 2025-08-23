@@ -68,7 +68,7 @@ export interface GameScore {
 export interface Profile {
   id: string;
   display_name: string;
-  member_cat;
+  member_cat: string;
   created_at: string;
 }
 
