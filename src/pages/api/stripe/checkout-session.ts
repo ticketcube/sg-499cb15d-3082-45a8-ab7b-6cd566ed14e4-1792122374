@@ -18,6 +18,13 @@ const supabaseAdmin = createClient(
   }
 );
 
+const { data: priceData } = await supabase
+    .from("stripe_prices")
+    .select("price_id")
+    .eq("product_name", "Aug31Game")
+    .single();
+
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   res.setHeader('Content-Type', 'application/json');
   
@@ -69,10 +76,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
+          { price: priceData.price_id, quantity: 1 }
       ],
       mode: 'payment',
       success_url: `${domain}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
