@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { StripePrice } from "@/types";
 import Link from "next/link";
 import Image from 'next/image';
 
@@ -12,26 +14,56 @@ export default function HomePage() {
     const router = useRouter();
     const { user, profile, loading } = useAuth();
     const [currentView, setCurrentView] = useState<ViewMode>('home');
+    const [price, setPrice] = useState<StripePrice | null>(null);
+    const [priceLoading, setPriceLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    // Redirect logic based on authentication and payment status
+    // Fetch Stripe price information for payment integration
     useEffect(() => {
-        if (!loading) {
-            if (!user) {
-                // Unauthenticated users go to survey
-                router.push('/survey');
-                return;
-            }
-            
-            if (user && profile) {
-                // Authenticated users without payment go to join-game
-                if (!profile.member_cat || profile.member_cat !== 'aug31_paid') {
-                    router.push('/join-game');
-                    return;
+        const fetchPrice = async () => {
+            try {
+                const { data: priceRow, error: priceError } = await supabase
+                    .from("stripe_prices")
+                    .select("*")
+                    .eq("active", true)
+                    .eq("member_cat", "aug31_paid")
+                    .single();
+
+                if (priceError || !priceRow) {
+                    throw new Error("Could not find a valid price. Please contact support.");
                 }
-                // Users with aug31_paid status stay on this page (full access)
+                
+                setPrice(priceRow);
+            } catch (e: any) {
+                setError(e.message || "An unexpected error occurred.");
+            } finally {
+                setPriceLoading(false);
             }
-        }
-    }, [loading, user, profile, router]);
+        };
+
+        fetchPrice();
+    }, []);
+
+    // Determine user access level
+    const getUserAccessLevel = () => {
+        if (!user) return 'guest';
+        if (!profile?.member_cat || profile.member_cat !== 'aug31_paid') return 'unpaid';
+        return 'paid';
+    };
+
+    const accessLevel = getUserAccessLevel();
+
+    const handlePayment = async () => {
+        if (!user || !price) return;
+        // Payment integration will be handled by existing Stripe API
+        // For now, this is a placeholder - actual implementation would create checkout session
+        console.log("Payment integration needed here");
+    };
+
+    const handleWaitlist = () => {
+        // Placeholder for waitlist functionality
+        console.log("Waitlist functionality needed here");
+    };
 
     if (loading) {
         return (
@@ -41,16 +73,114 @@ export default function HomePage() {
         );
     }
 
-    // Show loading while redirecting
-    if (!user || !profile || profile.member_cat !== 'aug31_paid') {
-        return (
-            <div className="flex items-center justify-center h-screen">
-                <div className="w-8 h-8 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
-            </div>
-        );
-    }
+    // Guest view - show game rules + sign up button
+    const renderGuestView = () => (
+        <div className="bg-white flex flex-col h-full">
+            <section className='py-8 px-4 flex-grow'>
+                <div className='flex flex-col items-center text-center space-y-6 max-w-sm mx-auto'>
+                    <div className="relative w-24 h-24 mx-auto">
+                        <Image
+                            src="/full-4unders-logo-mddg489f.png"
+                            alt="4Under Club Logo"
+                            fill
+                            className="object-contain"
+                        />
+                    </div>
 
-    const renderHomeView = () => (
+                    <div className="space-y-4">
+                        <h1 className="text-2xl font-bold text-green-700 text-center">
+                            Welcome to 4Under Club
+                        </h1>
+                        <p className="text-lg text-gray-700">
+                            The 4Under Club guarantees fast and fun rounds of golf by solving the two problems that slow down pace of play.
+                        </p>
+                    </div>
+
+                    <div className="flex flex-col items-center space-y-3 mt-4">
+                        <div className="flex gap-3 w-full max-w-xs">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="flex-1 text-sm text-white bg-green-600 hover:bg-green-700"
+                                onClick={() => setCurrentView('how-it-works')}
+                            >
+                                Club Rules
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="flex-1 text-sm text-white bg-green-600 hover:bg-green-700"
+                                onClick={() => setCurrentView('game-rules')}
+                            >
+                                Club Game
+                            </Button>
+                        </div>
+
+                        <Link href="/auth/register">
+                            <div className="bg-blue-600 text-white rounded-2xl px-4 py-2 shadow-lg hover:shadow-xl transition-shadow cursor-pointer hover:bg-blue-700 inline-block">
+                                <h1 className="text-xl font-bold">
+                                    Sign Up to Play!
+                                </h1>
+                            </div>
+                        </Link>
+                    </div>
+                </div>
+            </section>
+        </div>
+    );
+
+    // Unpaid member view - show payment + waitlist options
+    const renderUnpaidMemberView = () => (
+        <div className="bg-white flex flex-col h-full">
+            <section className='py-8 px-4 flex-grow'>
+                <div className='flex flex-col items-center text-center space-y-6 max-w-sm mx-auto'>
+                    <div className="relative w-24 h-24 mx-auto">
+                        <Image
+                            src="/full-4unders-logo-mddg489f.png"
+                            alt="4Under Club Logo"
+                            fill
+                            className="object-contain"
+                        />
+                    </div>
+
+                    <div className="space-y-4">
+                        <h1 className="text-2xl font-bold text-green-700 text-center">
+                            Welcome Back, {profile?.display_name}!
+                        </h1>
+                        <p className="text-lg text-gray-700">
+                            Ready to join the game? Purchase your membership or join the waitlist for upcoming events.
+                        </p>
+                    </div>
+
+                    <div className="flex flex-col items-center space-y-3 mt-4 w-full max-w-xs">
+                        {priceLoading ? (
+                            <div className="w-8 h-8 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
+                        ) : error ? (
+                            <p className="text-red-500 text-sm">{error}</p>
+                        ) : price ? (
+                            <Button
+                                onClick={handlePayment}
+                                className="w-full bg-green-600 hover:bg-green-700 text-white rounded-2xl px-4 py-3 shadow-lg hover:shadow-xl transition-shadow"
+                            >
+                                <span className="text-lg font-bold">Join {price.product_name}</span>
+                            </Button>
+                        ) : null}
+
+                        <Button
+                            onClick={handleWaitlist}
+                            variant="outline"
+                            className="w-full border-2 border-blue-600 text-blue-600 hover:bg-blue-50 rounded-2xl px-4 py-3 shadow-lg hover:shadow-xl transition-shadow"
+                        >
+                            <span className="text-lg font-bold">Join Waitlist</span>
+                        </Button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    );
+
+    // Paid member view - show full game rules + start game button
+    const renderPaidMemberView = () => (
         <div className="bg-white flex flex-col h-full">
             <section className='py-8 px-4 flex-grow'>
                 <div className='flex flex-col items-center text-center space-y-6 max-w-sm mx-auto'>
@@ -199,7 +329,7 @@ export default function HomePage() {
                                     className="flex-1 text-sm text-white bg-green-600 hover:bg-green-700"
                                     onClick={() => setCurrentView('home')}
                                 >
-                                    Club Mission
+                                    {accessLevel === 'guest' ? 'Welcome' : 'Club Mission'}
                                 </Button>
                                 <Button
                                     variant="outline"
@@ -211,13 +341,23 @@ export default function HomePage() {
                                 </Button>
                             </div>
 
-                            <Link href="/leaderboard/monthly">
-                                <div className="bg-red-600 text-white rounded-2xl px-4 py-2 shadow-lg hover:shadow-xl transition-shadow cursor-pointer hover:bg-red-700 inline-block">
-                                    <h1 className="text-xl font-bold">
-                                        Tap To Start Game!
-                                    </h1>
-                                </div>
-                            </Link>
+                            {accessLevel === 'paid' ? (
+                                <Link href="/leaderboard/monthly">
+                                    <div className="bg-red-600 text-white rounded-2xl px-4 py-2 shadow-lg hover:shadow-xl transition-shadow cursor-pointer hover:bg-red-700 inline-block">
+                                        <h1 className="text-xl font-bold">
+                                            Tap To Start Game!
+                                        </h1>
+                                    </div>
+                                </Link>
+                            ) : accessLevel === 'guest' ? (
+                                <Link href="/auth/register">
+                                    <div className="bg-blue-600 text-white rounded-2xl px-4 py-2 shadow-lg hover:shadow-xl transition-shadow cursor-pointer hover:bg-blue-700 inline-block">
+                                        <h1 className="text-xl font-bold">
+                                            Sign Up to Play!
+                                        </h1>
+                                    </div>
+                                </Link>
+                            ) : null}
                         </div>
                     </div>
                 </div>
@@ -305,7 +445,7 @@ export default function HomePage() {
                                 className="flex-1 text-sm text-white bg-green-600 hover:bg-green-700"
                                 onClick={() => setCurrentView('home')}
                             >
-                                Club Mission
+                                {accessLevel === 'guest' ? 'Welcome' : 'Club Mission'}
                             </Button>
                             <Button
                                 variant="outline"
@@ -316,13 +456,24 @@ export default function HomePage() {
                                 Club Rules
                             </Button>
                         </div>
-                        <Link href="/leaderboard/monthly">
-                            <div className="bg-red-600 text-white rounded-2xl px-4 py-2 shadow-lg hover:shadow-xl transition-shadow cursor-pointer hover:bg-red-700 inline-block">
-                                <h1 className="text-xl font-bold">
-                                    Tap To Start Game!
-                                </h1>
-                            </div>
-                        </Link>
+                        
+                        {accessLevel === 'paid' ? (
+                            <Link href="/leaderboard/monthly">
+                                <div className="bg-red-600 text-white rounded-2xl px-4 py-2 shadow-lg hover:shadow-xl transition-shadow cursor-pointer hover:bg-red-700 inline-block">
+                                    <h1 className="text-xl font-bold">
+                                        Tap To Start Game!
+                                    </h1>
+                                </div>
+                            </Link>
+                        ) : accessLevel === 'guest' ? (
+                            <Link href="/auth/register">
+                                <div className="bg-blue-600 text-white rounded-2xl px-4 py-2 shadow-lg hover:shadow-xl transition-shadow cursor-pointer hover:bg-blue-700 inline-block">
+                                    <h1 className="text-xl font-bold">
+                                        Sign Up to Play!
+                                    </h1>
+                                </div>
+                            </Link>
+                        ) : null}
                     </div>
                 </div>
             </div>
@@ -331,7 +482,13 @@ export default function HomePage() {
 
     return (
         <>
-            {currentView === 'home' && renderHomeView()}
+            {currentView === 'home' && (
+                <>
+                    {accessLevel === 'guest' && renderGuestView()}
+                    {accessLevel === 'unpaid' && renderUnpaidMemberView()}
+                    {accessLevel === 'paid' && renderPaidMemberView()}
+                </>
+            )}
             {currentView === 'how-it-works' && renderHowItWorksView()}
             {currentView === 'game-rules' && renderGameRulesView()}
         </>
