@@ -651,11 +651,6 @@ export default function HomePage() {
                                     <p className="text-sm text-green-700 font-medium">
                                         {inventoryStatus.statusText}
                                     </p>
-                                    {!inventoryStatus.isSoldOut && (
-                                        <p className="text-xs text-green-600 mt-1">
-                                            Entry Fee: {gamePool.entry_fee_points} Points • Prize Pool: {gamePool.prize_pool_percentage}%
-                                        </p>
-                                    )}
                                 </div>
 
                                 {/* Join Game Button integrated into the stats module */}
@@ -822,7 +817,7 @@ export default function HomePage() {
                             </div>
 
                             <div className="flex items-center space-x-3 bg-white p-1 rounded-xl shadow-sm">
-                                <div className="p-2 bg-purple-100 rounded-full min-w-fit">
+                                <div className="p-1 bg-purple-100 rounded-full min-w-fit">
                                     <span className="text-purple-700 font-bold text-base">4</span>
                                 </div>
                                 <div className="flex flex-col items-start text-left">
