@@ -585,9 +585,7 @@ export default function HomePage() {
                     </div>
 
                     <div className="space-y-4">
-                        <h1 className="text-2xl font-bold text-green-700 text-center">
-                            Welcome Back, {profile?.display_name}!
-                        </h1>
+                       
                         <div className="space-y-4">
                             <h1 className="text-2xl font-bold text-green-700 text-center">
                                 Club Misson
