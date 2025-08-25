@@ -52,7 +52,7 @@ export default function WaitlistModal({
   };
 
   const handleDateToggle = (date: Date) => {
-    const dateString = WaitlistService.formatDateForDatabase(date);
+    const dateString = date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
     
     if (selectedDates.includes(dateString)) {
       // Remove date
@@ -134,7 +134,7 @@ export default function WaitlistModal({
   };
 
   const isDateSelected = (date: Date): boolean => {
-    const dateString = WaitlistService.formatDateForDatabase(date);
+    const dateString = date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
     return selectedDates.includes(dateString);
   };
 
@@ -161,7 +161,7 @@ export default function WaitlistModal({
             <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto">
               {availableSundays.map((sunday, index) => {
                 const isSelected = isDateSelected(sunday);
-                const dateString = WaitlistService.formatDateForDisplay(sunday.toISOString().split('T')[0]);
+                const formattedDate = WaitlistService.formatDate(sunday.toISOString().split('T')[0]);
                 
                 return (
                   <button
@@ -175,7 +175,7 @@ export default function WaitlistModal({
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-medium">
-                        {WaitlistService.formatDateForDisplay(sunday.toISOString().split('T')[0])}
+                        {formattedDate}
                       </span>
                       {isSelected && (
                         <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
@@ -196,7 +196,7 @@ export default function WaitlistModal({
               </div>
               <div className="text-sm text-green-700">
                 {selectedDates.map(date => 
-                  WaitlistService.formatDateForDisplay(date)
+                  WaitlistService.formatDate(date)
                 ).join(", ")}
               </div>
             </div>
