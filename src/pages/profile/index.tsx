@@ -24,11 +24,7 @@ interface PlayerRound {
   game_type: number;
 }
 
-const [waitlist, setWaitlist] = useState < {
-    avail_1: string;
-    avail_2?: string | null;
-    avail_3?: string | null;
-} | null > (null);
+
 
 
 export default function ProfilePage() {
@@ -40,6 +36,12 @@ export default function ProfilePage() {
   const [displayName, setDisplayName] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+
+    const [waitlist, setWaitlist] = useState < {
+        avail_1: string;
+        avail_2?: string | null;
+        avail_3?: string | null;
+    } | null > (null);
 
   const loadProfileData = useCallback(async () => {
     if (!user) return;
