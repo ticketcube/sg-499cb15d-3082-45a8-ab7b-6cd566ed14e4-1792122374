@@ -652,7 +652,9 @@ export default function HomePage() {
                                         {inventoryStatus.statusText}
                                     </p>
                                     {!inventoryStatus.isSoldOut && (
-                                        
+                                        <p className="text-xs text-green-600 mt-1">
+                                            Entry Fee: {gamePool.entry_fee_points} Points • Prize Pool: {gamePool.prize_pool_percentage}%
+                                        </p>
                                     )}
                                 </div>
 
