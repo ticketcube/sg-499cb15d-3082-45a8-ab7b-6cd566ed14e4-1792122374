@@ -23,6 +23,22 @@ interface SurveyQuestion {
   options: string[];
 }
 
+interface GamePool {
+  id: string;
+  name: string;
+  entry_fee_points: number;
+  prize_pool_percentage: number;
+  status: string;
+  start_date: string;
+  end_date: string;
+  min_players: number;
+  max_players: number;
+  current_players: number;
+  total_prize_pool: number;
+  created_at: string;
+  created_by: string | null;
+}
+
 const surveyQuestions: SurveyQuestion[] = [
   {
     id: 1,
@@ -47,6 +63,8 @@ export default function HomePage() {
     const [currentView, setCurrentView] = useState<ViewMode>('home');
     const [price, setPrice] = useState<StripePrice | null>(null);
     const [priceLoading, setPriceLoading] = useState(true);
+    const [gamePool, setGamePool] = useState<GamePool | null>(null);
+    const [gamePoolLoading, setGamePoolLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isWaitlistModalOpen, setIsWaitlistModalOpen] = useState(false);
     
@@ -89,16 +107,17 @@ export default function HomePage() {
         }
     }, [user, responseId, isInitializing, currentStep, sessionId]);
 
-    // Fetch Stripe price information for payment integration
+    // PHASE 3: Fetch both Stripe price and GamePool data
     useEffect(() => {
-        const fetchPrice = async () => {
+        const fetchGameData = async () => {
             try {
-                const response = await fetch('/api/stripe-prices');
-                if (!response.ok) {
+                // Fetch Stripe price information
+                const priceResponse = await fetch('/api/stripe-prices');
+                if (!priceResponse.ok) {
                     throw new Error('Failed to fetch price data');
                 }
                 
-                const { data: priceRows } = await response.json();
+                const { data: priceRows } = await priceResponse.json();
                 
                 // Find the aug31_paid price
                 const priceRow = priceRows?.find((p: StripePrice) => 
@@ -110,15 +129,36 @@ export default function HomePage() {
                 }
                 
                 setPrice(priceRow);
+
+                // PHASE 3: Fetch active game pools for inventory checking
+                const gamePoolResponse = await fetch('/api/gamepools');
+                if (!gamePoolResponse.ok) {
+                    throw new Error('Failed to fetch game pool data');
+                }
+                
+                const { data: gamePools } = await gamePoolResponse.json();
+                
+                // Find the active August 31 game pool
+                const activePool = gamePools?.find((pool: GamePool) => 
+                    pool.status === 'ACTIVE' && pool.name.includes('August 31')
+                );
+                
+                if (!activePool) {
+                    throw new Error("No active game pools available.");
+                }
+                
+                setGamePool(activePool);
+                
             } catch (e: any) {
-                console.error('Price fetch error:', e);
+                console.error('Game data fetch error:', e);
                 setError(e.message || "An unexpected error occurred.");
             } finally {
                 setPriceLoading(false);
+                setGamePoolLoading(false);
             }
         };
 
-        fetchPrice();
+        fetchGameData();
     }, []);
 
     // Handle survey answers
@@ -211,8 +251,9 @@ export default function HomePage() {
 
     const [paymentLoading, setPaymentLoading] = useState(false);
 
+    // PHASE 3: Updated payment handler with gamepool_id and inventory checking
     const handlePayment = async () => {
-        if (!user || !price) {
+        if (!user || !price || !gamePool) {
             toast({
                 variant: "destructive",
                 title: "Error",
@@ -221,10 +262,21 @@ export default function HomePage() {
             return;
         }
 
+        // PHASE 3: Check if game is sold out before proceeding
+        const availableSlots = gamePool.max_players - gamePool.current_players;
+        if (availableSlots <= 0) {
+            toast({
+                variant: "destructive",
+                title: "Game Sold Out",
+                description: "Sorry, this game is currently sold out. Join the waitlist to be notified of future games!"
+            });
+            return;
+        }
+
         setPaymentLoading(true);
         
         try {
-            // Call the checkout session API with the price from database
+            // PHASE 3: Call the checkout session API with gamepool_id
             const response = await fetch('/api/stripe/checkout-session', {
                 method: 'POST',
                 headers: {
@@ -232,7 +284,9 @@ export default function HomePage() {
                 },
                 body: JSON.stringify({
                     priceId: price.price_id,
-                    userId: user.id
+                    userId: user.id,
+                    gamepool_id: gamePool.id,  // PHASE 3: Include gamepool_id
+                    quantity: 1                 // PHASE 3: Default to 1 slot
                 }),
             });
 
@@ -273,6 +327,27 @@ export default function HomePage() {
             });
         }
     };
+
+    // PHASE 3: Calculate inventory status
+    const getInventoryStatus = () => {
+        if (!gamePool) return { available: 0, isSoldOut: true, statusText: "Loading..." };
+        
+        const available = gamePool.max_players - gamePool.current_players;
+        const isSoldOut = available <= 0;
+        
+        let statusText = "";
+        if (isSoldOut) {
+            statusText = "SOLD OUT";
+        } else if (available === 1) {
+            statusText = "1 spot left!";
+        } else {
+            statusText = `${available} spots left`;
+        }
+        
+        return { available, isSoldOut, statusText };
+    };
+
+    const inventoryStatus = getInventoryStatus();
 
     if (loading) {
         return (
@@ -496,7 +571,7 @@ export default function HomePage() {
         );
     };
 
-    // Unpaid member view - ONLY show Club Rules button, hide Club Game
+    // PHASE 3: Updated unpaid member view with inventory status
     const renderUnpaidMemberView = () => (
         <div className="bg-white flex flex-col h-full">
             <section className='py-8 px-4 flex-grow'>
@@ -517,6 +592,21 @@ export default function HomePage() {
                         <p className="text-lg text-gray-700">
                             Ready to join the game? Purchase your membership or join the waitlist for upcoming events.
                         </p>
+
+                        {/* PHASE 3: Show inventory status */}
+                        {gamePool && (
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                <h3 className="font-bold text-blue-800">{gamePool.name}</h3>
+                                <p className="text-sm text-blue-700">
+                                    {inventoryStatus.statusText}
+                                </p>
+                                {!inventoryStatus.isSoldOut && (
+                                    <p className="text-xs text-blue-600 mt-1">
+                                        Entry Fee: {gamePool.entry_fee_points} Points
+                                    </p>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex flex-col items-center space-y-3 mt-4">
@@ -533,18 +623,24 @@ export default function HomePage() {
                         </div>
 
                         <div className="flex flex-col items-center space-y-3 mt-4 w-full max-w-xs">
-                            {priceLoading ? (
+                            {priceLoading || gamePoolLoading ? (
                                 <div className="w-8 h-8 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
                             ) : error ? (
                                 <p className="text-red-500 text-sm">{error}</p>
-                            ) : price ? (
+                            ) : price && gamePool ? (
                                 <Button
                                     onClick={handlePayment}
-                                    disabled={paymentLoading}
-                                    className="w-full bg-green-600 hover:bg-green-700 text-white rounded-2xl px-4 py-3 shadow-lg hover:shadow-xl transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
+                                    disabled={paymentLoading || inventoryStatus.isSoldOut}
+                                    className={`w-full rounded-2xl px-4 py-3 shadow-lg hover:shadow-xl transition-shadow disabled:opacity-50 disabled:cursor-not-allowed ${
+                                        inventoryStatus.isSoldOut 
+                                            ? "bg-gray-400 text-white" 
+                                            : "bg-green-600 hover:bg-green-700 text-white"
+                                    }`}
                                 >
                                     <span className="text-lg font-bold">
-                                        {paymentLoading ? "Processing..." : `Join ${price.product_name}`}
+                                        {inventoryStatus.isSoldOut ? "SOLD OUT" :
+                                         paymentLoading ? "Processing..." : 
+                                         `Join ${price.product_name}`}
                                     </span>
                                 </Button>
                             ) : null}
