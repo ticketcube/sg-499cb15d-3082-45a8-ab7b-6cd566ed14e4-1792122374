@@ -588,9 +588,39 @@ export default function HomePage() {
                         <h1 className="text-2xl font-bold text-green-700 text-center">
                             Welcome Back, {profile?.display_name}!
                         </h1>
-                        <p className="text-lg text-gray-700">
-                            Ready to join the game? Purchase your membership or join the waitlist for upcoming events.
-                        </p>
+                        <div className="space-y-4">
+                            <h1 className="text-2xl font-bold text-green-700 text-center">
+                                Club Misson
+                            </h1>
+                            <p className="text-lg text-gray-700">
+                                The 4Under Club guarantees fast and fun rounds of golf by solving the two problems that slow down pace of play.
+                            </p>
+
+                            <div className="flex items-center space-x-3 bg-white p-3 rounded-xl shadow-sm">
+                                <div className="p-2 bg-green-100 rounded-full min-w-fit">
+                                    <span className="text-green-700 font-bold text-base">1</span>
+                                </div>
+                                <div className="flex flex-col items-start text-left">
+                                    <h3 className="text-sm font-bold">All It Takes Is One Slow Golfer</h3>
+                                    <p className="text-xs text-gray-700">
+                                        It only takes one slow golfer to bottleneck an entire course.  If we all have the same mission, there will be no bottlenecks.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center space-x-3 bg-white p-3 rounded-xl shadow-sm">
+                                <div className="p-2 bg-green-100 rounded-full min-w-fit">
+                                    <span className="text-green-700 font-bold text-base">2</span>
+                                </div>
+                                <div className="flex flex-col items-start text-left">
+                                    <h3 className="text-sm font-bold">All It Takes Is One Bad Hole </h3>
+                                    <p className="text-xs text-gray-700">
+                                        Blow up holes ruin scores, attitudes and pace of play.
+                                    </p>
+                                </div>
+                            </div>
+
+                        </div>
                     </div>
 
                     {/* Club Rules Button */}
