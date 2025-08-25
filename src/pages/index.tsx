@@ -665,7 +665,7 @@ export default function HomePage() {
                                 >
                                     {inventoryStatus.isSoldOut ? "SOLD OUT" :
                                      paymentLoading ? "Processing..." : 
-                                     `Buy Tee Time`}
+                                     `Buy 6:10am Tee Time`}
                                 </Button>
                             </div>
                         ) : null}
