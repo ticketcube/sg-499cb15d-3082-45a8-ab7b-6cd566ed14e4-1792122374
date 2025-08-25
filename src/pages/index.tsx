@@ -93,19 +93,25 @@ export default function HomePage() {
     useEffect(() => {
         const fetchPrice = async () => {
             try {
-                const { data: priceRow, error: priceError } = await supabase
-                    .from("stripe_prices")
-                    .select("*")
-                    .eq("active", true)
-                    .eq("member_cat", "aug31_paid")
-                    .single();
-
-                if (priceError || !priceRow) {
+                const response = await fetch('/api/stripe-prices');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch price data');
+                }
+                
+                const { data: priceRows } = await response.json();
+                
+                // Find the aug31_paid price
+                const priceRow = priceRows?.find((p: StripePrice) => 
+                    p.active && p.member_cat === 'aug31_paid'
+                );
+                
+                if (!priceRow) {
                     throw new Error("Could not find a valid price. Please contact support.");
                 }
                 
                 setPrice(priceRow);
             } catch (e: any) {
+                console.error('Price fetch error:', e);
                 setError(e.message || "An unexpected error occurred.");
             } finally {
                 setPriceLoading(false);
