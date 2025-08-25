@@ -15,9 +15,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   switch (method) {
     case 'GET':
       try {
-        const { responseId, sessionId } = req.query;
+        const { responseId: responseIdQuery, sessionId: sessionIdQuery } = req.query;
         
-        if (responseId) {
+        if (responseIdQuery) {
+          const responseId = Array.isArray(responseIdQuery) ? responseIdQuery[0] : responseIdQuery;
           // Get specific survey response
           const { data, error } = await supabaseServiceRole
             .from("survey_responses")
@@ -27,7 +28,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
           if (error) throw error;
           return res.status(200).json({ data });
-        } else if (sessionId) {
+        } else if (sessionIdQuery) {
+          const sessionId = Array.isArray(sessionIdQuery) ? sessionIdQuery[0] : sessionIdQuery;
           // Get survey response by session ID
           const { data, error } = await supabaseServiceRole
             .from("survey_responses")

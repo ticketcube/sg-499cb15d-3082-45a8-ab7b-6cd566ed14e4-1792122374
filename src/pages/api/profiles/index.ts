@@ -15,9 +15,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   switch (method) {
     case 'GET':
       try {
-        const { userId } = req.query;
+        const { userId: userIdQuery } = req.query;
         
-        if (userId) {
+        if (userIdQuery) {
+          const userId = Array.isArray(userIdQuery) ? userIdQuery[0] : userIdQuery;
           // Get specific user profile
           const { data, error } = await supabaseServiceRole
             .from("profiles")

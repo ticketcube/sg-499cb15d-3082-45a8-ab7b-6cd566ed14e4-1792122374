@@ -15,15 +15,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   switch (method) {
     case 'GET':
       try {
-        const { userId, month, year } = req.query;
+        const { userId: userIdQuery, month: monthQuery, year: yearQuery } = req.query;
         
-        let query = supabaseServiceRole.from("scores").select("*");
+        let query = supabaseServiceRole.from("game_scores").select("*");
         
-        if (userId) {
+        if (userIdQuery) {
+          const userId = Array.isArray(userIdQuery) ? userIdQuery[0] : userIdQuery;
           query = query.eq("user_id", userId);
         }
         
-        if (month && year) {
+        if (monthQuery && yearQuery) {
+          const month = Array.isArray(monthQuery) ? monthQuery[0] : monthQuery;
+          const year = Array.isArray(yearQuery) ? yearQuery[0] : yearQuery;
           const startDate = new Date(Number(year), Number(month) - 1, 1);
           const endDate = new Date(Number(year), Number(month), 0);
           query = query
@@ -45,7 +48,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const scoreData = req.body;
         
         const { data, error } = await supabaseServiceRole
-          .from("scores")
+          .from("game_scores")
           .insert([scoreData])
           .select()
           .single();
@@ -66,7 +69,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         const { data, error } = await supabaseServiceRole
-          .from("scores")
+          .from("game_scores")
           .update(updateData)
           .eq("id", scoreId)
           .select()
