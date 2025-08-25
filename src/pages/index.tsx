@@ -1,5 +1,4 @@
 
-        
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { Button } from "@/components/ui/button";
@@ -14,6 +13,7 @@ import { surveyService, SurveyResponse } from "@/services/surveyService";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import Image from 'next/image';
+import WaitlistModal from "@/components/WaitlistModal";
 
 type ViewMode = 'home' | 'how-it-works' | 'game-rules';
 
