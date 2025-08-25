@@ -665,7 +665,7 @@ export default function HomePage() {
                                 >
                                     {inventoryStatus.isSoldOut ? "SOLD OUT" :
                                      paymentLoading ? "Processing..." : 
-                                     `Buy Tee Time - Join ${price.product_name}`}
+                                     `Buy Tee Time`}
                                 </Button>
                             </div>
                         ) : null}
