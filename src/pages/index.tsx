@@ -48,6 +48,7 @@ export default function HomePage() {
     const [price, setPrice] = useState<StripePrice | null>(null);
     const [priceLoading, setPriceLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isWaitlistModalOpen, setIsWaitlistModalOpen] = useState(false);
     
     // Survey state
     const [currentStep, setCurrentStep] = useState(0);
@@ -256,8 +257,15 @@ export default function HomePage() {
     };
 
     const handleWaitlist = () => {
-        // Placeholder for waitlist functionality
-        console.log("Waitlist functionality needed here");
+        if (user) {
+            setIsWaitlistModalOpen(true);
+        } else {
+            toast({
+                variant: "destructive",
+                title: "Not Logged In",
+                description: "You must be logged in to join the waitlist.",
+            });
+        }
     };
 
     if (loading) {
@@ -865,6 +873,21 @@ export default function HomePage() {
             )}
             {currentView === 'how-it-works' && renderHowItWorksView()}
             {currentView === 'game-rules' && renderGameRulesView()}
+
+            {user && (
+                <WaitlistModal
+                    isOpen={isWaitlistModalOpen}
+                    onClose={() => setIsWaitlistModalOpen(false)}
+                    userId={user.id}
+                    onSuccess={(entry) => {
+                        console.log("Successfully managed waitlist:", entry);
+                        toast({
+                            title: "Success",
+                            description: "Your waitlist preferences have been saved."
+                        });
+                    }}
+                />
+            )}
         </>
     );
 }
