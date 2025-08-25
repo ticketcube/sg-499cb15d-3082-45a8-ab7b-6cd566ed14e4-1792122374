@@ -1,10 +1,17 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from "stripe";
+import { createClient } from "@supabase/supabase-js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-01-27.acacia',
 });
+
+// Create Supabase admin client for inventory checks
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+  process.env.SUPABASE_SERVICE_ROLE_KEY as string
+);
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   res.setHeader('Content-Type', 'application/json');
@@ -15,23 +22,68 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { priceId, userId } = req.body;
+    const { priceId, userId, gamepool_id, quantity = 1 } = req.body;
 
     console.log('API Route - Received request:', { 
       priceId, 
       userId,
+      gamepool_id,
+      quantity,
       nodeEnv: process.env.NODE_ENV,
       stripeKeyPrefix: process.env.STRIPE_SECRET_KEY?.substring(0, 8) + '...'
     });
 
-    if (!priceId || !userId) {
-      console.error('Missing parameters:', { priceId: !!priceId, userId: !!userId });
-      return res.status(400).json({ error: 'Missing required parameters: priceId and userId are required.' });
+    if (!priceId || !userId || !gamepool_id) {
+      console.error('Missing parameters:', { 
+        priceId: !!priceId, 
+        userId: !!userId, 
+        gamepool_id: !!gamepool_id 
+      });
+      return res.status(400).json({ 
+        error: 'Missing required parameters: priceId, userId, and gamepool_id are required.' 
+      });
     }
 
     if (!process.env.STRIPE_SECRET_KEY) {
       console.error('STRIPE_SECRET_KEY is not configured');
       return res.status(500).json({ error: 'Payment system not configured properly' });
+    }
+
+    // PHASE 2: Pre-checkout inventory validation
+    console.log('Checking inventory for gamepool:', gamepool_id);
+    
+    const { data: gamepool, error: gamepoolError } = await supabaseAdmin
+      .from('gamepools')
+      .select('id, name, current_players, max_players, status')
+      .eq('id', gamepool_id)
+      .eq('status', 'ACTIVE')
+      .single();
+
+    if (gamepoolError || !gamepool) {
+      console.error('Failed to fetch gamepool:', gamepoolError);
+      return res.status(400).json({ 
+        error: 'Game pool not found or inactive' 
+      });
+    }
+
+    // Check if there are enough slots available
+    const availableSlots = gamepool.max_players - gamepool.current_players;
+    
+    console.log('Inventory check:', {
+      gamepool_name: gamepool.name,
+      current_players: gamepool.current_players,
+      max_players: gamepool.max_players,
+      available_slots: availableSlots,
+      requested_quantity: quantity
+    });
+
+    if (availableSlots < quantity) {
+      console.log('Game is sold out or insufficient slots available');
+      return res.status(400).json({ 
+        error: availableSlots === 0 
+          ? 'Sorry, this game is sold out!' 
+          : `Only ${availableSlots} slot(s) remaining, but you requested ${quantity}` 
+      });
     }
 
     // Log which Stripe environment we're using
@@ -54,7 +106,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       line_items: [
         {
           price: priceId,
-          quantity: 1,
+          quantity: quantity,
         },
       ],
       mode: 'payment',
@@ -62,6 +114,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       cancel_url: `${domain}/payment/cancel`,
       metadata: {
         user_id: userId,
+        gamepool_id: gamepool_id,
+        quantity: quantity.toString(),
       },
     });
 
@@ -70,7 +124,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(500).json({ error: 'Could not create Stripe session URL.' });
     }
 
-    console.log('Stripe session created successfully:', { sessionId: session.id, url: session.url });
+    console.log('Stripe session created successfully:', { 
+      sessionId: session.id, 
+      url: session.url,
+      gamepool_name: gamepool.name,
+      slots_reserved: quantity
+    });
 
     return res.status(200).json({ sessionId: session.id, url: session.url });
 
