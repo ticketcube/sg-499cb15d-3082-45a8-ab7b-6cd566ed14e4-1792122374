@@ -36,6 +36,24 @@ This document outlines the plan to implement inventory control for game pools, e
         $$ language plpgsql;
         ```
 
+## Phase 1.5: Database Security
+
+**Goal:** Secure the `gamepools`, `gamepool_entries`, and `stripe_prices` tables to prevent unauthorized client-side access. All sensitive operations will be moved to server-side API routes using the `service_role` key.
+
+1.  **Enable Row Level Security (RLS):**
+    *   RLS will be enabled for `gamepools`, `gamepool_entries`, and `stripe_prices` tables.
+
+2.  **RLS Policies for `gamepools`:**
+    *   A restrictive policy will be created to **block all** `SELECT`, `INSERT`, `UPDATE`, and `DELETE` operations from the client-side SDK. This ensures the table can only be modified by the backend service role.
+
+3.  **RLS Policies for `gamepool_entries`:**
+    *   **SELECT:** A policy will allow users to view **only their own** entries (`user_id = auth.uid()`).
+    *   **INSERT, UPDATE, DELETE:** Restrictive policies will be created to **block all** write operations from the client. New entries will only be created via the secure Stripe webhook.
+
+4.  **RLS Policies for `stripe_prices`:**
+    *   A restrictive policy will be created to **block all** client access. This ensures pricing data can only be accessed through secure server-side API routes using the service role key.
+    *   This prevents unauthorized access to sensitive pricing information and product details.
+
 ## Phase 2: Backend API Modifications
 
 **Goal:** Update the server-side logic to enforce inventory limits before payment and to update inventory after successful payment.
