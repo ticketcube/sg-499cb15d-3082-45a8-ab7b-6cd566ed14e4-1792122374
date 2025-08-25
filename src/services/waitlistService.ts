@@ -1,22 +1,14 @@
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from "@/integrations/supabase/types";
 
-// Create service role client for admin operations that bypass RLS
-const supabaseServiceRole = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import type { Database } from "@/integrations/supabase/types";
 
 type WaitlistRow = Database["public"]["Tables"]["waitlist"]["Row"];
 type WaitlistInsert = Database["public"]["Tables"]["waitlist"]["Insert"];
 type WaitlistUpdate = Database["public"]["Tables"]["waitlist"]["Update"];
 
-export interface WaitlistEntry {
-  id: string;
-  avail_1: string;
-  avail_2: string | null;
-  avail_3: string | null;
-  created_at: string;
+export interface WaitlistEntry extends WaitlistRow {
+  profiles?: {
+    display_name: string | null;
+  } | null;
 }
 
 export class WaitlistService {
@@ -47,21 +39,20 @@ export class WaitlistService {
   // Get user's current waitlist entry
   static async getUserWaitlist(userId: string): Promise<WaitlistEntry | null> {
     try {
-      const { data, error } = await supabaseServiceRole
-        .from("waitlist")
-        .select("*")
-        .eq("id", userId)
-        .single();
+      const response = await fetch(`/api/waitlist?userId=${userId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-      if (error) {
-        if (error.code === 'PGRST116') {
-          // No rows found - user not on waitlist yet
-          return null;
-        }
-        throw error;
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to fetch waitlist data');
       }
 
-      return data;
+      return result.data;
     } catch (error) {
       console.error("Error fetching user waitlist:", error);
       throw error;
@@ -82,22 +73,21 @@ export class WaitlistService {
         throw new Error("Maximum 3 dates allowed");
       }
 
-      const waitlistData: WaitlistInsert = {
-        id: userId,
-        avail_1: dates[0],
-        avail_2: dates[1] || null,
-        avail_3: dates[2] || null,
-      };
+      const response = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId, dates }),
+      });
 
-      const { data, error } = await supabaseServiceRole
-        .from("waitlist")
-        .upsert(waitlistData)
-        .select()
-        .single();
+      const result = await response.json();
 
-      if (error) throw error;
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to update waitlist');
+      }
 
-      return data;
+      return result.data;
     } catch (error) {
       console.error("Error upserting waitlist:", error);
       throw error;
@@ -107,12 +97,18 @@ export class WaitlistService {
   // Remove user from waitlist
   static async removeFromWaitlist(userId: string): Promise<void> {
     try {
-      const { error } = await supabaseServiceRole
-        .from("waitlist")
-        .delete()
-        .eq("id", userId);
+      const response = await fetch(`/api/waitlist?userId=${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-      if (error) throw error;
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to remove from waitlist');
+      }
     } catch (error) {
       console.error("Error removing from waitlist:", error);
       throw error;
@@ -122,17 +118,20 @@ export class WaitlistService {
   // Get all waitlist entries (admin function)
   static async getAllWaitlistEntries(): Promise<WaitlistEntry[]> {
     try {
-      const { data, error } = await supabaseServiceRole
-        .from("waitlist")
-        .select(`
-          *,
-          profiles!waitlist_id_fkey(display_name)
-        `)
-        .order("created_at", { ascending: false });
+      const response = await fetch('/api/waitlist/admin', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-      if (error) throw error;
+      const result = await response.json();
 
-      return data || [];
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to fetch waitlist entries');
+      }
+
+      return result.data || [];
     } catch (error) {
       console.error("Error fetching all waitlist entries:", error);
       throw error;
@@ -140,18 +139,21 @@ export class WaitlistService {
   }
 
   // Format date for display
-  static formatDateForDisplay(dateString: string): string {
+  static formatDate(dateString: string): string {
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      weekday: "long",
-      month: "short",
-      day: "numeric"
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     });
   }
 
-  // Convert Date to YYYY-MM-DD string for database
-  static formatDateForDatabase(date: Date): string {
-    return date.toISOString().split('T')[0];
+  // Check if a date is available for selection (not in the past)
+  static isDateAvailable(date: Date): boolean {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    return date >= now;
   }
 }
 
