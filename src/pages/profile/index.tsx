@@ -28,7 +28,7 @@ interface PlayerRound {
 
 
 export default function ProfilePage() {
-  const { user, loading } = useAuth();
+  const { user, profile: contextProfile, loading } = useAuth();
   const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [pastRounds, setPastRounds] = useState<PlayerRound[]>([]);
@@ -37,11 +37,11 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-    const [waitlist, setWaitlist] = useState < {
-        avail_1: string;
-        avail_2?: string | null;
-        avail_3?: string | null;
-    } | null > (null);
+  const [waitlist, setWaitlist] = useState<{
+      avail_1: string;
+      avail_2?: string | null;
+      avail_3?: string | null;
+  } | null>(null);
 
   const loadProfileData = useCallback(async () => {
     if (!user) return;
@@ -49,54 +49,65 @@ export default function ProfilePage() {
     try {
       setIsLoading(true);
       
-      // Load profile
-      const profileData = await userService.getProfile(user.id);
+      // PERFORMANCE FIX #3: Use cached profile from AuthContext instead of fetching again
+      let profileData = contextProfile;
+      
+      // Only fetch profile if not available in context (rare case)
+      if (!profileData) {
+        profileData = await userService.getProfile(user.id);
+      }
+      
       setProfile(profileData);
       setDisplayName(profileData?.display_name || user.email?.split("@")[0] || "");
 
-      // Load past rounds with detailed information
-      const { data: games, error } = await supabase
-        .from("games")
-        .select(`
-          id,
-          course_name,
-          tee_name,
-          created_at,
-          ghin_handicap,
-          adjusted_average_score,
-          target_score,
-          total_points,
-          four_points_earned,
-          game_type
-        `)
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        console.error("Error fetching past rounds:", error);
-      } else {
-        setPastRounds(games as PlayerRound[]);
-      }
-    } catch (error) {
-      console.error("Error loading profile ", error);
-    } finally {
-      setIsLoading(false);
-    }
-      // Load waitlist data
-      const { data: waitlistData, error: waitlistError } = await supabase
+      // PERFORMANCE FIX #1: Parallelize remaining database queries
+      const [gamesResponse, waitlistResponse] = await Promise.all([
+        // Load past rounds with detailed information
+        supabase
+          .from("games")
+          .select(`
+            id,
+            course_name,
+            tee_name,
+            created_at,
+            ghin_handicap,
+            adjusted_average_score,
+            target_score,
+            total_points,
+            four_points_earned,
+            game_type
+          `)
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false }),
+        
+        // Load waitlist data
+        supabase
           .from("waitlist")
           .select("avail_1, avail_2, avail_3")
           .eq("id", user.id)
-          .maybeSingle();
+          .maybeSingle()
+      ]);
 
-      if (waitlistError) {
-          console.error("Error fetching waitlist:", waitlistError);
+      // Process games data
+      if (gamesResponse.error) {
+        console.error("Error fetching past rounds:", gamesResponse.error);
       } else {
-          setWaitlist(waitlistData);
+        setPastRounds(gamesResponse.data as PlayerRound[]);
       }
 
+      // Process waitlist data
+      if (waitlistResponse.error) {
+        console.error("Error fetching waitlist:", waitlistResponse.error);
+      } else {
+        setWaitlist(waitlistResponse.data);
+      }
 
-  }, [user]);
+    } catch (error) {
+      console.error("Error loading profile data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user, contextProfile]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -285,28 +296,28 @@ export default function ProfilePage() {
             </div>
           )}
         </CardContent>
-          </Card>
+      </Card>
 
-          {/* WaitList */}
-          {/* Waitlist */}
-          <Card className="mt-6">
-              <CardHeader>
-                  <CardTitle>Waitlist Availability</CardTitle>
-              </CardHeader>
-              <CardContent>
-                  {!waitlist ? (
-                      <div className="text-center py-8 text-gray-500">
-                          <p>You haven’t set your availability yet.</p>
-                      </div>
-                  ) : (
-                      <div className="space-y-2">
-                          <p><span className="font-semibold">1st Choice:</span> {waitlist.avail_1}</p>
-                          {waitlist.avail_2 && <p><span className="font-semibold">2nd Choice:</span> {waitlist.avail_2}</p>}
-                          {waitlist.avail_3 && <p><span className="font-semibold">3rd Choice:</span> {waitlist.avail_3}</p>}
-                      </div>
-                  )}
-              </CardContent>
-          </Card>
+      {/* WaitList */}
+      {/* Waitlist */}
+      <Card className="mt-6">
+          <CardHeader>
+              <CardTitle>Waitlist Availability</CardTitle>
+          </CardHeader>
+          <CardContent>
+              {!waitlist ? (
+                  <div className="text-center py-8 text-gray-500">
+                      <p>You haven’t set your availability yet.</p>
+                  </div>
+              ) : (
+                  <div className="space-y-2">
+                      <p><span className="font-semibold">1st Choice:</span> {waitlist.avail_1}</p>
+                      {waitlist.avail_2 && <p><span className="font-semibold">2nd Choice:</span> {waitlist.avail_2}</p>}
+                      {waitlist.avail_3 && <p><span className="font-semibold">3rd Choice:</span> {waitlist.avail_3}</p>}
+                  </div>
+              )}
+          </CardContent>
+      </Card>
     </div>
   );
 }

@@ -33,8 +33,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchUserProfile = async (userId: string) => {
+  const fetchUserProfile = async (userId: string, useCache = true) => {
     try {
+      // PERFORMANCE FIX #3: Use cached profile if available and recent
+      if (useCache && profile && profile.id === userId) {
+        return profile;
+      }
+
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -46,7 +51,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return null;
       }
 
-      return data as Profile;
+      const profileData = data as Profile;
+      setProfile(profileData); // Cache the profile data
+      return profileData;
     } catch (error) {
       console.error('Error in fetchUserProfile:', error);
       return null;
@@ -55,7 +62,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshProfile = async () => {
     if (user) {
-      const userProfile = await fetchUserProfile(user.id);
+      // Force refresh by bypassing cache
+      const userProfile = await fetchUserProfile(user.id, false);
       setProfile(userProfile);
     }
   };
