@@ -24,6 +24,13 @@ interface PlayerRound {
   game_type: number;
 }
 
+const [waitlist, setWaitlist] = useState < {
+    avail_1: string;
+    avail_2?: string | null;
+    avail_3?: string | null;
+} | null > (null);
+
+
 export default function ProfilePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -73,6 +80,20 @@ export default function ProfilePage() {
     } finally {
       setIsLoading(false);
     }
+      // Load waitlist data
+      const { data: waitlistData, error: waitlistError } = await supabase
+          .from("waitlist")
+          .select("avail_1, avail_2, avail_3")
+          .eq("id", user.id)
+          .maybeSingle();
+
+      if (waitlistError) {
+          console.error("Error fetching waitlist:", waitlistError);
+      } else {
+          setWaitlist(waitlistData);
+      }
+
+
   }, [user]);
 
   useEffect(() => {
@@ -262,7 +283,28 @@ export default function ProfilePage() {
             </div>
           )}
         </CardContent>
-      </Card>
+          </Card>
+
+          {/* WaitList */}
+          {/* Waitlist */}
+          <Card className="mt-6">
+              <CardHeader>
+                  <CardTitle>Waitlist Availability</CardTitle>
+              </CardHeader>
+              <CardContent>
+                  {!waitlist ? (
+                      <div className="text-center py-8 text-gray-500">
+                          <p>You haven’t set your availability yet.</p>
+                      </div>
+                  ) : (
+                      <div className="space-y-2">
+                          <p><span className="font-semibold">1st Choice:</span> {waitlist.avail_1}</p>
+                          {waitlist.avail_2 && <p><span className="font-semibold">2nd Choice:</span> {waitlist.avail_2}</p>}
+                          {waitlist.avail_3 && <p><span className="font-semibold">3rd Choice:</span> {waitlist.avail_3}</p>}
+                      </div>
+                  )}
+              </CardContent>
+          </Card>
     </div>
   );
 }
