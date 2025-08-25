@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { Button } from "@/components/ui/button";
@@ -571,7 +570,7 @@ export default function HomePage() {
         );
     };
 
-    // PHASE 3: Updated unpaid member view with inventory status
+    // PHASE 3: Updated unpaid member view with inventory status integrated as Join button
     const renderUnpaidMemberView = () => (
         <div className="bg-white flex flex-col h-full">
             <section className='py-8 px-4 flex-grow'>
@@ -592,67 +591,73 @@ export default function HomePage() {
                         <p className="text-lg text-gray-700">
                             Ready to join the game? Purchase your membership or join the waitlist for upcoming events.
                         </p>
-
-                        {/* PHASE 3: Show inventory status */}
-                        {gamePool && (
-                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                                <h3 className="font-bold text-blue-800">{gamePool.name}</h3>
-                                <p className="text-sm text-blue-700">
-                                    {inventoryStatus.statusText}
-                                </p>
-                                {!inventoryStatus.isSoldOut && (
-                                    <p className="text-xs text-blue-600 mt-1">
-                                        Entry Fee: {gamePool.entry_fee_points} Points
-                                    </p>
-                                )}
-                            </div>
-                        )}
                     </div>
 
-                    <div className="flex flex-col items-center space-y-3 mt-4">
-                        {/* Only show Club Rules button for unpaid users */}
-                        <div className="w-full max-w-xs">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                className="w-full text-sm text-white bg-green-600 hover:bg-green-700"
-                                onClick={() => setCurrentView('how-it-works')}
-                            >
-                                Club Rules
-                            </Button>
-                        </div>
+                    {/* Club Rules Button */}
+                    <div className="w-full max-w-xs">
+                        <Button
+                            variant="outline"
+                            size="lg"
+                            className="w-full text-white bg-green-600 hover:bg-green-700 border-green-600 hover:border-green-700 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all"
+                            onClick={() => setCurrentView('how-it-works')}
+                        >
+                            Club Rules
+                        </Button>
+                    </div>
 
-                        <div className="flex flex-col items-center space-y-3 mt-4 w-full max-w-xs">
-                            {priceLoading || gamePoolLoading ? (
+                    {/* Gamepool Stats Module integrated as Join button */}
+                    <div className="w-full max-w-xs">
+                        {priceLoading || gamePoolLoading ? (
+                            <div className="bg-gray-100 rounded-xl p-6 flex items-center justify-center">
                                 <div className="w-8 h-8 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
-                            ) : error ? (
-                                <p className="text-red-500 text-sm">{error}</p>
-                            ) : price && gamePool ? (
+                            </div>
+                        ) : error ? (
+                            <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                                <p className="text-red-600 text-sm font-medium">{error}</p>
+                            </div>
+                        ) : price && gamePool ? (
+                            <div className="bg-gradient-to-r from-blue-50 to-green-50 border-2 border-green-200 rounded-xl p-4 space-y-3">
+                                {/* Game Pool Info */}
+                                <div className="text-center">
+                                    <h3 className="font-bold text-green-800 text-lg">{gamePool.name}</h3>
+                                    <p className="text-sm text-green-700 font-medium">
+                                        {inventoryStatus.statusText}
+                                    </p>
+                                    {!inventoryStatus.isSoldOut && (
+                                        <p className="text-xs text-green-600 mt-1">
+                                            Entry Fee: {gamePool.entry_fee_points} Points • Prize Pool: {gamePool.prize_pool_percentage}%
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Join Game Button integrated into the stats module */}
                                 <Button
                                     onClick={handlePayment}
                                     disabled={paymentLoading || inventoryStatus.isSoldOut}
-                                    className={`w-full rounded-2xl px-4 py-3 shadow-lg hover:shadow-xl transition-shadow disabled:opacity-50 disabled:cursor-not-allowed ${
+                                    className={`w-full py-4 text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all ${
                                         inventoryStatus.isSoldOut 
-                                            ? "bg-gray-400 text-white" 
+                                            ? "bg-gray-400 text-white cursor-not-allowed" 
                                             : "bg-green-600 hover:bg-green-700 text-white"
                                     }`}
                                 >
-                                    <span className="text-lg font-bold">
-                                        {inventoryStatus.isSoldOut ? "SOLD OUT" :
-                                         paymentLoading ? "Processing..." : 
-                                         `Join ${price.product_name}`}
-                                    </span>
+                                    {inventoryStatus.isSoldOut ? "SOLD OUT" :
+                                     paymentLoading ? "Processing..." : 
+                                     `Buy Tee Time - Join ${price.product_name}`}
                                 </Button>
-                            ) : null}
+                            </div>
+                        ) : null}
+                    </div>
 
-                            <Button
-                                onClick={handleWaitlist}
-                                variant="outline"
-                                className="w-full border-2 border-blue-600 text-blue-600 hover:bg-blue-50 rounded-2xl px-4 py-3 shadow-lg hover:shadow-xl transition-shadow"
-                            >
-                                <span className="text-lg font-bold">Join Waitlist</span>
-                            </Button>
-                        </div>
+                    {/* Join Waitlist Button */}
+                    <div className="w-full max-w-xs">
+                        <Button
+                            onClick={handleWaitlist}
+                            variant="outline"
+                            size="lg"
+                            className="w-full border-2 border-blue-600 text-blue-600 hover:bg-blue-50 hover:border-blue-700 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all"
+                        >
+                            Join Waitlist
+                        </Button>
                     </div>
                 </div>
             </section>
@@ -752,7 +757,7 @@ export default function HomePage() {
                         </div>
 
                         <div className="grid grid-cols-1 gap-3 mb-4">
-                            <div className="flex items-center space-x-3 bg-white p-3 rounded-xl shadow-sm">
+                            <div className="flex items-center space-x-3 bg-white p-1 rounded-xl shadow-sm">
                                 <div className="p-2 bg-green-100 rounded-full min-w-fit">
                                     <span className="text-green-700 font-bold text-base">1</span>
                                 </div>
@@ -764,7 +769,7 @@ export default function HomePage() {
                                 </div>
                             </div>
 
-                            <div className="flex items-center space-x-3 bg-white p-3 rounded-xl shadow-sm">
+                            <div className="flex items-center space-x-3 bg-white p-1 rounded-xl shadow-sm">
                                 <div className="p-2 bg-blue-100 rounded-full min-w-fit">
                                     <span className="text-blue-700 font-bold text-base">2</span>
                                 </div>
@@ -776,7 +781,7 @@ export default function HomePage() {
                                 </div>
                             </div>
 
-                            <div className="flex items-center space-x-3 bg-white p-3 rounded-xl shadow-sm">
+                            <div className="flex items-center space-x-3 bg-white p-1 rounded-xl shadow-sm">
                                 <div className="p-2 bg-red-100 rounded-full min-w-fit">
                                     <span className="text-red-700 font-bold text-base">3</span>
                                 </div>
@@ -788,7 +793,7 @@ export default function HomePage() {
                                 </div>
                             </div>
 
-                            <div className="flex items-center space-x-3 bg-white p-3 rounded-xl shadow-sm">
+                            <div className="flex items-center space-x-3 bg-white p-1 rounded-xl shadow-sm">
                                 <div className="p-2 bg-purple-100 rounded-full min-w-fit">
                                     <span className="text-purple-700 font-bold text-base">4</span>
                                 </div>
