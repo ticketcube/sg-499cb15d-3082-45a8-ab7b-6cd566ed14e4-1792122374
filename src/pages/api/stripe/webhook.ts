@@ -48,7 +48,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (event.type === 'checkout.session.completed') {
         const session = event.data.object as Stripe.Checkout.Session;
 
-        const { user_id } = session.metadata || {};
+        const { user_id, gamepool_id, quantity } = session.metadata || {};
         const paymentIntentId = typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id;
 
         if (!user_id) {
@@ -56,9 +56,56 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return res.status(400).json({ error: 'Required user_id metadata is missing.' });
         }
 
-        console.log('Processing successful payment for user:', user_id, { paymentIntentId });
+        // Parse quantity from metadata (default to 1 if not provided)
+        const parsedQuantity = quantity ? parseInt(quantity, 10) : 1;
+
+        console.log('Processing successful payment:', { 
+            user_id, 
+            gamepool_id,
+            quantity: parsedQuantity,
+            sessionId: session.id,
+            paymentIntentId 
+        });
 
         try {
+            // PHASE 2: Handle inventory tracking if gamepool_id is provided
+            if (gamepool_id) {
+                console.log('Processing inventory update for gamepool:', gamepool_id);
+
+                // Create gamepool entry record
+                const { data: entryData, error: entryError } = await supabaseAdmin
+                    .from('gamepool_entries')
+                    .insert({
+                        gamepool_id,
+                        user_id,
+                        quantity: parsedQuantity,
+                        stripe_checkout_id: session.id
+                    })
+                    .select();
+
+                if (entryError) {
+                    console.error('Failed to create gamepool entry:', entryError);
+                    return res.status(500).json({ error: 'Failed to record game entry.' });
+                }
+
+                console.log('Successfully created gamepool entry:', entryData);
+
+                // Update gamepool current_players count atomically
+                const { error: rpcError } = await supabaseAdmin
+                    .rpc('increment_current_players', {
+                        pool_id: gamepool_id,
+                        qty: parsedQuantity
+                    });
+
+                if (rpcError) {
+                    console.error('Failed to increment current_players:', rpcError);
+                    // This is critical - if we can't update the count, we have oversold
+                    return res.status(500).json({ error: 'Failed to update game inventory.' });
+                }
+
+                console.log(`Successfully incremented current_players by ${parsedQuantity} for gamepool:`, gamepool_id);
+            }
+
             // Update user's member_cat to indicate they've paid for August 31 game
             const { error } = await supabaseAdmin
                 .from('profiles')
@@ -89,7 +136,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 // Don't fail the webhook for this, user access is already granted
             }
 
-            console.log('Successfully updated user access for August 31 game:', user_id);
+            console.log('Successfully processed payment webhook:', {
+                user_id,
+                gamepool_id,
+                quantity: parsedQuantity,
+                member_cat_updated: true,
+                inventory_updated: !!gamepool_id
+            });
 
         } catch (error) {
             console.error('Error processing webhook:', error);
