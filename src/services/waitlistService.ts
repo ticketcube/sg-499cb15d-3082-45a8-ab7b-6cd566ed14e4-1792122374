@@ -1,5 +1,11 @@
-import { supabase } from "@/integrations/supabase/client";
+import { createClient } from '@supabase/supabase-js';
 import type { Database } from "@/integrations/supabase/types";
+
+// Create service role client for admin operations that bypass RLS
+const supabaseServiceRole = createClient<Database>(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 type WaitlistRow = Database["public"]["Tables"]["waitlist"]["Row"];
 type WaitlistInsert = Database["public"]["Tables"]["waitlist"]["Insert"];
@@ -41,7 +47,7 @@ export class WaitlistService {
   // Get user's current waitlist entry
   static async getUserWaitlist(userId: string): Promise<WaitlistEntry | null> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseServiceRole
         .from("waitlist")
         .select("*")
         .eq("id", userId)
@@ -83,7 +89,7 @@ export class WaitlistService {
         avail_3: dates[2] || null,
       };
 
-      const { data, error } = await supabase
+      const { data, error } = await supabaseServiceRole
         .from("waitlist")
         .upsert(waitlistData)
         .select()
@@ -101,7 +107,7 @@ export class WaitlistService {
   // Remove user from waitlist
   static async removeFromWaitlist(userId: string): Promise<void> {
     try {
-      const { error } = await supabase
+      const { error } = await supabaseServiceRole
         .from("waitlist")
         .delete()
         .eq("id", userId);
@@ -116,7 +122,7 @@ export class WaitlistService {
   // Get all waitlist entries (admin function)
   static async getAllWaitlistEntries(): Promise<WaitlistEntry[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseServiceRole
         .from("waitlist")
         .select(`
           *,
