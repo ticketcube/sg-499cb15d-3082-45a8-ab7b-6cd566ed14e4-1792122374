@@ -67,6 +67,8 @@ const surveyQuestions: SurveyQuestion[] = [
 export default function HomePage() {
     const router = useRouter();
     const { user, profile, loading, register } = useAuth();
+    // SSR safety - only run client-side code after hydration
+    const [isClient, setIsClient] = useState(false);
     const [currentView, setCurrentView] = useState<ViewMode>('home');
     const [price, setPrice] = useState<StripePrice | null>(null);
     const [priceLoading, setPriceLoading] = useState(true);
