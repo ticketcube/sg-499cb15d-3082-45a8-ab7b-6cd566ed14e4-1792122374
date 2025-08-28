@@ -93,3 +93,29 @@ export const scoreOptions = [
   { taps: 4, type: "E", points: 6, color: "text-purple-600", bg: "bg-purple-100" },
   { taps: 5, type: "R", points: 0, color: "text-gray-600", bg: "bg-gray-100" }
 ];
+
+export interface Game {
+  id: string;
+  course_name: string;
+  tee_name: string;
+  created_at: string;
+  ghin_handicap: number | null;
+  adjusted_average_score: number | null;
+  target_score: number;
+  total_points: number;
+  four_points_earned: number;
+  game_type: number;
+  user_id: string;
+}
+
+export interface SurveyResponse {
+  id: string;
+  session_id: string;
+  user_id?: string;
+  question_1_answer?: string;
+  question_2_answer?: string;
+  question_3_answer?: string;
+  drop_off_step?: number;
+  completed: boolean;
+  created_at: string;
+}
