@@ -33,59 +33,63 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   
-  // PERFORMANCE FIX #1: Use ref to track active requests and prevent race conditions
-  const activeRequestRef = useRef<AbortController | null>(null);
+  // PERFORMANCE FIX: Track initialization and prevent duplicate requests
   const isInitializedRef = useRef(false);
+  const lastProfileFetchRef = useRef<string | null>(null);
+  const profilePromiseRef = useRef<Promise<Profile | null> | null>(null);
 
-  // PERFORMANCE FIX #2: Memoized profile fetcher with request cancellation
+  // PERFORMANCE FIX: Memoized profile fetcher with better error handling
   const fetchUserProfile = useCallback(async (userId: string, forceRefresh = false) => {
     try {
-      // Cancel any existing profile request
-      if (activeRequestRef.current) {
-        activeRequestRef.current.abort();
-      }
-
-      // Create new request controller
-      const controller = new AbortController();
-      activeRequestRef.current = controller;
-
-      // Use cached profile if available and not forcing refresh
-      if (!forceRefresh && profile && profile.id === userId) {
+      // Prevent duplicate requests for same user
+      if (!forceRefresh && lastProfileFetchRef.current === userId && profile?.id === userId) {
         return profile;
       }
 
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .abortSignal(controller.signal)
-        .single();
-
-      // Check if request was cancelled
-      if (controller.signal.aborted) {
-        return null;
+      // Return existing promise if one is already in flight for this user
+      if (!forceRefresh && profilePromiseRef.current && lastProfileFetchRef.current === userId) {
+        return profilePromiseRef.current;
       }
 
-      if (error) {
-        console.error('Error fetching user profile:', error);
-        return null;
+      // Create new profile fetch promise
+      const profilePromise = (async () => {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .single();
+
+        if (error) {
+          console.error('Error fetching user profile:', error);
+          return null;
+        }
+
+        const profileData = data as Profile;
+        setProfile(profileData);
+        return profileData;
+      })();
+
+      // Cache the promise and user ID
+      profilePromiseRef.current = profilePromise;
+      lastProfileFetchRef.current = userId;
+
+      const result = await profilePromise;
+      
+      // Clear the promise cache after completion
+      if (profilePromiseRef.current === profilePromise) {
+        profilePromiseRef.current = null;
       }
 
-      const profileData = data as Profile;
-      setProfile(profileData);
-      return profileData;
+      return result;
     } catch (error: any) {
-      // Ignore aborted requests
-      if (error?.name === 'AbortError') {
-        return null;
-      }
       console.error('Error in fetchUserProfile:', error);
-      return null;
-    } finally {
-      // Clear the active request reference
-      if (activeRequestRef.current) {
-        activeRequestRef.current = null;
+      
+      // Clear cache on error
+      if (lastProfileFetchRef.current === userId) {
+        profilePromiseRef.current = null;
       }
+      
+      return null;
     }
   }, [profile]);
 
@@ -95,18 +99,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // PERFORMANCE FIX #3: Clear all cached data and cancel requests on logout
+  // PERFORMANCE FIX: Clear all cached data on logout
   const clearAuthState = useCallback(() => {
-    // Cancel any active requests
-    if (activeRequestRef.current) {
-      activeRequestRef.current.abort();
-      activeRequestRef.current = null;
-    }
-    
-    // Clear all state
     setSession(null);
     setUser(null);
     setProfile(null);
+    lastProfileFetchRef.current = null;
+    profilePromiseRef.current = null;
   }, []);
 
   useEffect(() => {
@@ -131,8 +130,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isInitializedRef.current = true;
       } catch (error) {
         console.error('Error initializing auth:', error);
-        // PERFORMANCE FIX #4: Clear state on initialization error
-        clearAuthState();
+        if (mounted) {
+          clearAuthState();
+        }
       } finally {
         if (mounted) {
           setLoading(false);
@@ -142,7 +142,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     initializeAuth();
 
-    // PERFORMANCE FIX #5: Simplified auth state change handler
+    // PERFORMANCE FIX: Simplified auth state change handler
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
 
@@ -154,7 +154,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // Handle sign in
+      // Handle sign in/token refresh
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -171,10 +171,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       mounted = false;
       subscription.unsubscribe();
-      // Cancel any active requests when component unmounts
-      if (activeRequestRef.current) {
-        activeRequestRef.current.abort();
-      }
     };
   }, [fetchUserProfile, clearAuthState, profile]);
 
