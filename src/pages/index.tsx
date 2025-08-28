@@ -15,15 +15,14 @@ import { useToast } from "@/hooks/use-toast";
 import surveyService from "@/services/surveyService";
 import type { StripePrice, SurveyResponse } from "@/types";
 
-
-
-
-type ViewMode = 'home' | 'how-it-works' | 'game-rules';
 // Dynamically import PullToRefreshWrapper to prevent SSR issues
 const PullToRefreshWrapper = dynamic(() => import("@/components/PullToRefreshWrapper"), {
     ssr: false,
     loading: () => <div className="min-h-screen">Loading...</div>
 });
+
+
+type ViewMode = 'home' | 'how-it-works' | 'game-rules';
 
 interface SurveyQuestion {
   id: number;
