@@ -597,7 +597,6 @@ export default function HomePage() {
                               
 
                                 {priceLoading || gamePoolLoading ? (
-                                    <div className="flex items-center space-x-3 bg-white p-3 rounded-xl shadow-sm">
                                         <div className="w-8 h-8 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
                                     </div>
                                 ) : error ? (
