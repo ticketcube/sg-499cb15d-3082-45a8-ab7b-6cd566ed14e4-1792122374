@@ -77,10 +77,7 @@ export default function HomePage() {
     const [error, setError] = useState<string | null>(null);
     const [isWaitlistModalOpen, setIsWaitlistModalOpen] = useState(false);
 
-    // SSR safety check
-    useEffect(() => {
-        setIsClient(true);
-    }, []);
+   
     
     // Survey state
     const [currentStep, setCurrentStep] = useState(0);
@@ -100,6 +97,11 @@ export default function HomePage() {
     const [displayName, setDisplayName] = useState("");
     const [registrationLoading, setRegistrationLoading] = useState(false);
     const { toast } = useToast();
+
+    // SSR safety check
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
 
     // Initialize survey for guests
     useEffect(() => {
