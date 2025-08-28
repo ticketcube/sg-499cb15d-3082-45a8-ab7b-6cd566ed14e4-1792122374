@@ -707,14 +707,7 @@ export default function HomePage() {
         </div>
     );
 
-    // SSR fallback - render basic loading state during SSR
-    if (!isClient || loading || loadingState.data) {
-        return (
-            <div className="flex justify-center items-center min-h-[400px]">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-            </div>
-        );
-    }
+
     // Paid member view - show full game rules + start game button
     const renderPaidMemberView = () => (
         <div className="bg-white flex flex-col h-full">
