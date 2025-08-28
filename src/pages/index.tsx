@@ -593,7 +593,7 @@ export default function HomePage() {
                             <p className="text-lg text-gray-700">
                                 The 4Under Club guarantees fast and fun rounds of golf by solving the two problems that slow down pace of play.
                             </p>
-                            <div className="w-full max-w-xs">
+                            <div className="flex items-center w-full max-w-xs">
                                 {priceLoading || gamePoolLoading ? (
                                     <div className="bg-gray-100 rounded-xl p-6 flex items-center justify-center">
                                         <div className="w-8 h-8 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
