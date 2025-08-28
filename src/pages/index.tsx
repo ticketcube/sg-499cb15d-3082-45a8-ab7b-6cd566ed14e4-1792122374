@@ -1,11 +1,19 @@
 import { useState, useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 import { Trophy, Calendar, Users, Target, TrendingUp } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/router";
 import WaitlistModal from "@/components/WaitlistModal";
+import { useToast } from "@/hooks/use-toast";
+import surveyService from "@/services/surveyService";
+import type { StripePrice, SurveyResponse } from "@/types";
 
 type ViewMode = 'home' | 'how-it-works' | 'game-rules';
 

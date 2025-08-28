@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,13 +29,7 @@ export default function WaitlistModal({
   const [existingEntry, setExistingEntry] = useState<WaitlistEntry | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (isOpen) {
-      loadExistingEntry();
-    }
-  }, [isOpen, loadExistingEntry]);
-
-  const loadExistingEntry = async () => {
+  const loadExistingEntry = useCallback(async () => {
     try {
       const entry = await WaitlistService.getUserWaitlist(userId);
       setExistingEntry(entry);
@@ -48,7 +42,13 @@ export default function WaitlistModal({
     } catch (error) {
       console.error("Error loading existing waitlist entry:", error);
     }
-  };
+  }, [userId]);
+
+  useEffect(() => {
+    if (isOpen) {
+      loadExistingEntry();
+    }
+  }, [isOpen, loadExistingEntry]);
 
   const handleDateToggle = (date: Date) => {
     const dateString = date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
