@@ -629,6 +629,7 @@ export default function HomePage() {
                                 </div>
                             ) : null}
                         </div>
+                       
 
                             <div className="flex items-center space-x-3 bg-white p-3 rounded-xl shadow-sm">
                                 <div className="p-2 bg-green-100 rounded-full min-w-fit">
