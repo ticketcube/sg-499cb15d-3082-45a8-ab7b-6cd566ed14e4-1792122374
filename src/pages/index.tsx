@@ -76,6 +76,11 @@ export default function HomePage() {
     const [gamePoolLoading, setGamePoolLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isWaitlistModalOpen, setIsWaitlistModalOpen] = useState(false);
+
+    // SSR safety check
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
     
     // Survey state
     const [currentStep, setCurrentStep] = useState(0);
