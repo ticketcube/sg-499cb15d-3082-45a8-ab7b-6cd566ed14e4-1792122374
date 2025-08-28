@@ -1,5 +1,5 @@
 
-import { createContext, useContext, useEffect, useState, ReactNode, useCallback, useRef } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Session, User } from "@supabase/supabase-js";
 import { signUp as supabaseSignUp, signIn as supabaseSignIn, signOut as supabaseSignOut } from "@/services/supabase";
@@ -32,109 +32,71 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  
-  // PERFORMANCE FIX: Track initialization and prevent duplicate requests
-  const isInitializedRef = useRef(false);
-  const lastProfileFetchRef = useRef<string | null>(null);
-  const profilePromiseRef = useRef<Promise<Profile | null> | null>(null);
 
-  // PERFORMANCE FIX: Memoized profile fetcher with better error handling
-  const fetchUserProfile = useCallback(async (userId: string, forceRefresh = false) => {
+  // SIMPLIFIED: Basic profile fetch without caching or promises
+  const fetchUserProfile = async (userId: string) => {
     try {
-      // Prevent duplicate requests for same user
-      if (!forceRefresh && lastProfileFetchRef.current === userId && profile?.id === userId) {
-        return profile;
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching user profile:', error);
+        setProfile(null);
+        return null;
       }
 
-      // Return existing promise if one is already in flight for this user
-      if (!forceRefresh && profilePromiseRef.current && lastProfileFetchRef.current === userId) {
-        return profilePromiseRef.current;
-      }
-
-      // Create new profile fetch promise
-      const profilePromise = (async () => {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', userId)
-          .single();
-
-        if (error) {
-          console.error('Error fetching user profile:', error);
-          return null;
-        }
-
-        const profileData = data as Profile;
-        setProfile(profileData);
-        return profileData;
-      })();
-
-      // Cache the promise and user ID
-      profilePromiseRef.current = profilePromise;
-      lastProfileFetchRef.current = userId;
-
-      const result = await profilePromise;
-      
-      // Clear the promise cache after completion
-      if (profilePromiseRef.current === profilePromise) {
-        profilePromiseRef.current = null;
-      }
-
-      return result;
+      const profileData = data as Profile;
+      setProfile(profileData);
+      return profileData;
     } catch (error: any) {
       console.error('Error in fetchUserProfile:', error);
-      
-      // Clear cache on error
-      if (lastProfileFetchRef.current === userId) {
-        profilePromiseRef.current = null;
-      }
-      
+      setProfile(null);
       return null;
-    }
-  }, [profile]);
-
-  const refreshProfile = async () => {
-    if (user) {
-      await fetchUserProfile(user.id, true);
     }
   };
 
-  // PERFORMANCE FIX: Clear all cached data on logout
-  const clearAuthState = useCallback(() => {
+  const refreshProfile = async () => {
+    if (user?.id) {
+      await fetchUserProfile(user.id);
+    }
+  };
+
+  // SIMPLIFIED: Clear state function
+  const clearAuthState = () => {
     setSession(null);
     setUser(null);
     setProfile(null);
-    lastProfileFetchRef.current = null;
-    profilePromiseRef.current = null;
-  }, []);
+  };
 
   useEffect(() => {
-    let mounted = true;
+    let isMounted = true;
 
+    // SIMPLIFIED: Initialize auth without complex state management
     const initializeAuth = async () => {
       try {
-        // Prevent multiple initializations
-        if (isInitializedRef.current) return;
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
         
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!mounted) return;
-        
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          await fetchUserProfile(session.user.id);
+        if (!isMounted) return;
+
+        if (currentSession) {
+          setSession(currentSession);
+          setUser(currentSession.user);
+          if (currentSession.user?.id) {
+            await fetchUserProfile(currentSession.user.id);
+          }
+        } else {
+          clearAuthState();
         }
-        
-        isInitializedRef.current = true;
       } catch (error) {
         console.error('Error initializing auth:', error);
-        if (mounted) {
+        if (isMounted) {
           clearAuthState();
         }
       } finally {
-        if (mounted) {
+        if (isMounted) {
           setLoading(false);
         }
       }
@@ -142,47 +104,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     initializeAuth();
 
-    // PERFORMANCE FIX: Simplified auth state change handler
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!mounted) return;
+    // SIMPLIFIED: Basic auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+      if (!isMounted) return;
 
-      console.log('Auth state changed:', event);
+      console.log('Auth event:', event);
 
-      // Handle sign out specifically
-      if (event === 'SIGNED_OUT') {
+      if (event === 'SIGNED_OUT' || !newSession) {
         clearAuthState();
-        return;
-      }
-
-      // Handle sign in/token refresh
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        // Only fetch profile if it's a different user or we don't have one
-        if (!profile || profile.id !== session.user.id) {
-          await fetchUserProfile(session.user.id);
-        }
       } else {
-        setProfile(null);
+        setSession(newSession);
+        setUser(newSession.user);
+        
+        if (newSession.user?.id) {
+          await fetchUserProfile(newSession.user.id);
+        }
       }
     });
 
     return () => {
-      mounted = false;
+      isMounted = false;
       subscription.unsubscribe();
     };
-  }, [fetchUserProfile, clearAuthState, profile]);
+  }, []); // Remove all dependencies to prevent re-runs
 
   const login = async (email: string, password: string) => {
     try {
       const result = await supabaseSignIn(email, password);
-      
-      if (result.user) {
-        // Profile will be loaded by onAuthStateChange handler
-        // No need to manually fetch here to avoid race conditions
-      }
-      
+      // Auth state change will handle profile loading
       return result;
     } catch (error) {
       console.error('Login error:', error);
@@ -193,12 +142,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (email: string, password: string, displayName: string) => {
     try {
       const result = await supabaseSignUp(email, password, displayName);
-      
-      if (result.user) {
-        // Profile will be loaded by onAuthStateChange handler
-        // No need to manually fetch here to avoid race conditions
-      }
-      
+      // Auth state change will handle profile loading
       return result;
     } catch (error) {
       console.error('Register error:', error);
@@ -209,10 +153,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     try {
       await supabaseSignOut();
-      // clearAuthState will be called by onAuthStateChange handler
+      // Auth state change will handle clearing state
     } catch (error) {
       console.error('Logout error:', error);
-      // Force clear state even if logout fails
+      // Force clear on error
       clearAuthState();
       throw error;
     }
