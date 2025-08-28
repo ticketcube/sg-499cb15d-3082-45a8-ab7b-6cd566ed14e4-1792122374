@@ -1,7 +1,11 @@
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Calendar, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import WaitlistService, { WaitlistEntry } from "@/services/waitlistService";
@@ -27,14 +31,9 @@ export default function WaitlistModal({
 
   useEffect(() => {
     if (isOpen) {
-      // Generate available Sundays
-      const sundays = WaitlistService.getAvailableSundays();
-      setAvailableSundays(sundays);
-      
-      // Load existing waitlist entry
       loadExistingEntry();
     }
-  }, [isOpen, userId]);
+  }, [isOpen, loadExistingEntry]);
 
   const loadExistingEntry = async () => {
     try {

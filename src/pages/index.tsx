@@ -1,17 +1,10 @@
 import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Trophy, Calendar, Users, Target, TrendingUp } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { StripePrice } from "@/types";
-import { surveyService, SurveyResponse } from "@/services/surveyService";
-import { useToast } from "@/hooks/use-toast";
-import Link from "next/link";
-import Image from 'next/image';
+import { useRouter } from "next/router";
 import WaitlistModal from "@/components/WaitlistModal";
 
 type ViewMode = 'home' | 'how-it-works' | 'game-rules';
@@ -863,7 +856,7 @@ export default function HomePage() {
                                 </Link>
                             ) : accessLevel === 'guest' ? (
                                 <Link href="/auth/register">
-                                    <div className="bg-blue-600 text-white rounded-2xl px-4 py-2 shadow-lg hover:shadow-xl transition-shadow cursor-pointer hover:bg-blue-700 inline-block">
+                                    <div className="bg-blue-600 text-white rounded-2xl px-4 py-1 shadow-lg hover:shadow-xl transition-shadow cursor-pointer hover:bg-blue-700 inline-block">
                                         <h1 className="text-xl font-bold">
                                             Sign Up to Play!
                                         </h1>
@@ -992,6 +985,81 @@ export default function HomePage() {
             </div>
         </div>
     );
+
+    const handleStartGame = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        
+        if (!user) {
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: "Please ensure you're logged in and try again."
+            });
+            return;
+        }
+
+        if (!price || !gamePool) {
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: "Please ensure you're logged in and try again."
+            });
+            return;
+        }
+
+        // PHASE 3: Check if game is sold out before proceeding
+        const availableSlots = gamePool.max_players - gamePool.current_players;
+        if (availableSlots <= 0) {
+            toast({
+                variant: "destructive",
+                title: "Game Sold Out",
+                description: "Sorry, this game is currently sold out. Join the waitlist to be notified of future games!"
+            });
+            return;
+        }
+
+        setPaymentLoading(true);
+        
+        try {
+            // PHASE 3: Call the checkout session API with gamepool_id
+            const response = await fetch('/api/stripe/checkout-session', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    priceId: price.price_id,
+                    userId: user.id,
+                    gamepool_id: gamePool.id,  // PHASE 3: Include gamepool_id
+                    quantity: 1                 // PHASE 3: Default to 1 slot
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to create checkout session');
+            }
+
+            const { url } = await response.json();
+            
+            if (!url) {
+                throw new Error('No checkout URL received');
+            }
+
+            // Redirect to Stripe Checkout
+            window.location.href = url;
+            
+        } catch (error) {
+            console.error('Payment error:', error);
+            toast({
+                variant: "destructive",
+                title: "Payment Error",
+                description: error instanceof Error ? error.message : "Unable to process payment. Please try again."
+            });
+        } finally {
+            setPaymentLoading(false);
+        }
+    };
 
     return (
         <>

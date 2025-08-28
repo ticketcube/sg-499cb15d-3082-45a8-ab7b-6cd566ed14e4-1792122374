@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Trophy, Calendar, TrendingUp } from "lucide-react";
+import { useRouter } from "next/router";
 import { supabase } from "@/integrations/supabase/client";
 import { Game, Profile } from "@/types";
-import { useRouter } from "next/router";
 import { User } from "lucide-react";
 
 export default function PublicProfilePage() {
