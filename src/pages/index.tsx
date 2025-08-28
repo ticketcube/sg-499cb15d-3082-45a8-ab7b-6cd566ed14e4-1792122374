@@ -14,6 +14,8 @@ import WaitlistModal from "@/components/WaitlistModal";
 import { useToast } from "@/hooks/use-toast";
 import surveyService from "@/services/surveyService";
 import type { StripePrice, SurveyResponse } from "@/types";
+import dynamic from "next/dynamic";
+
 
 // Dynamically import PullToRefreshWrapper to prevent SSR issues
 const PullToRefreshWrapper = dynamic(() => import("@/components/PullToRefreshWrapper"), {
