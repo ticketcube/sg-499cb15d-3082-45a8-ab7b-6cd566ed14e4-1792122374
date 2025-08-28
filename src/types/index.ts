@@ -82,18 +82,6 @@ export interface StripePrice {
   created_at: string;
 }
 
-export type Game = Database["public"]["Tables"]["games"]["Row"] & {
-  profiles: { display_name: string | null } | null;
-};
-
-export const scoreOptions = [
-  { taps: 1, type: "B", points: 1, color: "text-green-600", bg: "bg-green-100" },
-  { taps: 2, type: "P", points: 2, color: "text-blue-600", bg: "bg-blue-100" },
-  { taps: 3, type: "Bir", points: 4, color: "text-red-600", bg: "bg-red-100" },
-  { taps: 4, type: "E", points: 6, color: "text-purple-600", bg: "bg-purple-100" },
-  { taps: 5, type: "R", points: 0, color: "text-gray-600", bg: "bg-gray-100" }
-];
-
 export interface Game {
   id: string;
   course_name: string;
@@ -106,6 +94,7 @@ export interface Game {
   four_points_earned: number;
   game_type: number;
   user_id: string;
+  profiles?: { display_name: string | null } | null;
 }
 
 export interface SurveyResponse {
@@ -119,3 +108,11 @@ export interface SurveyResponse {
   completed: boolean;
   created_at: string;
 }
+
+export const scoreOptions = [
+  { taps: 1, type: "B", points: 1, color: "text-green-600", bg: "bg-green-100" },
+  { taps: 2, type: "P", points: 2, color: "text-blue-600", bg: "bg-blue-100" },
+  { taps: 3, type: "Bir", points: 4, color: "text-red-600", bg: "bg-red-100" },
+  { taps: 4, type: "E", points: 6, color: "text-purple-600", bg: "bg-purple-100" },
+  { taps: 5, type: "R", points: 0, color: "text-gray-600", bg: "bg-gray-100" }
+];
