@@ -590,9 +590,7 @@ export default function HomePage() {
                             <h1 className="text-2xl font-bold text-green-700 text-center">
                                 Club Misson
                             </h1>
-                            <p className="text-lg text-gray-700">
-                                The 4Under Club guarantees fast and fun rounds of golf by solving the two problems that slow down pace of play.
-                            </p>
+                          
                             <div className="flex justify-center w-full">
                                 {priceLoading || gamePoolLoading ? (
                                     <div className="bg-gray-100 rounded-xl p-6 flex items-center justify-center">
@@ -627,6 +625,9 @@ export default function HomePage() {
                                         </Button>
                                     </div>
                                 ) : null}
+                                <p className="text-lg text-gray-700">
+                                    The 4Under Club guarantees fast and fun rounds of golf by solving the two problems that slow down pace of play.
+                                </p>
                             </div>
 
                             <div className="flex items-center space-x-3 bg-white p-3 rounded-xl shadow-sm">
