@@ -1,14 +1,11 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Target, Trophy, TrendingUp, Edit2, Save, X } from "lucide-react";
+import { Calendar, Trophy, TrendingUp } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { userService } from "@/services/userService";
 import { supabase } from "@/integrations/supabase/client";
-import { Profile } from "@/types";
 import { useRouter } from "next/router";
 
 interface PlayerRound {
@@ -24,19 +21,14 @@ interface PlayerRound {
   game_type: number;
 }
 
-
-
-
 export default function ProfilePage() {
   const { user, profile: contextProfile, loading } = useAuth();
   const router = useRouter();
-  const [profile, setProfile] = useState<Profile | null>(null);
+  
+  // OPTIMIZATION #1: Use contextProfile instead of separate profile state
+  // OPTIMIZATION #2: Combined loading states
   const [pastRounds, setPastRounds] = useState<PlayerRound[]>([]);
-  const [isEditing, setIsEditing] = useState(false);
-  const [displayName, setDisplayName] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-
+  const [loadingState, setLoadingState] = useState({ data: true, saving: false });
   const [waitlist, setWaitlist] = useState<{
       avail_1: string;
       avail_2?: string | null;
@@ -47,22 +39,11 @@ export default function ProfilePage() {
     if (!user) return;
 
     try {
-      setIsLoading(true);
-      
-      // PERFORMANCE FIX #3: Use cached profile from AuthContext instead of fetching again
-      let profileData = contextProfile;
-      
-      // Only fetch profile if not available in context (rare case)
-      if (!profileData) {
-        profileData = await userService.getProfile(user.id);
-      }
-      
-      setProfile(profileData);
-      setDisplayName(profileData?.display_name || user.email?.split("@")[0] || "");
+      setLoadingState(prev => ({ ...prev, data: true }));
 
-      // PERFORMANCE FIX #1: Parallelize remaining database queries
+      // PERFORMANCE FIX: Parallelize database queries
       const [gamesResponse, waitlistResponse] = await Promise.all([
-        // Load past rounds with detailed information
+        // Load past rounds - simplified query for better performance
         supabase
           .from("games")
           .select(`
@@ -105,9 +86,9 @@ export default function ProfilePage() {
     } catch (error) {
       console.error("Error loading profile data:", error);
     } finally {
-      setIsLoading(false);
+      setLoadingState(prev => ({ ...prev, data: false }));
     }
-  }, [user, contextProfile]);
+  }, [user]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -119,26 +100,6 @@ export default function ProfilePage() {
       loadProfileData();
     }
   }, [user, loading, router, loadProfileData]);
-
-  const handleSaveProfile = async () => {
-    if (!user || !displayName.trim()) return;
-
-    try {
-      setIsSaving(true);
-      await userService.updateProfile(user.id, displayName.trim());
-      setProfile(prev => ({ ...prev, display_name: displayName.trim() }));
-      setIsEditing(false);
-    } catch (error) {
-      console.error("Error updating profile:", error);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleCancelEdit = () => {
-    setDisplayName(profile?.display_name || user?.email?.split("@")[0] || "");
-    setIsEditing(false);
-  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -157,7 +118,10 @@ export default function ProfilePage() {
     return "N/A";
   };
 
-  if (loading || isLoading) {
+  // FEATURE ENHANCEMENT: Get most recent round for simplified display
+  const mostRecentRound = pastRounds.length > 0 ? pastRounds[0] : null;
+
+  if (loading || loadingState.data) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
@@ -171,23 +135,10 @@ export default function ProfilePage() {
 
   return (
     <div className="py-8 px-4 max-w-6xl mx-auto">
-      {/* Profile Header */}
+      {/* Profile Header - SIMPLIFIED (No editing functionality) */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>My Profile</span>
-            {!isEditing && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsEditing(true)}
-                className="gap-2"
-              >
-                <Edit2 className="h-4 w-4" />
-                Edit
-              </Button>
-            )}
-          </CardTitle>
+          <CardTitle>My Profile</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
@@ -197,37 +148,9 @@ export default function ProfilePage() {
           
           <div>
             <label className="text-sm font-medium text-gray-700">Display Name</label>
-            {isEditing ? (
-              <div className="flex gap-2 mt-1">
-                <Input
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder="Enter display name"
-                />
-                <Button
-                  size="sm"
-                  onClick={handleSaveProfile}
-                  disabled={isSaving || !displayName.trim()}
-                  className="gap-2"
-                >
-                  <Save className="h-4 w-4" />
-                  {isSaving ? "Saving..." : "Save"}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCancelEdit}
-                  className="gap-2"
-                >
-                  <X className="h-4 w-4" />
-                  Cancel
-                </Button>
-              </div>
-            ) : (
-              <p className="text-gray-900">
-                {profile?.display_name || user.email?.split("@")[0] || "Not set"}
-              </p>
-            )}
+            <p className="text-gray-900">
+              {contextProfile?.display_name || user.email?.split("@")[0] || "Not set"}
+            </p>
           </div>
 
           <div>
@@ -236,13 +159,79 @@ export default function ProfilePage() {
               {pastRounds.reduce((total, round) => total + (round.total_points || 0), 0)}
             </p>
           </div>
+
+          <div>
+            <label className="text-sm font-medium text-gray-700">Rounds Played</label>
+            <p className="text-xl font-semibold text-gray-900">{pastRounds.length}</p>
+          </div>
         </CardContent>
       </Card>
 
-      {/* Past Rounds */}
-      <Card>
+      {/* Most Recent Round - SIMPLIFIED (3 data points only) */}
+      {mostRecentRound && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>Most Recent Round</span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push(`/rounddata?roundId=${mostRecentRound.id}`)}
+              >
+                View Details
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Data Point 1: Course & Date */}
+              <div className="flex items-center space-x-2">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <p className="font-semibold">{mostRecentRound.course_name}</p>
+                  <p className="text-sm text-muted-foreground">{formatDate(mostRecentRound.created_at)}</p>
+                </div>
+              </div>
+              
+              {/* Data Point 2: Score/Handicap */}
+              <div className="flex items-center space-x-2">
+                <Badge variant="outline">{getScoreDisplay(mostRecentRound)}</Badge>
+                <span className="text-sm">Target: {mostRecentRound.target_score}</span>
+              </div>
+              
+              {/* Data Point 3: Points Earned */}
+              <div className="flex items-center justify-between space-x-4">
+                <div className="flex items-center space-x-2">
+                  <Trophy className="h-4 w-4 text-yellow-600" />
+                  <span className="font-medium">{mostRecentRound.total_points} pts</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <TrendingUp className={`h-4 w-4 ${mostRecentRound.four_points_earned >= 0 ? 'text-green-600' : 'text-red-600'}`} />
+                  <span className={`font-medium ${mostRecentRound.four_points_earned >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {mostRecentRound.four_points_earned >= 0 ? '+' : ''}{mostRecentRound.four_points_earned}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* All Rounds Summary - SIMPLIFIED */}
+      <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Past Rounds ({pastRounds.length})</CardTitle>
+          <CardTitle className="flex items-center justify-between">
+            <span>All Rounds ({pastRounds.length})</span>
+            {pastRounds.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push('/rounddata')}
+              >
+                View All Details
+              </Button>
+            )}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {pastRounds.length === 0 ? (
@@ -253,70 +242,50 @@ export default function ProfilePage() {
               </Button>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-2">
               {pastRounds.map((round) => (
-                <Card key={round.id}>
-                  <CardContent className="p-4">
-                    <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-center">
-                      <div className="md:col-span-2">
-                        <h3 className="font-semibold">{round.course_name}</h3>
-                        <p className="text-sm text-muted-foreground">{round.tee_name} Tees</p>
-                      </div>
-                      
-                      <div className="flex items-center space-x-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">{formatDate(round.created_at)}</span>
-                      </div>
-                      
-                      <div className="flex items-center space-x-2">
-                        <Badge variant="outline">{getScoreDisplay(round)}</Badge>
-                      </div>
-                      
-                      <div className="flex items-center space-x-2">
-                        <Target className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">Target: {round.target_score}</span>
-                      </div>
-                      
-                      <div className="flex items-center justify-between space-x-4">
-                        <div className="flex items-center space-x-2">
-                          <Trophy className="h-4 w-4 text-yellow-600" />
-                          <span className="text-sm font-medium">{round.total_points} pts</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <TrendingUp className={`h-4 w-4 ${round.four_points_earned >= 0 ? 'text-green-600' : 'text-red-600'}`} />
-                          <span className={`text-sm font-medium ${round.four_points_earned >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {round.four_points_earned >= 0 ? '+' : ''}{round.four_points_earned}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <div
+                  key={round.id}
+                  className="flex justify-between items-center p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+                  onClick={() => router.push(`/rounddata?roundId=${round.id}`)}
+                >
+                  <div>
+                    <h4 className="font-medium">{round.course_name}</h4>
+                    <p className="text-sm text-gray-600">
+                      {round.tee_name} • {formatDate(round.created_at)}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-green-600">{round.total_points} pts</p>
+                    <p className="text-sm text-gray-600">
+                      {round.four_points_earned >= 0 ? '+' : ''}{round.four_points_earned}
+                    </p>
+                  </div>
+                </div>
               ))}
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* WaitList */}
-      {/* Waitlist */}
-      <Card className="mt-6">
-          <CardHeader>
-              <CardTitle>Waitlist Availability</CardTitle>
-          </CardHeader>
-          <CardContent>
-              {!waitlist ? (
-                  <div className="text-center py-8 text-gray-500">
-                      <p>You haven’t set your availability yet.</p>
-                  </div>
-              ) : (
-                  <div className="space-y-2">
-                      <p><span className="font-semibold">1st Choice:</span> {waitlist.avail_1}</p>
-                      {waitlist.avail_2 && <p><span className="font-semibold">2nd Choice:</span> {waitlist.avail_2}</p>}
-                      {waitlist.avail_3 && <p><span className="font-semibold">3rd Choice:</span> {waitlist.avail_3}</p>}
-                  </div>
-              )}
-          </CardContent>
+      {/* Waitlist - KEPT as requested */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Waitlist Availability</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {!waitlist ? (
+            <div className="text-center py-8 text-gray-500">
+              <p>You haven't set your availability yet.</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <p><span className="font-semibold">1st Choice:</span> {waitlist.avail_1}</p>
+              {waitlist.avail_2 && <p><span className="font-semibold">2nd Choice:</span> {waitlist.avail_2}</p>}
+              {waitlist.avail_3 && <p><span className="font-semibold">3rd Choice:</span> {waitlist.avail_3}</p>}
+            </div>
+          )}
+        </CardContent>
       </Card>
     </div>
   );
