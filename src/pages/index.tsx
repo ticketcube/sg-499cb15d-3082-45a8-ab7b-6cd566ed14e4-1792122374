@@ -585,50 +585,50 @@ export default function HomePage() {
                     </div>
 
                     <div className="space-y-4">
+                        <div className="flex justify-center w-full">
+                            {priceLoading || gamePoolLoading ? (
+                                <div className="bg-gray-100 rounded-xl p-6 flex items-center justify-center">
+                                    <div className="w-8 h-8 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
+                                </div>
+                            ) : error ? (
+                                <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                                    <p className="text-red-600 text-sm font-medium">{error}</p>
+                                </div>
+                            ) : price && gamePool ? (
+                                <div className="bg-gradient-to-r from-blue-50 to-green-50 border-2 border-green-200 rounded-xl p-4 space-y-3">
+                                    {/* Game Pool Info */}
+                                    <div className="text-center">
+                                        <h3 className="font-bold text-green-800 text-lg">{gamePool.name}</h3>
+                                        <p className="text-sm text-green-700 font-medium">
+                                            {inventoryStatus.statusText}
+                                        </p>
+                                    </div>
+
+                                    {/* Join Game Button integrated into the stats module */}
+                                    <Button
+                                        onClick={handlePayment}
+                                        disabled={paymentLoading || inventoryStatus.isSoldOut}
+                                        className={`w-full py-4 text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all ${inventoryStatus.isSoldOut
+                                            ? "bg-gray-400 text-white cursor-not-allowed"
+                                            : "bg-green-600 hover:bg-green-700 text-white"
+                                            }`}
+                                    >
+                                        {inventoryStatus.isSoldOut ? "SOLD OUT" :
+                                            paymentLoading ? "Processing..." :
+                                                `Buy 6:10am Tee Time`}
+                                    </Button>
+                                </div>
+                            ) : null}
+                        </div>
                        
                         <div className="space-y-4">
                             <h1 className="text-2xl font-bold text-green-700 text-center">
                                 Club Misson
                             </h1>
+                            <p className="text-lg text-gray-700">
+                                The 4Under Club guarantees fast and fun rounds of golf by solving the two problems that slow down pace of play.
+                            </p>
                           
-                            <div className="flex justify-center w-full">
-                                {priceLoading || gamePoolLoading ? (
-                                    <div className="bg-gray-100 rounded-xl p-6 flex items-center justify-center">
-                                        <div className="w-8 h-8 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
-                                    </div>
-                                ) : error ? (
-                                    <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-                                        <p className="text-red-600 text-sm font-medium">{error}</p>
-                                    </div>
-                                ) : price && gamePool ? (
-                                    <div className="bg-gradient-to-r from-blue-50 to-green-50 border-2 border-green-200 rounded-xl p-4 space-y-3">
-                                        {/* Game Pool Info */}
-                                        <div className="text-center">
-                                            <h3 className="font-bold text-green-800 text-lg">{gamePool.name}</h3>
-                                            <p className="text-sm text-green-700 font-medium">
-                                                {inventoryStatus.statusText}
-                                            </p>
-                                        </div>
-
-                                        {/* Join Game Button integrated into the stats module */}
-                                        <Button
-                                            onClick={handlePayment}
-                                            disabled={paymentLoading || inventoryStatus.isSoldOut}
-                                            className={`w-full py-4 text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all ${inventoryStatus.isSoldOut
-                                                    ? "bg-gray-400 text-white cursor-not-allowed"
-                                                    : "bg-green-600 hover:bg-green-700 text-white"
-                                                }`}
-                                        >
-                                            {inventoryStatus.isSoldOut ? "SOLD OUT" :
-                                                paymentLoading ? "Processing..." :
-                                                    `Buy 6:10am Tee Time`}
-                                        </Button>
-                                    </div>
-                                ) : null}
-                                <p className="text-lg text-gray-700">
-                                    The 4Under Club guarantees fast and fun rounds of golf by solving the two problems that slow down pace of play.
-                                </p>
-                            </div>
 
                             <div className="flex items-center space-x-3 bg-white p-3 rounded-xl shadow-sm">
                                 <div className="p-2 bg-green-100 rounded-full min-w-fit">
