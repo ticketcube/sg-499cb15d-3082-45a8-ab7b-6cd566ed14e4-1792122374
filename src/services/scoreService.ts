@@ -88,7 +88,7 @@ export const scoreService = {
           total_points,
           four_points_earned,
           created_at,
-          profiles!games_user_id_fkey (
+          profiles (
             display_name
           )
         `)
