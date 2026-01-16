@@ -660,6 +660,13 @@ export type Database = {
             referencedRelation: "course_tees"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "games_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       guest_users: {
