@@ -88,7 +88,9 @@ export const scoreService = {
           total_points,
           four_points_earned,
           created_at,
-          profiles(display_name)
+          profiles!games_user_id_fkey (
+            display_name
+          )
         `)
         .gte('created_at', startOfMonth.toISOString())
         .lte('created_at', endOfMonth.toISOString())
