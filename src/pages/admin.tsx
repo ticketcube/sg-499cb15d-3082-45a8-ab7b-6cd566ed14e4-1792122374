@@ -50,7 +50,7 @@ export default function AdminPage() {
   }, [toast]);
 
   useEffect(() => {
-    if (!loading && (!user || user.email !== 'alan@alanrakov.com')) {
+    if (!loading && (!user || user.email !== 'a@a.com')) {
       router.push('/auth/login');
       return;
     }
