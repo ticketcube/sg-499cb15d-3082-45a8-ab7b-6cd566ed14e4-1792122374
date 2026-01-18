@@ -1450,6 +1450,10 @@ export type Database = {
       }
       generate_api_key: { Args: never; Returns: string }
       generate_api_secret: { Args: never; Returns: string }
+      increment_current_players: {
+        Args: { pool_id: string; qty: number }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
