@@ -55,7 +55,7 @@ export default function AdminPage() {
       return;
     }
 
-    if (user && user.email === 'alan@alanrakov.com') {
+    if (user && user.email === 'a@a.com') {
       loadData();
     }
   }, [user, loading, router, loadData]);
