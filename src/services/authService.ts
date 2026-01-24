@@ -15,21 +15,20 @@ export interface AuthError {
 
 // Dynamic URL Helper
 const getURL = () => {
-  let url = process?.env?.NEXT_PUBLIC_VERCEL_URL ?? 
-           process?.env?.NEXT_PUBLIC_SITE_URL ?? 
-           'http://localhost:3000'
-  
-  // Handle undefined or null url
-  if (!url) {
-    url = 'http://localhost:3000';
+  // Use current domain (works for all Vercel deployments)
+  if (typeof window !== 'undefined') {
+    return window.location.origin + '/'
   }
-  
-  // Ensure url has protocol
+
+  // Server-side: use Vercel's auto-set URL or fallback
+  let url =
+    process?.env?.NEXT_PUBLIC_VERCEL_URL ??
+    process?.env?.NEXT_PUBLIC_APP_URL ??
+    'http://localhost:3000'
+
   url = url.startsWith('http') ? url : `https://${url}`
-  
-  // Ensure url ends with slash
   url = url.endsWith('/') ? url : `${url}/`
-  
+
   return url
 }
 
