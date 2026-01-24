@@ -1,4 +1,4 @@
- 
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 export type Json =
   | string
   | number
@@ -36,6 +36,75 @@ export type Database = {
           setting_key?: string
           setting_value?: Json
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      admin_users: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          role: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          role?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          role?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      api_usage_logs: {
+        Row: {
+          api_calls: number | null
+          api_name: string
+          cost: number | null
+          created_at: string | null
+          endpoint: string | null
+          id: string
+          model: string | null
+          request_data: Json | null
+          tokens_input: number | null
+          tokens_output: number | null
+          tokens_total: number | null
+          user_id: string | null
+        }
+        Insert: {
+          api_calls?: number | null
+          api_name: string
+          cost?: number | null
+          created_at?: string | null
+          endpoint?: string | null
+          id?: string
+          model?: string | null
+          request_data?: Json | null
+          tokens_input?: number | null
+          tokens_output?: number | null
+          tokens_total?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          api_calls?: number | null
+          api_name?: string
+          cost?: number | null
+          created_at?: string | null
+          endpoint?: string | null
+          id?: string
+          model?: string | null
+          request_data?: Json | null
+          tokens_input?: number | null
+          tokens_output?: number | null
+          tokens_total?: number | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -1051,6 +1120,36 @@ export type Database = {
         }
         Relationships: []
       }
+      search_cache: {
+        Row: {
+          created_at: string | null
+          expires_at: string
+          hit_count: number | null
+          id: string
+          query: string
+          results: Json
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at: string
+          hit_count?: number | null
+          id?: string
+          query: string
+          results: Json
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string
+          hit_count?: number | null
+          id?: string
+          query?: string
+          results?: Json
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       stripe_prices: {
         Row: {
           active: boolean | null
@@ -1126,6 +1225,39 @@ export type Database = {
           updated_at?: string | null
           user_agent?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      system_settings: {
+        Row: {
+          created_at: string | null
+          enable_ai: boolean | null
+          id: string
+          max_conversation_length: number | null
+          openai_api_key: string | null
+          openai_model: string | null
+          system_prompt: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          enable_ai?: boolean | null
+          id?: string
+          max_conversation_length?: number | null
+          openai_api_key?: string | null
+          openai_model?: string | null
+          system_prompt?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          enable_ai?: boolean | null
+          id?: string
+          max_conversation_length?: number | null
+          openai_api_key?: string | null
+          openai_model?: string | null
+          system_prompt?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -1442,6 +1574,7 @@ export type Database = {
         }[]
       }
       cleanup_expired_pending_templates: { Args: never; Returns: undefined }
+      cleanup_expired_search_cache: { Args: never; Returns: undefined }
       cleanup_expired_sessions: { Args: never; Returns: undefined }
       cleanup_old_conversations: { Args: never; Returns: undefined }
       decrement_mint_count: {
