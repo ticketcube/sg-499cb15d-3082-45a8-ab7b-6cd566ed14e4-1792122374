@@ -15,7 +15,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 const COLORS = ['#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
 
 // Admin email configuration - update this to your admin email
-const ADMIN_EMAIL = 'alan@alanrakov.com';
+const ADMIN_EMAIL = 'a@a.com';
 
 export default function AdminPage() {
   const router = useRouter();
