@@ -82,6 +82,8 @@ export default function HomePage() {
    
     
     // Survey state
+    const [surveyEnabled, setSurveyEnabled] = useState(false);
+    const [surveyLoading, setSurveyLoading] = useState(true);
     const [currentStep, setCurrentStep] = useState(0);
     const [answers, setAnswers] = useState<string[]>([]);
     const [responseId, setResponseId] = useState<string | null>(null);
@@ -105,9 +107,26 @@ export default function HomePage() {
         setIsClient(true);
     }, []);
 
-    // Initialize survey for guests
+    // Check if survey is enabled
     useEffect(() => {
-        if (!user && !responseId && !isInitializing && currentStep > 0) {
+        const checkSurveyEnabled = async () => {
+            try {
+                const enabled = await surveyService.isSurveyEnabled();
+                setSurveyEnabled(enabled);
+            } catch (error) {
+                console.error('Failed to check survey status:', error);
+                setSurveyEnabled(false);
+            } finally {
+                setSurveyLoading(false);
+            }
+        };
+        
+        checkSurveyEnabled();
+    }, []);
+
+    // Initialize survey for guests (only if survey is enabled)
+    useEffect(() => {
+        if (!user && !responseId && !isInitializing && currentStep > 0 && surveyEnabled) {
             const initSurvey = async () => {
                 setIsInitializing(true);
                 try {
@@ -123,7 +142,7 @@ export default function HomePage() {
             };
             initSurvey();
         }
-    }, [user, responseId, isInitializing, currentStep, sessionId]);
+    }, [user, responseId, isInitializing, currentStep, sessionId, surveyEnabled]);
 
     // PHASE 3: Fetch both Stripe price and GamePool data
     useEffect(() => {
@@ -375,8 +394,62 @@ export default function HomePage() {
         );
     }
 
-    // Guest survey view - replaces old welcome view
+    // Guest survey view - only show if survey is enabled
     const renderGuestView = () => {
+        // If survey is disabled, skip directly to registration
+        if (!surveyLoading && !surveyEnabled) {
+            // Show simple landing with register button
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-start justify-center pt-8 p-4">
+                    <Card className="w-full max-w-md mx-auto min-h-[600px]">
+                        <CardContent className="p-8 text-center space-y-6 flex flex-col justify-between min-h-[552px]">
+                            <div className="space-y-6">
+                                <div className="relative w-24 h-24 mx-auto">
+                                    <Image
+                                        src="/full-4unders-logo-mddg489f.png"
+                                        alt="4Under Club Logo"
+                                        fill
+                                        className="object-contain"
+                                    />
+                                </div>
+                                <div className="space-y-4">
+                                    <h1 className="text-2xl font-bold text-green-700">
+                                        Welcome to Golf 4Points!
+                                    </h1>
+                                    <p className="text-lg text-gray-700">
+                                        Join the 4Under Club and play fast, fun golf in under 4 hours.
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="space-y-3">
+                                <Link href="/auth/register">
+                                    <Button className="w-full bg-green-600 hover:bg-green-700 text-white text-lg py-6">
+                                        Create Account
+                                    </Button>
+                                </Link>
+                                <Button
+                                    onClick={() => router.push('/auth/login')}
+                                    variant="outline"
+                                    className="w-full text-lg py-3"
+                                >
+                                    Member Login
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            );
+        }
+
+        // Show loading state while checking survey status
+        if (surveyLoading) {
+            return (
+                <div className="flex items-center justify-center h-screen">
+                    <div className="w-8 h-8 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
+                </div>
+            );
+        }
+
         // Show registration after completing survey
         if (showRegistration) {
             return (
@@ -471,7 +544,7 @@ export default function HomePage() {
             );
         }
 
-        // Initial survey landing
+        // Initial survey landing (only if survey is enabled)
         if (currentStep === 0) {
             return (
                 <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-start justify-center pt-8 p-4">
@@ -520,7 +593,7 @@ export default function HomePage() {
             );
         }
 
-        // Survey questions
+        // Survey questions (only if survey is enabled)
         const currentQuestion = surveyQuestions[currentStep - 1];
         const progressPercentage = (currentStep / surveyQuestions.length) * 100;
 

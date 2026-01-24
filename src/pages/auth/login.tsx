@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,40 +17,37 @@ export default function LoginPage() {
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  
-  if (!email || !password) {
-    toast({ variant: "destructive", title: "Error", description: "Please fill in all fields" });
-    return;
-  }
-
-  setLoading(true);
-  
-  try {
-    const result = await login(email, password);
+    e.preventDefault();
     
-    // Check if login actually succeeded
-    if (result.user && result.session) {
-      toast({ title: "Success", description: "Logged in successfully!" });
-      
-      // Small delay to ensure state updates complete
-      setTimeout(() => {
-        const redirect = router.query.redirect as string | undefined;
-        router.push(redirect || "/");
-      }, 100);
-    } else {
-      throw new Error("Login failed");
+    if (!email || !password) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please fill in all fields"
+      });
+      return;
     }
-  } catch (error) {
-    setLoading(false); // Only set loading false on error
-    toast({
-      variant: "destructive",
-      title: "Error",
-      description: "Failed to log in. Please check your credentials."
-    });
-  }
-  // Don't set loading to false on success - let navigation happen
-};
+
+    setLoading(true);
+    
+    try {
+      await login(email, password);
+      toast({
+        title: "Success",
+        description: "Logged in successfully!"
+      });
+      const redirect = router.query.redirect as string | undefined;
+      router.push(redirect || "/");
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: error instanceof Error ? error.message : "Invalid email or password. Please try again."
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="p-4 flex flex-col items-center justify-center min-h-[60vh]">
@@ -71,6 +67,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={loading}
               />
             </div>
             
@@ -83,6 +80,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={loading}
               />
             </div>
             

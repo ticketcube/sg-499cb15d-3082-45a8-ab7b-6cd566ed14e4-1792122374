@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
 
@@ -14,6 +13,9 @@ import { useToast } from "@/hooks/use-toast";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 const COLORS = ['#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
+
+// Admin email configuration - update this to your admin email
+const ADMIN_EMAIL = 'alan@alanrakov.com';
 
 export default function AdminPage() {
   const router = useRouter();
@@ -38,7 +40,7 @@ export default function AdminPage() {
       setAnalytics(analyticsData);
       setResponses(responsesData);
     } catch (error) {
-      console.error('Error loading admin ', error);
+      console.error('Error loading admin data:', error);
       toast({
         variant: 'destructive',
         title: 'Error',
@@ -50,15 +52,22 @@ export default function AdminPage() {
   }, [toast]);
 
   useEffect(() => {
-    if (!loading && (!user || user.email !== 'a@a.com')) {
-      router.push('/auth/login');
+    // Check if user is authorized
+    if (!loading && (!user || user.email !== ADMIN_EMAIL)) {
+      toast({
+        variant: 'destructive',
+        title: 'Access Denied',
+        description: 'You do not have permission to access this page.'
+      });
+      router.push('/');
       return;
     }
 
-    if (user && user.email === 'a@a.com') {
+    // Load admin data if authorized
+    if (user && user.email === ADMIN_EMAIL) {
       loadData();
     }
-  }, [user, loading, router, loadData]);
+  }, [user, loading, router, loadData, toast]);
 
   const handleToggleSurvey = async (enabled: boolean) => {
     try {
@@ -102,17 +111,17 @@ export default function AdminPage() {
     window.URL.revokeObjectURL(url);
   };
 
+  // Show loading state
   if (loading || loadingData) {
     return (
-     
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="w-8 h-8 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
-        </div>
-     
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-8 h-8 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
+      </div>
     );
   }
 
-  if (!user || user.email !== 'alan@alanrakov.com') {
+  // Block unauthorized access
+  if (!user || user.email !== ADMIN_EMAIL) {
     return null;
   }
 
@@ -129,156 +138,154 @@ export default function AdminPage() {
   })) : [];
 
   return (
-    
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Survey Admin</h1>
-          <div className="flex items-center space-x-4">
-            <span className="text-sm font-medium">Survey Status:</span>
-            <Switch
-              checked={surveyEnabled}
-              onCheckedChange={handleToggleSurvey}
-            />
-            <Badge variant={surveyEnabled ? "default" : "secondary"}>
-              {surveyEnabled ? "Enabled" : "Disabled"}
-            </Badge>
-          </div>
+    <div className="container mx-auto p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Survey Admin Dashboard</h1>
+        <div className="flex items-center space-x-4">
+          <span className="text-sm font-medium">Survey Status:</span>
+          <Switch
+            checked={surveyEnabled}
+            onCheckedChange={handleToggleSurvey}
+          />
+          <Badge variant={surveyEnabled ? "default" : "secondary"}>
+            {surveyEnabled ? "Enabled" : "Disabled"}
+          </Badge>
         </div>
+      </div>
 
-        {analytics && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Total Started</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{analytics.total_started}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Total Completed</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{analytics.total_completed}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Completion Rate</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{analytics.completion_rate.toFixed(1)}%</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Actions</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Button onClick={exportData} variant="outline" size="sm">
-                  Export CSV
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+      {analytics && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Total Started</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{analytics.total_started}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Total Completed</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{analytics.total_completed}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Completion Rate</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{analytics.completion_rate.toFixed(1)}%</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Actions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={exportData} variant="outline" size="sm">
+                Export CSV
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
-        <Tabs defaultValue="analytics" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="responses">Responses</TabsTrigger>
-          </TabsList>
+      <Tabs defaultValue="analytics" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="responses">Responses</TabsTrigger>
+        </TabsList>
 
-          <TabsContent value="analytics" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Drop-off Rates</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={dropOffData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip formatter={(value) => [`${Number(value).toFixed(1)}%`, 'Drop-off Rate']} />
-                      <Bar dataKey="value" fill="#10B981" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>How Often Do You Play?</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        data={q1Data}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {q1Data.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="responses">
+        <TabsContent value="analytics" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Survey Responses</CardTitle>
+                <CardTitle>Drop-off Rates</CardTitle>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Started</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Q1: How Often</TableHead>
-                      <TableHead>Q2: Duration</TableHead>
-                      <TableHead>Q3: GHIN</TableHead>
-                      <TableHead>Drop-off</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {responses.map((response) => (
-                      <TableRow key={response.id}>
-                        <TableCell>
-                          {new Date(response.started_at).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={response.completed ? "default" : "secondary"}>
-                            {response.completed ? "Completed" : "Incomplete"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{response.question_1_answer || "-"}</TableCell>
-                        <TableCell>{response.question_2_answer || "-"}</TableCell>
-                        <TableCell>{response.question_3_answer || "-"}</TableCell>
-                        <TableCell>Step {response.drop_off_step}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={dropOffData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip formatter={(value) => [`${Number(value).toFixed(1)}%`, 'Drop-off Rate']} />
+                    <Bar dataKey="value" fill="#10B981" />
+                  </BarChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
-    
+
+            <Card>
+              <CardHeader>
+                <CardTitle>How Often Do You Play?</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={q1Data}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {q1Data.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="responses">
+          <Card>
+            <CardHeader>
+              <CardTitle>Survey Responses</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Started</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Q1: How Often</TableHead>
+                    <TableHead>Q2: Duration</TableHead>
+                    <TableHead>Q3: GHIN</TableHead>
+                    <TableHead>Drop-off</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {responses.map((response) => (
+                    <TableRow key={response.id}>
+                      <TableCell>
+                        {new Date(response.started_at).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={response.completed ? "default" : "secondary"}>
+                          {response.completed ? "Completed" : "Incomplete"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{response.question_1_answer || "-"}</TableCell>
+                      <TableCell>{response.question_2_answer || "-"}</TableCell>
+                      <TableCell>{response.question_3_answer || "-"}</TableCell>
+                      <TableCell>Step {response.drop_off_step}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 }
