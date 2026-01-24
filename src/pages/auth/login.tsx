@@ -18,37 +18,40 @@ export default function LoginPage() {
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!email || !password) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Please fill in all fields"
-      });
-      return;
-    }
+  e.preventDefault();
+  
+  if (!email || !password) {
+    toast({ variant: "destructive", title: "Error", description: "Please fill in all fields" });
+    return;
+  }
 
-    setLoading(true);
+  setLoading(true);
+  
+  try {
+    const result = await login(email, password);
     
-    try {
-      await login(email, password);
-      toast({
-        title: "Success",
-        description: "Logged in successfully!"
-      });
-      const redirect = router.query.redirect as string | undefined;
-      router.push(redirect || "/");
-    } catch {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to log in. Please check your credentials."
-      });
-    } finally {
-      setLoading(false);
+    // Check if login actually succeeded
+    if (result.user && result.session) {
+      toast({ title: "Success", description: "Logged in successfully!" });
+      
+      // Small delay to ensure state updates complete
+      setTimeout(() => {
+        const redirect = router.query.redirect as string | undefined;
+        router.push(redirect || "/");
+      }, 100);
+    } else {
+      throw new Error("Login failed");
     }
-  };
+  } catch (error) {
+    setLoading(false); // Only set loading false on error
+    toast({
+      variant: "destructive",
+      title: "Error",
+      description: "Failed to log in. Please check your credentials."
+    });
+  }
+  // Don't set loading to false on success - let navigation happen
+};
 
   return (
     <div className="p-4 flex flex-col items-center justify-center min-h-[60vh]">
