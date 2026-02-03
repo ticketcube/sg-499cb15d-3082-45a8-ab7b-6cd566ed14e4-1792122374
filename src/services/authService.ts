@@ -66,54 +66,73 @@ export class AuthService {
     return response.json();
   }
 
-  static async signInWithFanDragon(fanDragonTokens: FanDragonTokenResponse) {
-    const { user, access_token } = fanDragonTokens;
-
-    // Check if user exists in profiles
-    const { data: existingProfile } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("email", user.email)
-      .single();
-
-    if (existingProfile) {
-      // User exists, sign them in with Supabase
-      const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
-        email: user.email,
-        password: access_token, // Use FanDragon token as password placeholder
-      });
-
-      if (signInError) {
-        // If password doesn't match, update it
-        await this.updateSupabasePassword(user.email, access_token);
-      }
-
-      return { user: existingProfile };
-    } else {
-      // Create new user in Supabase
-      const { data: authData, error: signUpError } = await supabase.auth.signUp({
-        email: user.email,
-        password: access_token,
-        options: {
-          data: {
-            display_name: user.display_name || user.email.split("@")[0],
-            fandragon_id: user.id,
-          },
+  static async signInWithFanDragon(tokens: FanDragonTokenResponse) {
+    try {
+      // First, get user info from FanDragon using the access token
+      const userInfoResponse = await fetch("https://fandragon.com/api/user", {
+        headers: {
+          Authorization: `Bearer ${tokens.access_token}`,
         },
       });
 
-      if (signUpError) {
-        throw signUpError;
+      if (!userInfoResponse.ok) {
+        throw new Error("Failed to fetch user info from FanDragon");
       }
 
-      // Fetch the newly created profile
-      const { data: newProfile } = await supabase
+      const fanDragonUser = await userInfoResponse.json();
+
+      // Check if user exists in Supabase profiles
+      const { data: existingProfile } = await supabase
         .from("profiles")
         .select("*")
-        .eq("id", authData.user?.id)
+        .eq("email", fanDragonUser.email)
         .single();
 
-      return { user: newProfile };
+      if (existingProfile) {
+        // User exists - sign them in with a custom token approach
+        // Store FanDragon tokens in local storage for now
+        localStorage.setItem("fandragon_tokens", JSON.stringify(tokens));
+        localStorage.setItem("fandragon_user", JSON.stringify(fanDragonUser));
+        
+        // Create a Supabase session using email-based authentication
+        // This is a workaround since we can't directly inject FanDragon tokens into Supabase
+        const { data: sessionData, error: signInError } = await supabase.auth.signInWithPassword({
+          email: fanDragonUser.email,
+          password: tokens.access_token, // Use access token as password for OAuth users
+        });
+
+        if (signInError) {
+          // If password sign-in fails, user might need to reset password or we need to create them
+          throw new Error("Failed to establish Supabase session");
+        }
+
+        return sessionData;
+      } else {
+        // New user - create profile and sign them up
+        localStorage.setItem("fandragon_tokens", JSON.stringify(tokens));
+        localStorage.setItem("fandragon_user", JSON.stringify(fanDragonUser));
+
+        // Sign up the user with Supabase using FanDragon credentials
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email: fanDragonUser.email,
+          password: tokens.access_token, // Use access token as password
+          options: {
+            data: {
+              display_name: fanDragonUser.name || fanDragonUser.email,
+              fandragon_id: fanDragonUser.id,
+            },
+          },
+        });
+
+        if (signUpError) {
+          throw new Error(`Failed to create Supabase user: ${signUpError.message}`);
+        }
+
+        return signUpData;
+      }
+    } catch (error) {
+      console.error("FanDragon sign-in error:", error);
+      throw error;
     }
   }
 
