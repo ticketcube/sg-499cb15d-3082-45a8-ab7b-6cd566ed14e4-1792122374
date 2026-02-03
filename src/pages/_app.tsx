@@ -33,11 +33,13 @@ export default function App({ Component, pageProps }: AppProps) {
     };
 
     const handleRouteChangeComplete = () => {
-      // Strip hash to prevent auto-anchor jump on first paint
-      if (location.hash) {
-        history.replaceState(null, "", location.pathname + location.search);
+      // Only handle scroll for non-auth routes to prevent interference with OAuth flow
+      if (!router.pathname.startsWith('/auth/')) {
+        if (location.hash) {
+          history.replaceState(null, "", location.pathname + location.search);
+        }
+        scrollTopNextFrame();
       }
-      scrollTopNextFrame();
     };
 
     router.events.on("routeChangeComplete", handleRouteChangeComplete);

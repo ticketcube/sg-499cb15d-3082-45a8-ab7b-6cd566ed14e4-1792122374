@@ -33,7 +33,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshProfile = async () => {
     try {
+      console.log('Refreshing profile...');
       const { data: { session: currentSession } } = await supabase.auth.getSession();
+      
+      console.log('Current session:', currentSession ? 'exists' : 'none');
       
       if (currentSession?.user) {
         setSession(currentSession);
@@ -45,9 +48,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .eq('id', currentSession.user.id)
           .single();
 
+        console.log('Profile fetch result:', { hasData: !!data, error });
+
         if (!error && data) {
           setProfile(data as Profile);
         }
+      } else {
+        // No session - clear everything
+        setSession(null);
+        setUser(null);
+        setProfile(null);
       }
     } catch (error) {
       console.error('Error refreshing profile:', error);
@@ -59,7 +69,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const initAuth = async () => {
       try {
+        console.log('Initializing auth...');
         const { data: { session: initialSession } } = await supabase.auth.getSession();
+        
+        console.log('Initial session:', initialSession ? 'exists' : 'none');
         
         if (!mounted) return;
 
@@ -89,6 +102,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     initAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+      console.log('Auth state change:', event, newSession ? 'has session' : 'no session');
+      
       if (!mounted) return;
 
       if (event === 'SIGNED_OUT' || !newSession?.user) {
