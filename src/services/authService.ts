@@ -26,7 +26,7 @@ export class AuthService {
   static getFanDragonAuthUrl(): string {
     const clientId = process.env.NEXT_PUBLIC_FANDRAGON_CLIENT_ID;
     const redirectUri = this.getRedirectUri();
-    const oauthUrl = process.env.NEXT_PUBLIC_FANDRAGON_OAUTH_URL || "https://fandragon.io/oauth/consent";
+    const oauthUrl = process.env.NEXT_PUBLIC_FANDRAGON_OAUTH_URL || "https://fandragon.com/oauth/consent";
     
     const params = new URLSearchParams({
       client_id: clientId || "",
@@ -42,7 +42,7 @@ export class AuthService {
     const clientId = process.env.NEXT_PUBLIC_FANDRAGON_CLIENT_ID;
     const clientSecret = process.env.FANDRAGON_CLIENT_SECRET;
     const redirectUri = this.getRedirectUri();
-    const tokenUrl = process.env.NEXT_PUBLIC_FANDRAGON_TOKEN_URL || "https://fandragon.io/oauth/token";
+    const tokenUrl = process.env.NEXT_PUBLIC_FANDRAGON_TOKEN_URL || "https://fandragon.com/oauth/token";
 
     const response = await fetch(tokenUrl, {
       method: "POST",
@@ -132,7 +132,7 @@ export class AuthService {
   static async refreshFanDragonToken(refreshToken: string): Promise<FanDragonTokenResponse> {
     const clientId = process.env.NEXT_PUBLIC_FANDRAGON_CLIENT_ID;
     const clientSecret = process.env.FANDRAGON_CLIENT_SECRET;
-    const tokenUrl = process.env.NEXT_PUBLIC_FANDRAGON_TOKEN_URL || "https://fandragon.io/oauth/token";
+    const tokenUrl = process.env.NEXT_PUBLIC_FANDRAGON_TOKEN_URL || "https://fandragon.com/oauth/token";
 
     const response = await fetch(tokenUrl, {
       method: "POST",
