@@ -32,18 +32,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const refreshProfile = async () => {
-    const currentUser = user;
-    if (!currentUser?.id) return;
-
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', currentUser.id)
-        .single();
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      
+      if (currentSession?.user) {
+        setSession(currentSession);
+        setUser(currentSession.user);
 
-      if (!error && data) {
-        setProfile(data as Profile);
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', currentSession.user.id)
+          .single();
+
+        if (!error && data) {
+          setProfile(data as Profile);
+        }
       }
     } catch (error) {
       console.error('Error refreshing profile:', error);
