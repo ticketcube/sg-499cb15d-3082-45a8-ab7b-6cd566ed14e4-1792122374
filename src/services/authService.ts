@@ -23,16 +23,29 @@ export class AuthService {
       : "http://localhost:3000/auth/callback";
   }
 
+  private static generateState(): string {
+    // Generate a random state value for CSRF protection
+    return Math.random().toString(36).substring(2) + Date.now().toString(36);
+  }
+
   static getFanDragonAuthUrl(): string {
     const clientId = process.env.NEXT_PUBLIC_FANDRAGON_CLIENT_ID;
     const redirectUri = this.getRedirectUri();
-    const oauthUrl = process.env.NEXT_PUBLIC_FANDRAGON_OAUTH_URL || "https://agyoehyzvergiiwdbzmz.supabase.co/auth/v1/authorize";
+    const oauthUrl = process.env.NEXT_PUBLIC_FANDRAGON_OAUTH_URL || "https://fandragon.com/auth/login";
+    const state = this.generateState();
+    
+    // Store state in sessionStorage for validation in callback
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("oauth_state", state);
+    }
     
     const params = new URLSearchParams({
+      oauth_flow: "true",
       client_id: clientId || "",
       redirect_uri: redirectUri,
       response_type: "code",
-      scope: "profile email"
+      scope: "profile email",
+      state: state
     });
 
     const fullUrl = `${oauthUrl}?${params.toString()}`;
@@ -42,6 +55,7 @@ export class AuthService {
     console.log("  - Client ID length:", clientId?.length);
     console.log("  - Redirect URI:", redirectUri);
     console.log("  - OAuth URL:", oauthUrl);
+    console.log("  - State:", state);
     console.log("  - Full URL:", fullUrl);
     console.log("  - URL Parameters:");
     params.forEach((value, key) => {
