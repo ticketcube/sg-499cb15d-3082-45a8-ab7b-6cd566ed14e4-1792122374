@@ -3,11 +3,13 @@ import { useRouter } from "next/router";
 import { AuthService } from "@/services/authService";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 
 export default function AuthCallback() {
   const router = useRouter();
   const { refreshProfile } = useAuth();
   const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState("Initializing authentication...");
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -23,6 +25,7 @@ export default function AuthCallback() {
       }
 
       try {
+        setStatus("Verifying security parameters...");
         // Validate state parameter to prevent CSRF attacks
         if (typeof window !== "undefined") {
           const storedState = sessionStorage.getItem("oauth_state");
@@ -33,12 +36,15 @@ export default function AuthCallback() {
           sessionStorage.removeItem("oauth_state");
         }
 
+        setStatus("Exchanging authorization code...");
         // Exchange code for tokens
         const tokens = await AuthService.exchangeCodeForTokens(code);
 
+        setStatus("Signing in with FanDragon...");
         // Sign in with FanDragon tokens
         await AuthService.signInWithFanDragon(tokens);
 
+        setStatus("Finalizing session...");
         // Refresh the user profile in context
         await refreshProfile();
 
