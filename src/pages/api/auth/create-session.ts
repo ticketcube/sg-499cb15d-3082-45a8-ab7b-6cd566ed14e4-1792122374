@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createClient } from "@supabase/supabase-js";
+import type { User } from "@supabase/supabase-js";
 
 // Initialize Supabase Admin client (server-side only)
 const supabaseAdmin = createClient(
@@ -36,7 +37,9 @@ export default async function handler(
       return res.status(500).json({ error: "Failed to check user existence" });
     }
 
-    const existingUser = existingUsers.users.find(u => u.email === email);
+    // Explicitly type the users array to fix TypeScript inference
+    const users: User[] = existingUsers?.users || [];
+    const existingUser = users.find(u => u.email === email);
 
     let userId: string;
 
