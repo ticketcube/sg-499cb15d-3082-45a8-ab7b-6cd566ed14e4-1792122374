@@ -26,7 +26,7 @@ export class AuthService {
   static getFanDragonAuthUrl(): string {
     const clientId = process.env.NEXT_PUBLIC_FANDRAGON_CLIENT_ID;
     const redirectUri = this.getRedirectUri();
-    const oauthUrl = process.env.NEXT_PUBLIC_FANDRAGON_OAUTH_URL || "https://fandragon.com/oauth/consent";
+    const oauthUrl = process.env.NEXT_PUBLIC_FANDRAGON_OAUTH_URL || "https://www.fandragon.com/oauth/consent";
     
     const params = new URLSearchParams({
       client_id: clientId || "",
@@ -42,7 +42,7 @@ export class AuthService {
     const clientId = process.env.NEXT_PUBLIC_FANDRAGON_CLIENT_ID;
     const clientSecret = process.env.FANDRAGON_CLIENT_SECRET;
     const redirectUri = this.getRedirectUri();
-    const tokenUrl = process.env.NEXT_PUBLIC_FANDRAGON_TOKEN_URL || "https://fandragon.com/oauth/token";
+    const tokenUrl = process.env.NEXT_PUBLIC_FANDRAGON_TOKEN_URL || "https://www.fandragon.com/oauth/token";
 
     const response = await fetch(tokenUrl, {
       method: "POST",
@@ -68,8 +68,8 @@ export class AuthService {
 
   static async signInWithFanDragon(tokens: FanDragonTokenResponse) {
     try {
-      // First, get user info from FanDragon using the access token
-      const userInfoResponse = await fetch("https://fandragon.com/api/user", {
+      // Get user info from FanDragon using the access token
+      const userInfoResponse = await fetch("https://www.fandragon.com/api/user", {
         headers: {
           Authorization: `Bearer ${tokens.access_token}`,
         },
@@ -81,77 +81,57 @@ export class AuthService {
 
       const fanDragonUser = await userInfoResponse.json();
 
-      // Check if user exists in Supabase profiles
-      const { data: existingProfile } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("email", fanDragonUser.email)
-        .single();
-
-      if (existingProfile) {
-        // User exists - sign them in with a custom token approach
-        // Store FanDragon tokens in local storage for now
-        localStorage.setItem("fandragon_tokens", JSON.stringify(tokens));
-        localStorage.setItem("fandragon_user", JSON.stringify(fanDragonUser));
-        
-        // Create a Supabase session using email-based authentication
-        // This is a workaround since we can't directly inject FanDragon tokens into Supabase
-        const { data: sessionData, error: signInError } = await supabase.auth.signInWithPassword({
+      // Call backend API to create/get user and generate session
+      const response = await fetch("/api/auth/create-session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
           email: fanDragonUser.email,
-          password: tokens.access_token, // Use access token as password for OAuth users
+          fandragon_tokens: tokens,
+          fandragon_user: fanDragonUser,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to create session");
+      }
+
+      const { auth_url } = await response.json();
+
+      // Use the magic link URL to establish session
+      // Extract the token from the URL
+      const url = new URL(auth_url);
+      const token = url.searchParams.get("token");
+      const type = url.searchParams.get("type");
+
+      if (token && type) {
+        // Verify the OTP token to create session
+        const { data: sessionData, error: verifyError } = await supabase.auth.verifyOtp({
+          token_hash: token,
+          type: type as any,
         });
 
-        if (signInError) {
-          // If password sign-in fails, user might need to reset password or we need to create them
-          throw new Error("Failed to establish Supabase session");
+        if (verifyError) {
+          throw new Error(`Failed to verify session: ${verifyError.message}`);
         }
 
         return sessionData;
-      } else {
-        // New user - create profile and sign them up
-        localStorage.setItem("fandragon_tokens", JSON.stringify(tokens));
-        localStorage.setItem("fandragon_user", JSON.stringify(fanDragonUser));
-
-        // Sign up the user with Supabase using FanDragon credentials
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-          email: fanDragonUser.email,
-          password: tokens.access_token, // Use access token as password
-          options: {
-            data: {
-              display_name: fanDragonUser.name || fanDragonUser.email,
-              fandragon_id: fanDragonUser.id,
-            },
-          },
-        });
-
-        if (signUpError) {
-          throw new Error(`Failed to create Supabase user: ${signUpError.message}`);
-        }
-
-        return signUpData;
       }
+
+      throw new Error("Invalid session URL received");
     } catch (error) {
       console.error("FanDragon sign-in error:", error);
       throw error;
     }
   }
 
-  private static async updateSupabasePassword(email: string, newPassword: string) {
-    // This is a workaround - in production, you'd want a more secure flow
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password: newPassword,
-    });
-
-    if (error) {
-      console.error("Failed to update password:", error);
-    }
-  }
-
   static async refreshFanDragonToken(refreshToken: string): Promise<FanDragonTokenResponse> {
     const clientId = process.env.NEXT_PUBLIC_FANDRAGON_CLIENT_ID;
     const clientSecret = process.env.FANDRAGON_CLIENT_SECRET;
-    const tokenUrl = process.env.NEXT_PUBLIC_FANDRAGON_TOKEN_URL || "https://fandragon.com/oauth/token";
+    const tokenUrl = process.env.NEXT_PUBLIC_FANDRAGON_TOKEN_URL || "https://www.fandragon.com/oauth/token";
 
     const response = await fetch(tokenUrl, {
       method: "POST",

@@ -9,13 +9,10 @@ export default function AuthCallbackPage() {
   const router = useRouter();
   const { refreshProfile } = useAuth();
   const [error, setError] = useState<string | null>(null);
-  const [processing, setProcessing] = useState(false);
+  const [status, setStatus] = useState<string>("Initializing...");
 
   useEffect(() => {
     const handleCallback = async () => {
-      // Prevent multiple executions
-      if (processing) return;
-
       try {
         const { code, error: oauthError } = router.query;
 
@@ -26,51 +23,48 @@ export default function AuthCallbackPage() {
         }
 
         if (!code || typeof code !== "string") {
-          return; // Still loading
+          return;
         }
 
-        setProcessing(true);
-
+        setStatus("Exchanging authorization code...");
         console.log("Exchanging code for tokens...");
-        // Exchange code for tokens
         const tokens = await AuthService.exchangeCodeForTokens(code);
         console.log("Tokens received:", { hasAccessToken: !!tokens.access_token });
 
-        console.log("Signing in with FanDragon...");
-        // Sign in with Supabase using FanDragon credentials
+        setStatus("Creating secure session...");
+        console.log("Creating Supabase session...");
         const sessionData = await AuthService.signInWithFanDragon(tokens);
         console.log("Session created:", { hasSession: !!sessionData });
 
-        // Wait a moment for auth state to propagate
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        setStatus("Loading your profile...");
+        await new Promise(resolve => setTimeout(resolve, 500));
 
-        // Refresh the auth context to pick up the new session
         console.log("Refreshing profile...");
         await refreshProfile();
 
-        console.log("Redirecting to home...");
-        // Redirect to home
+        setStatus("Redirecting to home...");
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        console.log("Authentication complete, redirecting...");
         router.push("/");
       } catch (err) {
         console.error("Callback error:", err);
         setError(err instanceof Error ? err.message : "Authentication failed");
         setTimeout(() => router.push("/auth/login"), 3000);
-      } finally {
-        setProcessing(false);
       }
     };
 
-    if (router.isReady && !processing) {
+    if (router.isReady) {
       handleCallback();
     }
-  }, [router, router.isReady, router.query, refreshProfile, processing]);
+  }, [router, router.isReady, router.query, refreshProfile]);
 
   return (
     <div className="p-4 flex flex-col items-center justify-center min-h-[60vh]">
       <Card className="max-w-md mx-auto w-full">
         <CardHeader className="text-center">
           <CardTitle>
-            {error ? "Authentication Error" : "Authenticating..."}
+            {error ? "Authentication Error" : "Authenticating with FanDragon"}
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center">
@@ -84,9 +78,7 @@ export default function AuthCallbackPage() {
           ) : (
             <div className="space-y-4">
               <Loader2 className="h-8 w-8 animate-spin mx-auto" />
-              <p className="text-muted-foreground">
-                Completing your sign in with FanDragon...
-              </p>
+              <p className="text-muted-foreground">{status}</p>
             </div>
           )}
         </CardContent>
