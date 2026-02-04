@@ -26,7 +26,12 @@ export class AuthService {
   static getFanDragonAuthUrl(): string {
     const clientId = process.env.NEXT_PUBLIC_FANDRAGON_CLIENT_ID;
     const redirectUri = this.getRedirectUri();
-    const oauthUrl = process.env.NEXT_PUBLIC_FANDRAGON_OAUTH_URL || "https://www.fandragon.com/oauth/consent";
+    const oauthUrl = process.env.NEXT_PUBLIC_FANDRAGON_OAUTH_URL || "https://www.fandragon.io/oauth/consent";
+    
+    console.log("🔵 Building FanDragon Auth URL:");
+    console.log("  - Client ID:", clientId);
+    console.log("  - Redirect URI:", redirectUri);
+    console.log("  - OAuth URL:", oauthUrl);
     
     const params = new URLSearchParams({
       client_id: clientId || "",
@@ -35,7 +40,9 @@ export class AuthService {
       scope: "profile email"
     });
 
-    return `${oauthUrl}?${params.toString()}`;
+    const fullUrl = `${oauthUrl}?${params.toString()}`;
+    console.log("  - Full URL:", fullUrl);
+    return fullUrl;
   }
 
   static async exchangeCodeForTokens(code: string): Promise<FanDragonTokenResponse> {
