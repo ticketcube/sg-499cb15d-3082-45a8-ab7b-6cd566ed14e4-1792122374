@@ -28,12 +28,6 @@ export class AuthService {
     const redirectUri = this.getRedirectUri();
     const oauthUrl = process.env.NEXT_PUBLIC_FANDRAGON_OAUTH_URL || "https://www.fandragon.com/oauth/consent";
     
-    console.log("🔵 Building FanDragon Auth URL:");
-    console.log("  - Client ID:", clientId);
-    console.log("  - Client ID length:", clientId?.length);
-    console.log("  - Redirect URI:", redirectUri);
-    console.log("  - OAuth URL:", oauthUrl);
-    
     const params = new URLSearchParams({
       client_id: clientId || "",
       redirect_uri: redirectUri,
@@ -42,6 +36,12 @@ export class AuthService {
     });
 
     const fullUrl = `${oauthUrl}?${params.toString()}`;
+    
+    console.log("🔵 Building FanDragon Auth URL:");
+    console.log("  - Client ID:", clientId);
+    console.log("  - Client ID length:", clientId?.length);
+    console.log("  - Redirect URI:", redirectUri);
+    console.log("  - OAuth URL:", oauthUrl);
     console.log("  - Full URL:", fullUrl);
     console.log("  - URL Parameters:");
     params.forEach((value, key) => {
