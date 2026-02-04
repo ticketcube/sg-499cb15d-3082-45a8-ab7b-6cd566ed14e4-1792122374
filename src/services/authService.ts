@@ -26,7 +26,7 @@ export class AuthService {
   static getFanDragonAuthUrl(): string {
     const clientId = process.env.NEXT_PUBLIC_FANDRAGON_CLIENT_ID;
     const redirectUri = this.getRedirectUri();
-    const oauthUrl = process.env.NEXT_PUBLIC_FANDRAGON_OAUTH_URL || "https://www.fandragon.com/oauth/consent";
+    const oauthUrl = process.env.NEXT_PUBLIC_FANDRAGON_OAUTH_URL || "https://agyoehyzvergiiwdbzmz.supabase.co/auth/v1/authorize";
     
     const params = new URLSearchParams({
       client_id: clientId || "",
@@ -55,7 +55,7 @@ export class AuthService {
     const clientId = process.env.NEXT_PUBLIC_FANDRAGON_CLIENT_ID;
     const clientSecret = process.env.FANDRAGON_CLIENT_SECRET;
     const redirectUri = this.getRedirectUri();
-    const tokenUrl = process.env.NEXT_PUBLIC_FANDRAGON_TOKEN_URL || "https://www.fandragon.com/oauth/token";
+    const tokenUrl = process.env.NEXT_PUBLIC_FANDRAGON_TOKEN_URL || "https://agyoehyzvergiiwdbzmz.supabase.co/auth/v1/token";
 
     const response = await fetch(tokenUrl, {
       method: "POST",

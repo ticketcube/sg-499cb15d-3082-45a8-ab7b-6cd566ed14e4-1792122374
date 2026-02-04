@@ -17,11 +17,17 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  const handleFanDragonSignIn = () => {
-    alert("🔵 BUTTON CLICKED - If you see this, the handler works!");
+  const handleFanDragonSignIn = async () => {
+    alert("🔵 BUTTON CLICKED - Check console for logs!");
     console.log("🔵 FanDragon Sign In clicked");
     const authUrl = AuthService.getFanDragonAuthUrl();
     console.log("🔵 Redirecting to:", authUrl);
+    console.log("🔵 Waiting 3 seconds so you can read these logs...");
+    
+    // Wait 3 seconds so user can see the logs
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    
+    console.log("🔵 NOW redirecting...");
     window.location.href = authUrl;
   };
 
