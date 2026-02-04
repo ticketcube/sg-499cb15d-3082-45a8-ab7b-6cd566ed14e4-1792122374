@@ -18,6 +18,7 @@ export default function LoginPage() {
   const { toast } = useToast();
 
   const handleFanDragonSignIn = () => {
+    alert("🔵 BUTTON CLICKED - If you see this, the handler works!");
     console.log("🔵 FanDragon Sign In clicked");
     const authUrl = AuthService.getFanDragonAuthUrl();
     console.log("🔵 Redirecting to:", authUrl);
