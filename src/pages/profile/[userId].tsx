@@ -26,11 +26,11 @@ export default function PublicProfilePage() {
       setIsLoading(true);
       setError(null);
 
-      // Load public profile info
+      // Load public profile info from user_profiles table
       const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .select("display_name, created_at")
-        .eq("id", profileUserId)
+        .from("user_profiles")
+        .select("user_id, display_name, created_at")
+        .eq("user_id", profileUserId)
         .single();
 
       if (profileError) {
@@ -43,7 +43,7 @@ export default function PublicProfilePage() {
       }
 
       if (profileData) {
-        setProfile({ ...profileData, id: profileUserId });
+        setProfile(profileData as Profile);
       }
 
       // Load public past rounds (no sensitive data)
