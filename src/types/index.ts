@@ -66,9 +66,17 @@ export interface GameScore {
 }
 
 export interface Profile {
-  id: string;
+  user_id: string;
+  username: string;
+  email: string;
   display_name: string;
+  avatar_url?: string | null;
+  role?: string;
   member_cat?: string;
+  stripe_customer_id?: string | null;
+  stripe_subscription_id?: string | null;
+  stripe_price_id?: string | null;
+  is_admin?: boolean;
   created_at: string;
   updated_at?: string;
 }

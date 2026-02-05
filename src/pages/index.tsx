@@ -68,7 +68,7 @@ const surveyQuestions: SurveyQuestion[] = [
 
 export default function HomePage() {
     const router = useRouter();
-    const { user, profile, loading, register } = useAuth();
+    const { user, profile, loading } = useAuth();
     // SSR safety - only run client-side code after hydration
     const [isClient, setIsClient] = useState(false);
     const [currentView, setCurrentView] = useState<ViewMode>('home');
@@ -235,46 +235,8 @@ export default function HomePage() {
     const handleRegistration = async (e: React.FormEvent) => {
         e.preventDefault();
         
-        if (!email || !password || !displayName) {
-            toast({
-                variant: "destructive",
-                title: "Error",
-                description: "Please fill in all fields"
-            });
-            return;
-        }
-
-        if (password.length < 6) {
-            toast({
-                variant: "destructive",
-                title: "Error",
-                description: "Password must be at least 6 characters"
-            });
-            return;
-        }
-
-        setRegistrationLoading(true);
-        
-        try {
-            await register(email, password, displayName);
-            toast({
-                title: "Success!",
-                description: "Account created successfully! Welcome to the 4Under Club."
-            });
-            
-            // After successful registration, user will be redirected to unpaid member view
-            // The useAuth context will handle the state change automatically
-            
-        } catch (error) {
-            console.error('Registration error:', error);
-            toast({
-                variant: "destructive",
-                title: "Registration Failed",
-                description: "Failed to create account. Please try again."
-            });
-        } finally {
-            setRegistrationLoading(false);
-        }
+        // Redirect to FanDragon auth instead of email/password registration
+        router.push('/auth/register');
     };
 
     // Determine user access level
