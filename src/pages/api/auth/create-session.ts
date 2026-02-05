@@ -14,6 +14,41 @@ const supabaseAdmin = createClient(
   }
 );
 
+// Generate username from email or FanDragon data
+function generateUsername(email: string, fandragonUser?: any): string {
+  // First try FanDragon username if available
+  if (fandragonUser?.username) {
+    return fandragonUser.username;
+  }
+  
+  // Otherwise generate from email prefix
+  const emailPrefix = email.split("@")[0];
+  return emailPrefix || `user_${Date.now()}`;
+}
+
+// Ensure username is unique by adding suffix if needed
+async function ensureUniqueUsername(baseUsername: string): Promise<string> {
+  let username = baseUsername;
+  let suffix = 1;
+  
+  while (true) {
+    const { data } = await supabaseAdmin
+      .from("user_profiles")
+      .select("username")
+      .eq("username", username)
+      .single();
+    
+    if (!data) {
+      // Username is available
+      return username;
+    }
+    
+    // Username exists, try with suffix
+    username = `${baseUsername}_${suffix}`;
+    suffix++;
+  }
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -29,15 +64,16 @@ export default async function handler(
       return res.status(400).json({ error: "Email is required" });
     }
 
+    console.log("[create-session] Processing FanDragon auth for:", email);
+
     // Check if user exists in Supabase Auth
     const { data: existingUsers, error: listError } = await supabaseAdmin.auth.admin.listUsers();
     
     if (listError) {
-      console.error("Error listing users:", listError);
+      console.error("[create-session] Error listing users:", listError);
       return res.status(500).json({ error: "Failed to check user existence" });
     }
 
-    // Explicitly type the users array to fix TypeScript inference
     const users: User[] = existingUsers?.users || [];
     const existingUser = users.find(u => u.email === email);
 
@@ -45,40 +81,63 @@ export default async function handler(
 
     if (existingUser) {
       userId = existingUser.id;
-      console.log("Existing user found:", userId);
+      console.log("[create-session] Existing user found:", userId);
+      
+      // Update user metadata with latest FanDragon tokens
+      await supabaseAdmin.auth.admin.updateUserById(userId, {
+        user_metadata: {
+          fandragon_access_token: fandragon_tokens?.access_token,
+          fandragon_refresh_token: fandragon_tokens?.refresh_token,
+          fandragon_user: fandragon_user,
+        },
+      });
     } else {
       // Create new user using admin API
+      const displayName = fandragon_user?.display_name || fandragon_user?.name || email;
+      
       const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
         email,
         email_confirm: true,
         user_metadata: {
-          display_name: fandragon_user?.name || fandragon_user?.email || email,
+          display_name: displayName,
           fandragon_id: fandragon_user?.id,
           auth_provider: "fandragon",
+          fandragon_access_token: fandragon_tokens?.access_token,
+          fandragon_refresh_token: fandragon_tokens?.refresh_token,
+          fandragon_user: fandragon_user,
         },
       });
 
       if (createError || !newUser.user) {
-        console.error("Error creating user:", createError);
+        console.error("[create-session] Error creating user:", createError);
         return res.status(500).json({ error: "Failed to create user" });
       }
 
       userId = newUser.user.id;
-      console.log("New user created:", userId);
+      console.log("[create-session] New user created:", userId);
 
-      // Create profile in profiles table
+      // Generate unique username
+      const baseUsername = generateUsername(email, fandragon_user);
+      const uniqueUsername = await ensureUniqueUsername(baseUsername);
+
+      // Create profile in user_profiles table
       const { error: profileError } = await supabaseAdmin
-        .from("profiles")
+        .from("user_profiles")
         .insert({
-          id: userId,
+          user_id: userId,
+          username: uniqueUsername,
           email,
-          full_name: fandragon_user?.name || email,
-          fandragon_id: fandragon_user?.id,
+          display_name: displayName,
+          avatar_url: fandragon_user?.avatar_url || null,
+          role: "fan",
         });
 
       if (profileError) {
-        console.error("Error creating profile:", profileError);
+        console.error("[create-session] Error creating user profile:", profileError);
+        return res.status(500).json({ error: "Failed to create user profile" });
       }
+
+      console.log("[create-session] User profile created with username:", uniqueUsername);
     }
 
     // Generate a session token for the user
@@ -88,22 +147,11 @@ export default async function handler(
     });
 
     if (sessionError || !sessionData) {
-      console.error("Error generating session:", sessionError);
+      console.error("[create-session] Error generating session:", sessionError);
       return res.status(500).json({ error: "Failed to generate session" });
     }
 
-    // Store FanDragon tokens in user metadata
-    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
-      user_metadata: {
-        fandragon_access_token: fandragon_tokens?.access_token,
-        fandragon_refresh_token: fandragon_tokens?.refresh_token,
-        fandragon_user: fandragon_user,
-      },
-    });
-
-    if (updateError) {
-      console.error("Error updating user metadata:", updateError);
-    }
+    console.log("[create-session] Session created successfully for:", email);
 
     return res.status(200).json({
       success: true,
@@ -111,7 +159,7 @@ export default async function handler(
       auth_url: sessionData.properties.action_link,
     });
   } catch (error) {
-    console.error("Session creation error:", error);
+    console.error("[create-session] Session creation error:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 }

@@ -8,8 +8,6 @@ interface AuthContextType {
   profile: Profile | null;
   session: Session | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, displayName: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -19,8 +17,6 @@ const AuthContext = createContext<AuthContextType>({
   profile: null,
   session: null,
   loading: true,
-  login: async () => {},
-  register: async () => {},
   logout: async () => {},
   refreshProfile: async () => {}
 });
@@ -33,34 +29,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshProfile = async () => {
     try {
-      console.log('Refreshing profile...');
+      console.log("[AuthContext] Refreshing profile...");
       const { data: { session: currentSession } } = await supabase.auth.getSession();
       
-      console.log('Current session:', currentSession ? 'exists' : 'none');
+      console.log("[AuthContext] Current session:", currentSession ? "exists" : "none");
       
       if (currentSession?.user) {
         setSession(currentSession);
         setUser(currentSession.user);
 
         const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', currentSession.user.id)
+          .from("user_profiles")
+          .select("*")
+          .eq("user_id", currentSession.user.id)
           .single();
 
-        console.log('Profile fetch result:', { hasData: !!data, error });
+        console.log("[AuthContext] Profile fetch result:", { hasData: !!data, error });
 
         if (!error && data) {
           setProfile(data as Profile);
         }
       } else {
-        // No session - clear everything
         setSession(null);
         setUser(null);
         setProfile(null);
       }
     } catch (error) {
-      console.error('Error refreshing profile:', error);
+      console.error("[AuthContext] Error refreshing profile:", error);
     }
   };
 
@@ -69,10 +64,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const initAuth = async () => {
       try {
-        console.log('Initializing auth...');
+        console.log("[AuthContext] Initializing auth...");
         const { data: { session: initialSession } } = await supabase.auth.getSession();
         
-        console.log('Initial session:', initialSession ? 'exists' : 'none');
+        console.log("[AuthContext] Initial session:", initialSession ? "exists" : "none");
         
         if (!mounted) return;
 
@@ -81,9 +76,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(initialSession.user);
           
           const { data: profileData } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', initialSession.user.id)
+            .from("user_profiles")
+            .select("*")
+            .eq("user_id", initialSession.user.id)
             .single();
             
           if (mounted && profileData) {
@@ -91,7 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
       } catch (error) {
-        console.error('Auth init error:', error);
+        console.error("[AuthContext] Auth init error:", error);
       } finally {
         if (mounted) {
           setLoading(false);
@@ -102,30 +97,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     initAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
-      console.log('Auth state change:', event, newSession ? 'has session' : 'no session');
+      console.log("[AuthContext] Auth state change:", event, newSession ? "has session" : "no session");
       
       if (!mounted) return;
 
-      if (event === 'SIGNED_OUT' || !newSession?.user) {
+      if (event === "SIGNED_OUT" || !newSession?.user) {
         setSession(null);
         setUser(null);
         setProfile(null);
-      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+      } else if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
         setSession(newSession);
         setUser(newSession.user);
         
         try {
           const { data: profileData } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', newSession.user.id)
+            .from("user_profiles")
+            .select("*")
+            .eq("user_id", newSession.user.id)
             .single();
             
           if (mounted && profileData) {
             setProfile(profileData as Profile);
           }
         } catch (error) {
-          console.error('Profile fetch error:', error);
+          console.error("[AuthContext] Profile fetch error:", error);
         }
       }
     });
@@ -135,57 +130,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       subscription.unsubscribe();
     };
   }, []);
-
-  const login = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    if (data.user) {
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', data.user.id)
-        .single();
-
-      if (profileData) {
-        setProfile(profileData as Profile);
-      }
-    }
-  };
-
-  const register = async (email: string, password: string, displayName: string) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          display_name: displayName
-        }
-      }
-    });
-
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    if (data.user) {
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', data.user.id)
-        .single();
-
-      if (profileData) {
-        setProfile(profileData as Profile);
-      }
-    }
-  };
 
   const logout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -200,8 +144,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       profile,
       session,
       loading,
-      login,
-      register,
       logout,
       refreshProfile,
     }}>
