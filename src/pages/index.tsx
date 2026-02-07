@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
-import { authService } from "@/services/authService";
+import { AuthService } from "@/services/authService";
 
 export default function Home() {
   const router = useRouter();
@@ -18,7 +18,7 @@ export default function Home() {
   }, [user, loading, router]);
 
   const handleLogin = async () => {
-    const authUrl = await authService.getFanDragonAuthUrl();
+    const authUrl = await AuthService.getFanDragonAuthUrl();
     window.location.href = authUrl;
   };
 
