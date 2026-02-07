@@ -24,23 +24,20 @@ export class AuthService {
   }
 
   private static generateState(): string {
-    // Generate a random state value for CSRF protection
     return Math.random().toString(36).substring(2) + Date.now().toString(36);
   }
 
   static getFanDragonAuthUrl(): string {
     const clientId = process.env.NEXT_PUBLIC_FANDRAGON_CLIENT_ID;
     const redirectUri = this.getRedirectUri();
-    const oauthUrl = process.env.NEXT_PUBLIC_FANDRAGON_OAUTH_URL || "https://fandragon.com/auth/login";
+    const oauthUrl = process.env.NEXT_PUBLIC_FANDRAGON_OAUTH_URL || "https://fandragon.com/oauth/consent";
     const state = this.generateState();
     
-    // Store state in sessionStorage for validation in callback
     if (typeof window !== "undefined") {
       sessionStorage.setItem("oauth_state", state);
     }
     
     const params = new URLSearchParams({
-      oauth_flow: "true",
       client_id: clientId || "",
       redirect_uri: redirectUri,
       response_type: "code",
@@ -52,15 +49,10 @@ export class AuthService {
     
     console.log("🔵 Building FanDragon Auth URL:");
     console.log("  - Client ID:", clientId);
-    console.log("  - Client ID length:", clientId?.length);
     console.log("  - Redirect URI:", redirectUri);
     console.log("  - OAuth URL:", oauthUrl);
     console.log("  - State:", state);
     console.log("  - Full URL:", fullUrl);
-    console.log("  - URL Parameters:");
-    params.forEach((value, key) => {
-      console.log(`    * ${key}:`, value);
-    });
     
     return fullUrl;
   }
@@ -69,7 +61,11 @@ export class AuthService {
     const clientId = process.env.NEXT_PUBLIC_FANDRAGON_CLIENT_ID;
     const clientSecret = process.env.FANDRAGON_CLIENT_SECRET;
     const redirectUri = this.getRedirectUri();
-    const tokenUrl = process.env.NEXT_PUBLIC_FANDRAGON_TOKEN_URL || "https://agyoehyzvergiiwdbzmz.supabase.co/auth/v1/token";
+    const tokenUrl = process.env.NEXT_PUBLIC_FANDRAGON_TOKEN_URL || "https://fandragon.com/api/oauth/token";
+
+    console.log("🟢 Exchanging code for tokens:");
+    console.log("  - Token URL:", tokenUrl);
+    console.log("  - Redirect URI:", redirectUri);
 
     const response = await fetch(tokenUrl, {
       method: "POST",
@@ -87,16 +83,20 @@ export class AuthService {
 
     if (!response.ok) {
       const error = await response.text();
+      console.error("❌ Token exchange failed:", error);
       throw new Error(`Failed to exchange code: ${error}`);
     }
 
-    return response.json();
+    const tokens = await response.json();
+    console.log("✅ Token exchange successful");
+    return tokens;
   }
 
   static async signInWithFanDragon(tokens: FanDragonTokenResponse) {
     try {
-      // Get user info from FanDragon using the access token
-      const userInfoResponse = await fetch("https://www.fandragon.com/api/user", {
+      console.log("🟡 Fetching user info from FanDragon...");
+      
+      const userInfoResponse = await fetch("https://fandragon.com/api/user", {
         headers: {
           Authorization: `Bearer ${tokens.access_token}`,
         },
@@ -107,8 +107,9 @@ export class AuthService {
       }
 
       const fanDragonUser = await userInfoResponse.json();
+      console.log("✅ User info fetched:", fanDragonUser.email);
 
-      // Call backend API to create/get user and generate session
+      console.log("🟡 Creating session...");
       const response = await fetch("/api/auth/create-session", {
         method: "POST",
         headers: {
@@ -127,15 +128,14 @@ export class AuthService {
       }
 
       const { auth_url } = await response.json();
+      console.log("✅ Session created");
 
-      // Use the magic link URL to establish session
-      // Extract the token from the URL
       const url = new URL(auth_url);
       const token = url.searchParams.get("token");
       const type = url.searchParams.get("type");
 
       if (token && type) {
-        // Verify the OTP token to create session
+        console.log("🟡 Verifying OTP...");
         const { data: sessionData, error: verifyError } = await supabase.auth.verifyOtp({
           token_hash: token,
           type: type as any,
@@ -145,12 +145,13 @@ export class AuthService {
           throw new Error(`Failed to verify session: ${verifyError.message}`);
         }
 
+        console.log("✅ Session verified successfully");
         return sessionData;
       }
 
       throw new Error("Invalid session URL received");
     } catch (error) {
-      console.error("FanDragon sign-in error:", error);
+      console.error("❌ FanDragon sign-in error:", error);
       throw error;
     }
   }
@@ -158,7 +159,7 @@ export class AuthService {
   static async refreshFanDragonToken(refreshToken: string): Promise<FanDragonTokenResponse> {
     const clientId = process.env.NEXT_PUBLIC_FANDRAGON_CLIENT_ID;
     const clientSecret = process.env.FANDRAGON_CLIENT_SECRET;
-    const tokenUrl = process.env.NEXT_PUBLIC_FANDRAGON_TOKEN_URL || "https://www.fandragon.com/oauth/token";
+    const tokenUrl = process.env.NEXT_PUBLIC_FANDRAGON_TOKEN_URL || "https://fandragon.com/api/oauth/token";
 
     const response = await fetch(tokenUrl, {
       method: "POST",
