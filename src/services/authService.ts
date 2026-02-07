@@ -33,12 +33,21 @@ export class AuthService {
     const oauthUrl = process.env.NEXT_PUBLIC_FANDRAGON_OAUTH_URL || "https://fandragon.com/oauth/consent";
     const state = this.generateState();
     
+    console.log("🔍 Environment Check:");
+    console.log("  - NEXT_PUBLIC_FANDRAGON_CLIENT_ID exists:", !!process.env.NEXT_PUBLIC_FANDRAGON_CLIENT_ID);
+    console.log("  - NEXT_PUBLIC_FANDRAGON_OAUTH_URL exists:", !!process.env.NEXT_PUBLIC_FANDRAGON_OAUTH_URL);
+    
+    if (!clientId) {
+      console.error("❌ CRITICAL: NEXT_PUBLIC_FANDRAGON_CLIENT_ID is not set!");
+      throw new Error("FanDragon Client ID is not configured");
+    }
+    
     if (typeof window !== "undefined") {
       sessionStorage.setItem("oauth_state", state);
     }
     
     const params = new URLSearchParams({
-      client_id: clientId || "",
+      client_id: clientId,
       redirect_uri: redirectUri,
       response_type: "code",
       scope: "profile email",
