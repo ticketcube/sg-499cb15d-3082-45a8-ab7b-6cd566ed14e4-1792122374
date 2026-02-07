@@ -120,17 +120,23 @@ export default async function handler(
       const baseUsername = generateUsername(email, fandragon_user);
       const uniqueUsername = await ensureUniqueUsername(baseUsername);
 
+      console.log("[create-session] Generated username:", uniqueUsername, "from base:", baseUsername);
+
       // Create profile in user_profiles table
+      const profileData = {
+        user_id: userId,
+        username: uniqueUsername,
+        email,
+        display_name: displayName,
+        avatar_url: fandragon_user?.avatar_url || null,
+        role: "fan",
+      };
+
+      console.log("[create-session] Creating profile with data:", JSON.stringify(profileData, null, 2));
+
       const { error: profileError } = await supabaseAdmin
         .from("user_profiles")
-        .insert({
-          user_id: userId,
-          username: uniqueUsername,
-          email,
-          display_name: displayName,
-          avatar_url: fandragon_user?.avatar_url || null,
-          role: "fan",
-        });
+        .insert(profileData);
 
       if (profileError) {
         console.error("[create-session] Error creating user profile:", profileError);
