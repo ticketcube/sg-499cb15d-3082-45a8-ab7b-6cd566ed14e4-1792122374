@@ -14,7 +14,7 @@ export const userService = {
       })
       .eq("id", userId)
       .select()
-      .single();
+      .maybeSingle();
 
     if (profileError) {
       console.error("Error updating profile:", profileError);
@@ -44,7 +44,7 @@ export const userService = {
       .from("profiles")
       .select("*")
       .eq("id", userId)
-      .single();
+      .maybeSingle();
 
     if (error) {
       if (error.code === 'PGRST116') {

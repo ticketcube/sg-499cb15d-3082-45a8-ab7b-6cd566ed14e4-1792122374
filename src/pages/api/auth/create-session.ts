@@ -134,10 +134,11 @@ export default async function handler(
 
       if (profileError) {
         console.error("[create-session] Error creating user profile:", profileError);
+        console.error("[create-session] Profile error details:", JSON.stringify(profileError, null, 2));
         return res.status(500).json({ error: "Failed to create user profile" });
       }
 
-      console.log("[create-session] User profile created with username:", uniqueUsername);
+      console.log("[create-session] User profile created successfully with username:", uniqueUsername);
     }
 
     // Generate a session token for the user

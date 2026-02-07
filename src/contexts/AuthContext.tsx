@@ -42,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .from("user_profiles")
           .select("*")
           .eq("user_id", currentSession.user.id)
-          .single();
+          .maybeSingle();
 
         console.log("[AuthContext] Profile fetch result:", { hasData: !!data, error });
 
@@ -79,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             .from("user_profiles")
             .select("*")
             .eq("user_id", initialSession.user.id)
-            .single();
+            .maybeSingle();
             
           if (mounted && profileData) {
             setProfile(profileData as Profile);
@@ -114,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             .from("user_profiles")
             .select("*")
             .eq("user_id", newSession.user.id)
-            .single();
+            .maybeSingle();
             
           if (mounted && profileData) {
             setProfile(profileData as Profile);
