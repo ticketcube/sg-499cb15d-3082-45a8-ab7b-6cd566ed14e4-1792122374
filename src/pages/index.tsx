@@ -17,8 +17,8 @@ export default function Home() {
     }
   }, [user, loading, router]);
 
-  const handleLogin = async () => {
-    const authUrl = await AuthService.getFanDragonAuthUrl();
+  const handleLogin = () => {
+    const authUrl = AuthService.getFanDragonAuthUrl();
     window.location.href = authUrl;
   };
 
