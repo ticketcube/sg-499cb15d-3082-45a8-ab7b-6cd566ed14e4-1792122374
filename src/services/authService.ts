@@ -30,12 +30,13 @@ export class AuthService {
   static getFanDragonAuthUrl(): string {
     const clientId = process.env.NEXT_PUBLIC_FANDRAGON_CLIENT_ID;
     const redirectUri = this.getRedirectUri();
-    const oauthUrl = process.env.NEXT_PUBLIC_FANDRAGON_OAUTH_URL || "https://fandragon.com/oauth/consent";
+    const fandragonBaseUrl = process.env.NEXT_PUBLIC_FANDRAGON_BASE_URL || "https://fandragon.com";
+    const oauthUrl = `${fandragonBaseUrl}/oauth/consent`;
     const state = this.generateState();
     
     console.log("🔍 Environment Check:");
     console.log("  - NEXT_PUBLIC_FANDRAGON_CLIENT_ID exists:", !!process.env.NEXT_PUBLIC_FANDRAGON_CLIENT_ID);
-    console.log("  - NEXT_PUBLIC_FANDRAGON_OAUTH_URL exists:", !!process.env.NEXT_PUBLIC_FANDRAGON_OAUTH_URL);
+    console.log("  - NEXT_PUBLIC_FANDRAGON_BASE_URL:", fandragonBaseUrl);
     
     if (!clientId) {
       console.error("❌ CRITICAL: NEXT_PUBLIC_FANDRAGON_CLIENT_ID is not set!");
@@ -50,7 +51,7 @@ export class AuthService {
       client_id: clientId,
       redirect_uri: redirectUri,
       response_type: "code",
-      scope: "profile email",
+      scope: "openid email profile",
       state: state
     });
 
@@ -70,7 +71,8 @@ export class AuthService {
     const clientId = process.env.NEXT_PUBLIC_FANDRAGON_CLIENT_ID;
     const clientSecret = process.env.FANDRAGON_CLIENT_SECRET;
     const redirectUri = this.getRedirectUri();
-    const tokenUrl = process.env.NEXT_PUBLIC_FANDRAGON_TOKEN_URL || "https://fandragon.com/api/oauth/token";
+    const fandragonBaseUrl = process.env.NEXT_PUBLIC_FANDRAGON_BASE_URL || "https://fandragon.com";
+    const tokenUrl = `${fandragonBaseUrl}/oauth/token`;
 
     console.log("🟢 Exchanging code for tokens:");
     console.log("  - Token URL:", tokenUrl);
@@ -104,8 +106,9 @@ export class AuthService {
   static async signInWithFanDragon(tokens: FanDragonTokenResponse) {
     try {
       console.log("🟡 Fetching user info from FanDragon...");
+      const fandragonBaseUrl = process.env.NEXT_PUBLIC_FANDRAGON_BASE_URL || "https://fandragon.com";
       
-      const userInfoResponse = await fetch("https://fandragon.com/api/user", {
+      const userInfoResponse = await fetch(`${fandragonBaseUrl}/oauth/userinfo`, {
         headers: {
           Authorization: `Bearer ${tokens.access_token}`,
         },
@@ -168,7 +171,8 @@ export class AuthService {
   static async refreshFanDragonToken(refreshToken: string): Promise<FanDragonTokenResponse> {
     const clientId = process.env.NEXT_PUBLIC_FANDRAGON_CLIENT_ID;
     const clientSecret = process.env.FANDRAGON_CLIENT_SECRET;
-    const tokenUrl = process.env.NEXT_PUBLIC_FANDRAGON_TOKEN_URL || "https://fandragon.com/api/oauth/token";
+    const fandragonBaseUrl = process.env.NEXT_PUBLIC_FANDRAGON_BASE_URL || "https://fandragon.com";
+    const tokenUrl = `${fandragonBaseUrl}/oauth/token`;
 
     const response = await fetch(tokenUrl, {
       method: "POST",
