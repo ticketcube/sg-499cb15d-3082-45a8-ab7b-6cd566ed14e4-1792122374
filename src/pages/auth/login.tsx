@@ -1,19 +1,40 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AuthService } from "@/services/authService";
+import { useRouter } from "next/router";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session) {
+        console.log("✅ User already logged in, redirecting to home");
+        router.push("/");
+      }
+    };
+    
+    checkAuth();
+  }, [router]);
 
   const handleFanDragonSignIn = async () => {
     setLoading(true);
     try {
       const authUrl = AuthService.getFanDragonAuthUrl();
-      console.log("🔵 Redirecting to FanDragon:", authUrl);
+      console.log("🔵 [Login Page] Redirecting to FanDragon:", authUrl);
+      
+      // Small delay to ensure state is set
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       window.location.href = authUrl;
     } catch (error) {
-      console.error("Error initiating FanDragon sign-in:", error);
+      console.error("❌ [Login Page] Error initiating FanDragon sign-in:", error);
       setLoading(false);
     }
   };
