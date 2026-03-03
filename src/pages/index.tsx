@@ -1,26 +1,22 @@
+import { useState } from "react";
 import Head from "next/head";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
-import { AuthService } from "@/services/authService";
+import { AuthDialog } from "@/components/AuthDialog";
 
 export default function Home() {
   const router = useRouter();
   const { user, loading } = useAuth();
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
 
-  useEffect(() => {
-    if (!loading && user) {
-      router.push("/game");
-    }
-  }, [user, loading, router]);
-
-  const handleLogin = () => {
-    const authUrl = AuthService.getFanDragonAuthUrl();
-    window.location.href = authUrl;
-  };
+  // If user is logged in, redirect to game
+  if (!loading && user) {
+    router.push("/game");
+    return null;
+  }
 
   if (loading) {
     return (
@@ -59,7 +55,7 @@ export default function Home() {
             </p>
 
             <Button 
-              onClick={handleLogin}
+              onClick={() => setShowAuthDialog(true)}
               className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-lg font-semibold"
               size="lg"
             >
@@ -72,6 +68,8 @@ export default function Home() {
           </CardContent>
         </Card>
       </div>
+
+      <AuthDialog open={showAuthDialog} onOpenChange={setShowAuthDialog} />
     </>
   );
 }
