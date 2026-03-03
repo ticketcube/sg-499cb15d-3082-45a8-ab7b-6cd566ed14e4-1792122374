@@ -61,7 +61,7 @@ export default function OAuthCallback() {
         }
 
         // Get redirect path
-        const redirectTo = sessionStorage.getItem("auth_redirect") || "/";
+        const redirectTo = sessionStorage.getItem("auth_redirect") || "/game";
         sessionStorage.removeItem("auth_redirect");
 
         // Redirect to original destination
@@ -92,7 +92,7 @@ export default function OAuthCallback() {
             <p className="text-gray-600 mb-6">{error}</p>
             <button
               onClick={() => router.push("/")}
-              className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+              className="bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
             >
               Return to Home
             </button>
@@ -105,7 +105,7 @@ export default function OAuthCallback() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="text-center">
-        <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <div className="w-16 h-16 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
         <h2 className="text-xl font-semibold text-gray-900">Completing sign in...</h2>
         <p className="text-gray-600 mt-2">Please wait while we set up your account</p>
       </div>
