@@ -4,11 +4,18 @@ import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/contexts/AuthContext";
 import { AuthService } from "@/services/authService";
 
 export default function Home() {
   const router = useRouter();
- 
+  const { user, loading } = useAuth();
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.push("/game");
+    }
+  }, [user, loading, router]);
 
   const handleLogin = () => {
     const authUrl = AuthService.getFanDragonAuthUrl();
