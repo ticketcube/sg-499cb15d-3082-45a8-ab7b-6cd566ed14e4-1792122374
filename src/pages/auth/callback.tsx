@@ -45,14 +45,44 @@ export default function OAuthCallback() {
 
           const exchangeData = await exchangeResponse.json();
 
-          // Use session URL to authenticate with Supabase
+          // Extract token from session URL
           if (exchangeData.session_url) {
-            window.location.href = exchangeData.session_url;
-            return;
+            const url = new URL(exchangeData.session_url);
+            const token = url.searchParams.get("token");
+            const type = url.searchParams.get("type");
+
+            if (token && type) {
+              console.log("Verifying session token...");
+
+              // Verify the OTP token to create the session
+              const { error: verifyError } = await supabase.auth.verifyOtp({
+                token_hash: token,
+                type: type as any,
+              });
+
+              if (verifyError) {
+                console.error("Session verification failed:", verifyError);
+                setError("Failed to establish session");
+                return;
+              }
+
+              console.log("Session verified successfully");
+
+              // Get redirect path
+              const redirectTo = sessionStorage.getItem("auth_redirect") || "/game";
+              sessionStorage.removeItem("auth_redirect");
+
+              // Redirect to original destination
+              router.push(redirectTo);
+              return;
+            }
           }
+
+          setError("Invalid session data received");
+          return;
         }
 
-        // Handle Supabase magic link (email auth)
+        // Handle Supabase magic link (email auth) - fallback
         const { error: supabaseError } = await supabase.auth.getSession();
         if (supabaseError) {
           console.error("Session error:", supabaseError);
