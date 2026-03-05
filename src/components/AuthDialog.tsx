@@ -9,39 +9,99 @@ import {
 } from "@/components/ui/dialog";
 
 interface AuthDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  isOpen: boolean;
+  onClose: () => void;
+  title?: string;
+  description?: string;
+  onSuccess?: (userId: string) => void | Promise<void>;
 }
 
-export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
+// Dynamic URL Helper (Vercel-compatible)
+const getURL = () => {
+  let url = process?.env?.NEXT_PUBLIC_SITE_URL ??
+    process?.env?.NEXT_PUBLIC_VERCEL_URL ??
+    'http://localhost:3000'
+
+  if (!url) {
+    url = 'http://localhost:3000';
+  }
+
+  url = url.startsWith('http') ? url : `https://${url}`
+  url = url.endsWith('/') ? url : `${url}/`
+
+  return url
+}
+
+const FanDragonIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+    <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z" />
+  </svg>
+);
+
+export default function AuthDialog({
+  isOpen,
+  onClose,
+  title = "Welcome to TicketCube",
+  description = "Sign in with your FanDragon account to create and manage your interactive ticket experiences",
+  onSuccess
+}: AuthDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState < string | null > (null);
 
   const handleFanDragonSignIn = async () => {
     try {
       setIsLoading(true);
+      setError(null);
 
-      // Save current page for redirect after auth
       sessionStorage.setItem("auth_redirect", window.location.pathname);
 
-      // Build FanDragon OAuth URL
-      const fandragonBaseUrl = process.env.NEXT_PUBLIC_FANDRAGON_BASE_URL || "https://fandragon.com";
+      console.log("🔄 [AuthDialog] Starting FanDragon OAuth sign in");
+      console.log("🔍 [AuthDialog] Current page:", window.location.pathname);
+
+      // ✅ Validate required environment variables FIRST
+      const clientId = process.env.NEXT_PUBLIC_FANDRAGON_CLIENT_ID;
+      const fandragonBaseUrl = process.env.NEXT_PUBLIC_FANDRAGON_BASE_URL || 'https://fandragon.com';
+
+      if (!clientId) {
+        const errorMsg = "FanDragon Client ID is not configured. Please contact support.";
+        console.error("❌ [AuthDialog] Missing NEXT_PUBLIC_FANDRAGON_CLIENT_ID");
+        setError(errorMsg);
+        setIsLoading(false);
+        return;
+      }
+
+      console.log("✅ [AuthDialog] Client ID validated:", clientId);
+
+      // ✅ Store actual browser path for redirect after auth
+      const redirectPath = window.location.pathname + window.location.search;
+      sessionStorage.setItem("auth_redirect", redirectPath);
+      console.log("✅ [AuthDialog] Stored redirect path in sessionStorage:", redirectPath);
+
+      // ✅ Use getURL() for consistent redirect_uri across environments
+      const baseUrl = getURL();
+      const redirectUri = `${baseUrl}auth/callback`;
+      console.log("✅ [AuthDialog] Base URL:", baseUrl);
+      console.log("✅ [AuthDialog] Redirect URI:", redirectUri);
+
+      // Build OAuth URL with proper parameters
       const params = new URLSearchParams({
-        client_id: process.env.NEXT_PUBLIC_FANDRAGON_CLIENT_ID!,
-        redirect_uri: `${window.location.origin}/auth/callback`,
-        response_type: "code",
-        scope: "openid email profile",
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        response_type: 'code',
+        scope: 'openid email profile',
         state: crypto.randomUUID(), // CSRF protection
       });
 
       const fandragonOAuthUrl = `${fandragonBaseUrl}/oauth/consent?${params}`;
 
-      console.log("🔵 [AuthDialog] Redirecting to FanDragon:", fandragonOAuthUrl);
+      console.log("🚀 [AuthDialog] Redirecting to FanDragon OAuth:", fandragonOAuthUrl);
+      console.log("🔍 [AuthDialog] OAuth Parameters:", Object.fromEntries(params));
 
-      // Redirect to FanDragon
       window.location.href = fandragonOAuthUrl;
 
     } catch (err) {
-      console.error("❌ [AuthDialog] OAuth error:", err);
+      console.error("❌ [AuthDialog] Unexpected error:", err);
+      setError(err instanceof Error ? err.message : "An unexpected error occurred");
       setIsLoading(false);
     }
   };
