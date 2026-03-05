@@ -13,6 +13,28 @@ interface AuthDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+// Dynamic URL Helper (Vercel-compatible)
+const getURL = () => {
+  let url = process?.env?.NEXT_PUBLIC_SITE_URL ??
+    process?.env?.NEXT_PUBLIC_VERCEL_URL ??
+    'http://localhost:3000'
+
+  if (!url) {
+    url = 'http://localhost:3000';
+  }
+
+  url = url.startsWith('http') ? url : `https://${url}`
+  url = url.endsWith('/') ? url : `${url}/`
+
+  return url
+}
+
+const FanDragonIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+    <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z" />
+  </svg>
+);
+
 export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
 
