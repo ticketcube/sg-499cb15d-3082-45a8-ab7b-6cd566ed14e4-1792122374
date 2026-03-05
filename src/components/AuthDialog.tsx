@@ -38,7 +38,7 @@ const FanDragonIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-export default function AuthDialog({
+export function AuthDialog({
   isOpen,
   onClose,
   title = "Welcome to TicketCube",
