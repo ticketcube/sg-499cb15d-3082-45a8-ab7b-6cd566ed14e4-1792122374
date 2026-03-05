@@ -9,44 +9,12 @@ import {
 } from "@/components/ui/dialog";
 
 interface AuthDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  title?: string;
-  description?: string;
-  onSuccess?: (userId: string) => void | Promise<void>;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-// Dynamic URL Helper (Vercel-compatible)
-const getURL = () => {
-  let url = process?.env?.NEXT_PUBLIC_SITE_URL ??
-    process?.env?.NEXT_PUBLIC_VERCEL_URL ??
-    'http://localhost:3000'
-
-  if (!url) {
-    url = 'http://localhost:3000';
-  }
-
-  url = url.startsWith('http') ? url : `https://${url}`
-  url = url.endsWith('/') ? url : `${url}/`
-
-  return url
-}
-
-const FanDragonIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
-    <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z" />
-  </svg>
-);
-
-export function AuthDialog({
-  isOpen,
-  onClose,
-  title = "Welcome to TicketCube",
-  description = "Sign in with your FanDragon account to create and manage your interactive ticket experiences",
-  onSuccess
-}: AuthDialogProps) {
+export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState < string | null > (null);
 
   const handleFanDragonSignIn = async () => {
     try {
@@ -100,8 +68,7 @@ export function AuthDialog({
       window.location.href = fandragonOAuthUrl;
 
     } catch (err) {
-      console.error("❌ [AuthDialog] Unexpected error:", err);
-      setError(err instanceof Error ? err.message : "An unexpected error occurred");
+      console.error("❌ [AuthDialog] OAuth error:", err);
       setIsLoading(false);
     }
   };
