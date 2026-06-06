@@ -103,52 +103,114 @@ export default function FourUndersClub() {
       </Head>
 
       <div className="min-h-screen bg-white">
-        {/* Hero Section */}
-        <section className="pt-8 md:pt-16 pb-12 px-4">
-          <div className="max-w-4xl mx-auto">
-            {/* Logo and Mission */}
-            <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12 mb-12">
-              <div className="flex-shrink-0">
-                <Image 
-                  src="/4Under_logo_vertical.jpg" 
-                  alt="Four Under Club Logo" 
-                  width={200} 
-                  height={300}
-                  className="w-48 md:w-56 h-auto"
-                />
-              </div>
-              
-              <div className="flex-1 text-center md:text-left">
-                <h1 className="text-3xl md:text-4xl font-bold mb-6 tracking-wide">
-                  CLUB MISSION
-                </h1>
-                <div className="space-y-4 text-lg md:text-xl text-gray-900">
-                  <p>Play Rancho Park in Under 4 Hours.</p>
-                  <p>Uphold 4Unders pace of play rules at all times with no exceptions.</p>
-                  <p>Inculcate Fast, Fun and Fair golf.</p>
-                </div>
-              </div>
-            </div>
+       {/* Hero Section */}
+<section className="pt-6 pb-12 px-4">
+  <div className="max-w-3xl mx-auto">
 
-            {/* CTA Button */}
-            {!showSurvey && currentStep < surveySteps.length && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="text-center"
-              >
-                <Button
-                  size="lg"
-                  onClick={() => setShowSurvey(true)}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-lg px-12 py-6 h-auto"
-                >
-                  Reserve Your Spot
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
-                <p className="text-sm text-gray-500 mt-4">Just 3 quick questions</p>
-              </motion.div>
-            )}
+    {/* Logo */}
+    <div className="text-center mb-8">
+      <Image
+        src="/4Under_logo_vertical.jpg"
+        alt="Four Under Club"
+        width={260}
+        height={400}
+        priority
+        className="
+          mx-auto
+          w-[200px]
+          md:w-[240px]
+          h-auto
+          object-contain
+        "
+      />
+    </div>
+
+    {/* Main Message */}
+    <div className="text-center mb-10">
+
+      <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-gray-900 mb-4">
+        Play Rancho Park
+        <br />
+        in Under 4 Hours
+      </h1>
+
+      <div className="flex justify-center gap-4 md:gap-8 text-lg md:text-2xl font-semibold text-emerald-700 mb-6">
+        <span>Fast.</span>
+        <span>Fun.</span>
+        <span>Fair.</span>
+      </div>
+
+      <p className="max-w-xl mx-auto text-lg text-gray-600 leading-relaxed">
+        Join golfers committed to restoring pace of play and creating
+        a better Rancho Park experience for everyone.
+      </p>
+
+    </div>
+
+    {/* Mission Card */}
+    <Card className="mb-10 border border-gray-200 shadow-sm">
+      <CardContent className="p-6">
+
+        <h2 className="text-xl font-bold mb-5 text-center">
+          Club Mission
+        </h2>
+
+        <div className="space-y-4">
+
+          <div className="flex gap-3 items-start">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-1 flex-shrink-0" />
+            <p>Play Rancho Park in under 4 hours.</p>
+          </div>
+
+          <div className="flex gap-3 items-start">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-1 flex-shrink-0" />
+            <p>Uphold Four Under pace-of-play standards without exception.</p>
+          </div>
+
+          <div className="flex gap-3 items-start">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-1 flex-shrink-0" />
+            <p>Promote Fast, Fun and Fair golf.</p>
+          </div>
+
+        </div>
+
+      </CardContent>
+    </Card>
+
+    {/* CTA */}
+    {!showSurvey && currentStep < surveySteps.length && (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-center"
+      >
+
+        <Button
+          size="lg"
+          onClick={() => setShowSurvey(true)}
+          className="
+            !bg-emerald-600
+            hover:!bg-emerald-700
+            !text-white
+            !font-semibold
+            !rounded-xl
+            !h-14
+            !px-10
+            !text-lg
+          "
+        >
+          Reserve Your Spot
+          <ArrowRight className="ml-2 h-5 w-5" />
+        </Button>
+
+        <p className="text-sm text-gray-500 mt-4">
+          Takes less than 30 seconds
+        </p>
+
+      </motion.div>
+    )}
+
+
 
             {/* Survey Section */}
             <AnimatePresence>
@@ -271,41 +333,83 @@ export default function FourUndersClub() {
               )}
             </AnimatePresence>
 
-            {/* Success State */}
-            {currentStep >= surveySteps.length && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-                className="mt-12"
-              >
-                <Card className="border-2 border-emerald-300 shadow-xl">
-                  <CardContent className="text-center py-12">
-                    <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <CheckCircle2 className="w-12 h-12 text-emerald-600" />
-                    </div>
-                    <h2 className="text-2xl md:text-3xl font-bold mb-4">Welcome to the Four Under Club!</h2>
-                    <p className="text-base md:text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-                      You're now on the waitlist. We'll be in touch with details about membership, 
-                      tee times, and how to start playing Rancho Park the Fast, Fun, and Fair way.
-                    </p>
-                    <div className="space-y-4">
-                      <Link href="/game">
-                        <Button
-                          size="lg"
-                          className="bg-emerald-600 hover:bg-emerald-700"
-                        >
-                          Try 4Points Now
-                        </Button>
-                      </Link>
-                      <p className="text-sm text-gray-500">
-                        Start playing with the 4Points format today
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
+                      {/* Success State */}
+                      {currentStep >= surveySteps.length && (
+                          <motion.div
+                              initial={{ opacity: 0, scale: 0.95 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ duration: 0.4 }}
+                              className="mt-10"
+                          >
+                              <Card className="overflow-hidden border-2 border-emerald-300 shadow-xl">
+
+                                  <CardContent className="p-0">
+
+                                      <div className="bg-gradient-to-b from-emerald-50 to-white py-8">
+
+                                          <Image
+                                              src="/4Under_logo_vertical.jpg"
+                                              alt="Four Under Club"
+                                              width={220}
+                                              height={340}
+                                              priority
+                                              className="
+              mx-auto
+              w-[180px]
+              md:w-[220px]
+              h-auto
+            "
+                                          />
+
+                                      </div>
+
+                                      <div className="px-6 py-8 text-center border-t border-emerald-100">
+
+                                          <div className="inline-flex items-center rounded-full bg-emerald-100 px-4 py-2 mb-6">
+                                              <span className="text-sm font-bold text-emerald-700">
+                                                  WAITLIST CONFIRMED
+                                              </span>
+                                          </div>
+
+                                          <h2 className="text-3xl font-bold mb-4">
+                                              Welcome to the Club
+                                          </h2>
+
+                                          <p className="text-gray-600 max-w-lg mx-auto mb-8 leading-relaxed">
+                                              You're officially on the Four Under Club waitlist.
+                                              We'll be in touch with membership details,
+                                              events, tee times and opportunities to help
+                                              improve the Rancho Park golf experience.
+                                          </p>
+
+                                          <Link href="/game" className="block">
+                                              <Button
+                                                  size="lg"
+                                                  className="
+                !w-full
+                !h-14
+                !rounded-xl
+                !bg-emerald-600
+                hover:!bg-emerald-700
+                !text-white
+                !font-semibold
+              "
+                                              >
+                                                  Try 4Points Now
+                                              </Button>
+                                          </Link>
+
+                                          <p className="mt-4 text-sm text-gray-500">
+                                              Start playing the Four Under format today
+                                          </p>
+
+                                      </div>
+
+                                  </CardContent>
+
+                              </Card>
+                          </motion.div>
+                      )}
           </div>
         </section>
       </div>
