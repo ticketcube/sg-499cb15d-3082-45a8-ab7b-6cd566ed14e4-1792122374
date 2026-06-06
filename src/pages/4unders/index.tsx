@@ -130,9 +130,8 @@ export default function FourUndersClub() {
       {/* Tagline */}
       <div className="text-center md:text-left">
         <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-gray-900 mb-3">
-          Play Rancho Park
-          <br />
-          in Under 4 Hours
+          Our Mission
+          
         </h1>
                               <h2 className="text-xl font-bold mb-5 text-center">
                                   Club Mission
