@@ -1,5 +1,6 @@
 import Head from "next/head";
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -289,15 +290,14 @@ export default function FourUndersClub() {
                       tee times, and how to start playing Rancho Park the Fast, Fun, and Fair way.
                     </p>
                     <div className="space-y-4">
-                      <Button
-                        asChild
-                        size="lg"
-                        className="bg-emerald-600 hover:bg-emerald-700"
-                      >
-                        <a href="/game">
+                      <Link href="/game">
+                        <Button
+                          size="lg"
+                          className="bg-emerald-600 hover:bg-emerald-700"
+                        >
                           Try 4Points Now
-                        </a>
-                      </Button>
+                        </Button>
+                      </Link>
                       <p className="text-sm text-gray-500">
                         Start playing with the 4Points format today
                       </p>
