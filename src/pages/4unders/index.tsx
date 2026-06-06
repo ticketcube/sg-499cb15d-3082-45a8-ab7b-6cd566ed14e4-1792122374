@@ -135,11 +135,7 @@ export default function FourUndersClub() {
           in Under 4 Hours
         </h1>
         
-        <div className="flex justify-center md:justify-start gap-4 text-lg md:text-xl font-semibold text-emerald-700">
-          <span>Fast.</span>
-          <span>Fun.</span>
-          <span>Fair.</span>
-        </div>
+       
       </div>
 
     </div>
