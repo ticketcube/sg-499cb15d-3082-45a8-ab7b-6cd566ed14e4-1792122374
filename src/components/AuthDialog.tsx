@@ -37,6 +37,7 @@ const FanDragonIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState < string | null > (null);
 
   const handleFanDragonSignIn = async () => {
     try {
