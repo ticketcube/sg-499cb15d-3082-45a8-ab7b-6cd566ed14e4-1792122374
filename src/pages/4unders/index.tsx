@@ -59,9 +59,9 @@ export default function FourUndersClub() {
       question: "How long are your Rancho Rounds?",
       key: "round_duration",
       options: [
-        { value: "under_3", label: "Under 3 Hours", icon: Zap },
-        { value: "3_to_4", label: "3-4 Hours", icon: Clock },
-        { value: "4_to_5", label: "4-5 Hours", icon: Clock },
+        { value: "under_4", label: "Under 4 Hours", icon: Zap },
+        { value: "4_to_4.5", label: "4 to 4 1/2 Hours", icon: Clock },
+        { value: "4.5_to_5", label: "4 1/2 to 5 Hours", icon: Clock },
         { value: "over_5", label: "Over 5 Hours", icon: Clock }
       ]
     },
