@@ -105,46 +105,51 @@ export default function FourUndersClub() {
       <div className="min-h-screen bg-white">
        {/* Hero Section */}
 <section className="pt-6 pb-12 px-4">
-  <div className="max-w-3xl mx-auto">
+  <div className="max-w-5xl mx-auto">
 
-    {/* Logo */}
-    <div className="text-center mb-8">
-      <Image
-        src="/4Under_logo_vertical.jpg"
-        alt="Four Under Club"
-        width={260}
-        height={400}
-        priority
-        className="
-          mx-auto
-          w-[200px]
-          md:w-[240px]
-          h-auto
-          object-contain
-        "
-      />
-    </div>
-
-    {/* Main Message */}
-    <div className="text-center mb-10">
-
-      <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-gray-900 mb-4">
-        Play Rancho Park
-        <br />
-        in Under 4 Hours
-      </h1>
-
-      <div className="flex justify-center gap-4 md:gap-8 text-lg md:text-2xl font-semibold text-emerald-700 mb-6">
-        <span>Fast.</span>
-        <span>Fun.</span>
-        <span>Fair.</span>
+    {/* Logo + Tagline Row */}
+    <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-10 mb-10">
+      
+      {/* Logo */}
+      <div className="flex-shrink-0">
+        <Image
+          src="/4Under_logo_vertical.jpg"
+          alt="Four Under Club"
+          width={120}
+          height={185}
+          priority
+          className="
+            w-[100px]
+            md:w-[120px]
+            h-auto
+            object-contain
+          "
+        />
       </div>
 
+      {/* Tagline */}
+      <div className="text-center md:text-left">
+        <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-gray-900 mb-3">
+          Play Rancho Park
+          <br />
+          in Under 4 Hours
+        </h1>
+        
+        <div className="flex justify-center md:justify-start gap-4 text-lg md:text-xl font-semibold text-emerald-700">
+          <span>Fast.</span>
+          <span>Fun.</span>
+          <span>Fair.</span>
+        </div>
+      </div>
+
+    </div>
+
+    {/* Subtitle */}
+    <div className="text-center mb-10">
       <p className="max-w-xl mx-auto text-lg text-gray-600 leading-relaxed">
         Join golfers committed to restoring pace of play and creating
         a better Rancho Park experience for everyone.
       </p>
-
     </div>
 
     {/* Mission Card */}
@@ -350,13 +355,13 @@ export default function FourUndersClub() {
                                           <Image
                                               src="/4Under_logo_vertical.jpg"
                                               alt="Four Under Club"
-                                              width={220}
-                                              height={340}
+                                              width={100}
+                                              height={155}
                                               priority
                                               className="
               mx-auto
-              w-[180px]
-              md:w-[220px]
+              w-[80px]
+              md:w-[100px]
               h-auto
             "
                                           />
