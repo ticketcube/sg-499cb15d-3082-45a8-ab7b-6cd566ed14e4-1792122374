@@ -10,114 +10,39 @@ export default function AuthCallback() {
     useEffect(() => {
         const handleAuthCallback = async () => {
             try {
-                console.log('🔄 [AuthCallback] Starting OAuth callback processing');
-                console.log('🔍 [AuthCallback] Current URL:', window.location.href);
-                console.log('🔍 [AuthCallback] URL Hash:', window.location.hash);
-                console.log('🔍 [AuthCallback] URL Search:', window.location.search);
+                console.log("[AuthCallback] Processing magic link callback");
+                console.log("[AuthCallback] Current URL:", window.location.href);
 
-                // Parse URL parameters
-                const hashParams = new URLSearchParams(window.location.hash.substring(1));
-                const urlParams = new URLSearchParams(window.location.search);
-
-                console.log('🔍 [AuthCallback] Hash params:', Object.fromEntries(hashParams));
-                console.log('🔍 [AuthCallback] URL params:', Object.fromEntries(urlParams));
-
-                // Check for OAuth provider errors
-                const errorParam = hashParams.get('error') || urlParams.get('error');
-                const errorDescription = hashParams.get('error_description') || urlParams.get('error_description');
-
-                if (errorParam) {
-                    console.error('❌ [AuthCallback] OAuth provider error:', errorParam);
-                    console.error('❌ [AuthCallback] Error description:', errorDescription);
-                    setError(`OAuth error: ${errorDescription || errorParam}`);
-                    return;
-                }
-
-                // ✅ NEW: Check for FanDragon OAuth authorization code
-                const authCode = urlParams.get('code');
-                
-                if (authCode) {
-                    console.log('🔄 [AuthCallback] FanDragon authorization code received');
-                    console.log('🔍 [AuthCallback] Code (first 10 chars):', authCode.substring(0, 10) + '...');
-
-                    // Call our token exchange endpoint
-                    console.log('🔄 [AuthCallback] Calling token exchange endpoint');
-                    const exchangeResponse = await fetch('/api/auth/exchange-token', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            code: authCode,
-                            redirect_uri: `${window.location.origin}/auth/callback`,
-                        }),
-                    });
-
-                    if (!exchangeResponse.ok) {
-                        const errorData = await exchangeResponse.json();
-                        console.error('❌ [AuthCallback] Token exchange failed:', errorData);
-                        setError(errorData.error || 'Failed to exchange authorization code');
-                        return;
-                    }
-
-                    const exchangeData = await exchangeResponse.json();
-                    console.log('✅ [AuthCallback] Token exchange successful');
-                    console.log('✅ [AuthCallback] User ID:', exchangeData.user.id);
-
-                    // Use the session URL to authenticate with Supabase
-                    if (exchangeData.session_url) {
-                        console.log('🔄 [AuthCallback] Using magic link session URL');
-                        window.location.href = exchangeData.session_url;
-                        return;
-                    }
-                }
-
-                // ✅ FALLBACK: Check for existing Supabase session (email auth or magic link)
                 const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
 
-                console.log('🔍 [AuthCallback] Session data:', sessionData);
-                console.log('🔍 [AuthCallback] Session error:', sessionError);
+                console.log("[AuthCallback] Session data:", sessionData);
+                console.log("[AuthCallback] Session error:", sessionError);
 
                 if (sessionError) {
-                    console.error('❌ [AuthCallback] Session error:', sessionError);
-                    setError('Authentication failed. Please try again.');
+                    console.error("[AuthCallback] Session error:", sessionError);
+                    setError("Authentication failed. Please try again.");
                     return;
                 }
 
                 if (!sessionData.session || !sessionData.session.user) {
-                    console.error('❌ [AuthCallback] No session found');
-
-                    // Check if we have OAuth params but no session yet
-                    if (hashParams.get('access_token') || urlParams.get('code')) {
-                        console.log('🔄 [AuthCallback] OAuth params found, waiting for session...');
-                        // Wait a bit longer for session to be established
-                        setTimeout(handleAuthCallback, 1500);
-                        return;
-                    }
-
-                    console.error('❌ [AuthCallback] No OAuth params and no session');
-                    setError('No authentication session found. Please try signing in again.');
+                    console.log("[AuthCallback] No session found yet, waiting...");
+                    setTimeout(handleAuthCallback, 1000);
                     return;
                 }
 
                 const user = sessionData.session.user;
-                console.log('✅ [AuthCallback] User authenticated:', user.id);
-                console.log('✅ [AuthCallback] User email:', user.email);
-                console.log('✅ [AuthCallback] User provider:', user.app_metadata?.provider);
+                console.log("[AuthCallback] User authenticated:", user.id);
+                console.log("[AuthCallback] User email:", user.email);
 
-                // Get redirect path from sessionStorage
-                const redirectPath = sessionStorage.getItem("auth_redirect") || "/my-cubes";
-                console.log('✅ [AuthCallback] Redirecting to:', redirectPath);
+                const redirectPath = sessionStorage.getItem("auth_redirect") || "/";
+                console.log("[AuthCallback] Redirecting to:", redirectPath);
                 
-                // Clear the stored redirect
                 sessionStorage.removeItem("auth_redirect");
-
-                // Redirect to original destination
                 router.replace(redirectPath);
 
             } catch (error) {
-                console.error('❌ [AuthCallback] Error in auth callback:', error);
-                setError('Something went wrong. Please try signing in again.');
+                console.error("[AuthCallback] Error:", error);
+                setError("Something went wrong. Please try signing in again.");
             } finally {
                 setLoading(false);
             }
@@ -127,7 +52,7 @@ export default function AuthCallback() {
     }, [router]);
 
     const handleRetryAuth = () => {
-        router.replace('/');
+        router.replace("/");
     };
 
     if (loading) {

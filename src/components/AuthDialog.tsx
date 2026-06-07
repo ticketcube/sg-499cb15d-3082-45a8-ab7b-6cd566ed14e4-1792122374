@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -7,13 +8,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { supabase } from "@/integrations/supabase/client";
+import { Mail, CheckCircle2 } from "lucide-react";
 
 interface AuthDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-// Dynamic URL Helper (Vercel-compatible)
 const getURL = () => {
   let url = process?.env?.NEXT_PUBLIC_SITE_URL ??
     process?.env?.NEXT_PUBLIC_VERCEL_URL ??
@@ -29,71 +31,57 @@ const getURL = () => {
   return url
 }
 
-const FanDragonIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
-    <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z" />
-  </svg>
-);
-
 export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
+  const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState < string | null > (null);
+  const [emailSent, setEmailSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleFanDragonSignIn = async () => {
+  const handleMagicLinkSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email || !email.includes("@")) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError(null);
 
-      sessionStorage.setItem("auth_redirect", window.location.pathname);
+      console.log("[AuthDialog] Sending magic link to:", email);
 
-      console.log("🔄 [AuthDialog] Starting FanDragon OAuth sign in");
-      console.log("🔍 [AuthDialog] Current page:", window.location.pathname);
+      const redirectPath = window.location.pathname + window.location.search;
+      sessionStorage.setItem("auth_redirect", redirectPath);
 
-      // ✅ Validate required environment variables FIRST
-      const clientId = process.env.NEXT_PUBLIC_FANDRAGON_CLIENT_ID;
-      const fandragonBaseUrl = process.env.NEXT_PUBLIC_FANDRAGON_BASE_URL || 'https://fandragon.com';
+      const { error: signInError } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${getURL()}auth/callback`,
+        },
+      });
 
-      if (!clientId) {
-        const errorMsg = "FanDragon Client ID is not configured. Please contact support.";
-        console.error("❌ [AuthDialog] Missing NEXT_PUBLIC_FANDRAGON_CLIENT_ID");
-        setError(errorMsg);
-        setIsLoading(false);
+      if (signInError) {
+        console.error("[AuthDialog] Magic link error:", signInError);
+        setError(signInError.message);
         return;
       }
 
-      console.log("✅ [AuthDialog] Client ID validated:", clientId);
-
-      // ✅ Store actual browser path for redirect after auth
-      const redirectPath = window.location.pathname + window.location.search;
-      sessionStorage.setItem("auth_redirect", redirectPath);
-      console.log("✅ [AuthDialog] Stored redirect path in sessionStorage:", redirectPath);
-
-      // ✅ Use getURL() for consistent redirect_uri across environments
-      const baseUrl = getURL();
-      const redirectUri = `${baseUrl}auth/callback`;
-      console.log("✅ [AuthDialog] Base URL:", baseUrl);
-      console.log("✅ [AuthDialog] Redirect URI:", redirectUri);
-
-      // Build OAuth URL with proper parameters
-      const params = new URLSearchParams({
-        client_id: clientId,
-        redirect_uri: redirectUri,
-        response_type: 'code',
-        scope: 'openid email profile',
-        state: crypto.randomUUID(), // CSRF protection
-      });
-
-      const fandragonOAuthUrl = `${fandragonBaseUrl}/oauth/consent?${params}`;
-
-      console.log("🚀 [AuthDialog] Redirecting to FanDragon OAuth:", fandragonOAuthUrl);
-      console.log("🔍 [AuthDialog] OAuth Parameters:", Object.fromEntries(params));
-
-      window.location.href = fandragonOAuthUrl;
+      console.log("[AuthDialog] Magic link sent successfully");
+      setEmailSent(true);
 
     } catch (err) {
-      console.error("❌ [AuthDialog] OAuth error:", err);
+      console.error("[AuthDialog] Error:", err);
+      setError("Something went wrong. Please try again.");
+    } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleReset = () => {
+    setEmail("");
+    setEmailSent(false);
+    setError(null);
   };
 
   return (
@@ -102,29 +90,69 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
         <DialogHeader>
           <DialogTitle>Sign In to Golf4Points</DialogTitle>
           <DialogDescription>
-            Continue with your FanDragon account to play and track your scores
+            {emailSent 
+              ? "Check your email for the sign-in link"
+              : "Enter your email to receive a magic link"
+            }
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 py-4">
-          <Button
-            onClick={handleFanDragonSignIn}
-            disabled={isLoading}
-            className="w-full"
-            size="lg"
-          >
-            <svg
-              className="mr-2 h-5 w-5"
-              viewBox="0 0 24 24"
-              fill="currentColor"
+
+        {emailSent ? (
+          <div className="space-y-4 py-4">
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="h-16 w-16 rounded-full bg-green-500/10 flex items-center justify-center">
+                <CheckCircle2 className="h-8 w-8 text-green-500" />
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-medium">
+                  Magic link sent to {email}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Click the link in your email to sign in. You can close this window.
+                </p>
+              </div>
+              <Button
+                onClick={handleReset}
+                variant="outline"
+                className="w-full"
+              >
+                Use a different email
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleMagicLinkSignIn} className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Input
+                type="email"
+                placeholder="your.email@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
+                className="h-12"
+                autoComplete="email"
+                autoFocus
+              />
+              {error && (
+                <p className="text-sm text-red-500">{error}</p>
+              )}
+            </div>
+
+            <Button
+              type="submit"
+              disabled={isLoading || !email}
+              className="w-full"
+              size="lg"
             >
-              <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z" />
-            </svg>
-            {isLoading ? "Redirecting..." : "Continue with FanDragon"}
-          </Button>
-          <p className="text-xs text-center text-muted-foreground">
-            By signing in, you agree to our Terms of Service and Privacy Policy
-          </p>
-        </div>
+              <Mail className="mr-2 h-5 w-5" />
+              {isLoading ? "Sending..." : "Send Magic Link"}
+            </Button>
+
+            <p className="text-xs text-center text-muted-foreground">
+              By signing in, you agree to our Terms of Service and Privacy Policy
+            </p>
+          </form>
+        )}
       </DialogContent>
     </Dialog>
   );
