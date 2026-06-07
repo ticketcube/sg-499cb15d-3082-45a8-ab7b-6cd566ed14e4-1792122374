@@ -1,7 +1,8 @@
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { AuthDialog } from "@/components/AuthDialog";
 import Link from "next/link";
 import Image from "next/image";
 import { LogIn, LogOut, User } from "lucide-react";
@@ -12,6 +13,7 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   const { user, loading } = useAuth();
+  const [authDialogOpen, setAuthDialogOpen] = useState(false);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -64,12 +66,15 @@ export function Layout({ children }: LayoutProps) {
                 </Button>
               </div>
             ) : (
-              <Link href="/auth/login">
-                <Button variant="ghost" size="sm" className="gap-2 text-red-800 hover:text-red-900 hover:bg-red-50">
-                  <LogIn className="h-4 w-4" />
-                  Login
-                </Button>
-              </Link>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setAuthDialogOpen(true)}
+                className="gap-2 text-red-800 hover:text-red-900 hover:bg-red-50"
+              >
+                <LogIn className="h-4 w-4" />
+                Login
+              </Button>
             )}
           </div>
         </div>
@@ -79,6 +84,9 @@ export function Layout({ children }: LayoutProps) {
       <main className="flex-grow flex flex-col overflow-x-hidden min-h-0">
         {children}
       </main>
+
+      {/* Auth Dialog */}
+      <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} />
     </div>
   );
 }
