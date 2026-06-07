@@ -1,4 +1,3 @@
-import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -25,7 +24,6 @@ export default function MVGPage() {
   };
 
   return (
-    <Layout>
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
         {/* Hero Section */}
         <section className="relative py-20 px-4">
@@ -297,6 +295,5 @@ export default function MVGPage() {
           </div>
         </section>
       </div>
-    </Layout>
   );
 }
