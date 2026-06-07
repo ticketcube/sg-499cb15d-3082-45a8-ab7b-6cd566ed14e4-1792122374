@@ -9,7 +9,10 @@ import { useRouter } from 'next/router'
 import { useEffect } from 'react'
 
 export default function App({ Component, pageProps }: AppProps) {
-  const router = useRouter();
+    const router = useRouter();
+    // Pages that should NOT have the header
+    const noLayoutRoutes = ['/4unders', '/mvg'];
+    const shouldHideLayout = noLayoutRoutes.includes(router.pathname);
 
   useEffect(() => {
     // Disable browser restoration so it doesn't fight our scroll
@@ -58,12 +61,19 @@ export default function App({ Component, pageProps }: AppProps) {
 
   return (
     <AuthProvider>
-      <GameProvider>
-        <Layout>
-          <Component {...pageProps} />
-        </Layout>
-        <Toaster />
-      </GameProvider>
+          <GameProvider>
+              {shouldHideLayout ? (
+                  <>
+                      <Component {...pageProps} />
+                      <Toaster />
+                  </>
+              ) : (
+                  <Layout>
+                      <Component {...pageProps} />
+                      <Toaster />
+                  </Layout>
+              )}
+          </GameProvider>
     </AuthProvider>
   )
 }
