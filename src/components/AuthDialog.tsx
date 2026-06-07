@@ -36,6 +36,27 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isReturningMember, setIsReturningMember] = useState<boolean | null>(null);
+
+  const checkIfReturningMember = async (emailAddress: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('id')
+        .eq('email', emailAddress)
+        .maybeSingle();
+
+      if (error) {
+        console.error("[AuthDialog] Error checking user:", error);
+        return false;
+      }
+
+      return !!data;
+    } catch (err) {
+      console.error("[AuthDialog] Error:", err);
+      return false;
+    }
+  };
 
   const handleMagicLinkSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,7 +70,11 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       setIsLoading(true);
       setError(null);
 
-      console.log("[AuthDialog] Sending magic link to:", email);
+      console.log("[AuthDialog] Checking if returning member:", email);
+      const isReturning = await checkIfReturningMember(email);
+      setIsReturningMember(isReturning);
+
+      console.log("[AuthDialog] Sending magic link to:", email, "Returning:", isReturning);
 
       const redirectPath = window.location.pathname + window.location.search;
       sessionStorage.setItem("auth_redirect", redirectPath);
@@ -82,6 +107,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     setEmail("");
     setEmailSent(false);
     setError(null);
+    setIsReturningMember(null);
   };
 
   return (
@@ -89,11 +115,14 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-3xl font-bold text-center bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-            Join the 4Under Club
+            {emailSent && isReturningMember 
+              ? "Welcome Back, Champion!"
+              : "Join the 4Under Club"
+            }
           </DialogTitle>
           <DialogDescription className="text-center text-base pt-2">
             {emailSent 
-              ? "Check your email to complete your membership"
+              ? "Check your email to complete your sign-in"
               : "Elite golfers playing under par, together"
             }
           </DialogDescription>
@@ -107,14 +136,17 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
               </div>
               <div className="space-y-3">
                 <p className="text-lg font-semibold">
-                  Magic Link Sent!
+                  {isReturningMember ? "Sign-In Link Sent!" : "Magic Link Sent!"}
                 </p>
                 <p className="text-sm text-muted-foreground px-4">
-                  We sent a secure sign-in link to<br />
+                  We sent a secure {isReturningMember ? "sign-in" : "membership"} link to<br />
                   <span className="font-medium text-foreground">{email}</span>
                 </p>
                 <p className="text-xs text-muted-foreground px-6">
-                  Click the link in your email to join the club. The link expires in 60 minutes.
+                  {isReturningMember 
+                    ? "Click the link to access your account. The link expires in 60 minutes."
+                    : "Click the link to complete your membership. The link expires in 60 minutes."
+                  }
                 </p>
               </div>
               <Button
@@ -177,11 +209,11 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                 size="lg"
               >
                 <Mail className="mr-2 h-5 w-5" />
-                {isLoading ? "Sending Magic Link..." : "Join the 4Under Club"}
+                {isLoading ? "Checking..." : "Continue"}
               </Button>
 
               <p className="text-xs text-center text-muted-foreground leading-relaxed">
-                By joining, you agree to our Terms of Service and Privacy Policy.<br />
+                By continuing, you agree to our Terms of Service and Privacy Policy.<br />
                 No passwords needed — we'll send you a secure sign-in link.
               </p>
             </form>
