@@ -59,52 +59,7 @@ export default function MVGPage() {
           </div>
         </section>
 
-        {/* MVP Inspiration */}
-        <section className="py-16 px-4 bg-card/50">
-          <div className="container mx-auto max-w-5xl">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div>
-                <h2 className="text-3xl font-bold mb-4">From Startups to Fairways</h2>
-                <p className="text-muted-foreground mb-4">
-                  The Minimum Viable Product strategy powered Facebook, Twitter, and Dropbox. 
-                  Instead of building everything at once, these companies identified the intersection 
-                  between the <span className="font-semibold text-primary">minimum</span> product they could build 
-                  and the <span className="font-semibold text-primary">viable</span> product consumers would actually use.
-                </p>
-                <p className="text-muted-foreground mb-4">
-                  Minimum Viable Golf applies this same philosophy to golf. Most golfers try to build 
-                  the entire solution—perfect swing, perfect equipment, perfect course management—all at once. 
-                  They get overwhelmed, frustrated, and quit.
-                </p>
-                <p className="text-muted-foreground">
-                  MVG gives you a <span className="font-semibold text-foreground">guarantee of improvement</span>. 
-                  Your scores will go down. Your happiness will go up. Less will most certainly be more.
-                </p>
-              </div>
-              <div className="bg-primary/10 p-8 rounded-lg border-2 border-primary/20">
-                <h3 className="text-xl font-bold mb-4 text-center">The MVG Promise</h3>
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-3">
-                    <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
-                    <span>Play 18 holes in less than 4 hours</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
-                    <span>Compete against yourself first, others second</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
-                    <span>Make golf easy, fun, and accessible for anyone</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
-                    <span>Focus on what matters, eliminate what doesn't</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </section>
+     
 
         {/* Nine Disciplines */}
         <section className="py-16 px-4">
