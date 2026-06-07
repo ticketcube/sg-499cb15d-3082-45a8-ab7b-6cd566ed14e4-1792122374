@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { Mail, CheckCircle2 } from "lucide-react";
+import { Mail, CheckCircle2, Trophy, Users, Target } from "lucide-react";
 
 interface AuthDialogProps {
   open: boolean;
@@ -86,29 +86,35 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Sign In to Golf4Points</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-3xl font-bold text-center bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+            Join the 4Under Club
+          </DialogTitle>
+          <DialogDescription className="text-center text-base pt-2">
             {emailSent 
-              ? "Check your email for the sign-in link"
-              : "Enter your email to receive a magic link"
+              ? "Check your email to complete your membership"
+              : "Elite golfers playing under par, together"
             }
           </DialogDescription>
         </DialogHeader>
 
         {emailSent ? (
-          <div className="space-y-4 py-4">
-            <div className="flex flex-col items-center text-center space-y-4">
-              <div className="h-16 w-16 rounded-full bg-green-500/10 flex items-center justify-center">
-                <CheckCircle2 className="h-8 w-8 text-green-500" />
+          <div className="space-y-6 py-6">
+            <div className="flex flex-col items-center text-center space-y-6">
+              <div className="h-20 w-20 rounded-full bg-green-500/10 flex items-center justify-center">
+                <CheckCircle2 className="h-10 w-10 text-green-500" />
               </div>
-              <div className="space-y-2">
-                <p className="text-sm font-medium">
-                  Magic link sent to {email}
+              <div className="space-y-3">
+                <p className="text-lg font-semibold">
+                  Magic Link Sent!
                 </p>
-                <p className="text-xs text-muted-foreground">
-                  Click the link in your email to sign in. You can close this window.
+                <p className="text-sm text-muted-foreground px-4">
+                  We sent a secure sign-in link to<br />
+                  <span className="font-medium text-foreground">{email}</span>
+                </p>
+                <p className="text-xs text-muted-foreground px-6">
+                  Click the link in your email to join the club. The link expires in 60 minutes.
                 </p>
               </div>
               <Button
@@ -121,37 +127,65 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
             </div>
           </div>
         ) : (
-          <form onSubmit={handleMagicLinkSignIn} className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Input
-                type="email"
-                placeholder="your.email@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={isLoading}
-                className="h-12"
-                autoComplete="email"
-                autoFocus
-              />
-              {error && (
-                <p className="text-sm text-red-500">{error}</p>
-              )}
+          <div className="space-y-6 py-6">
+            <div className="grid grid-cols-3 gap-4 mb-6">
+              <div className="flex flex-col items-center text-center space-y-2">
+                <div className="h-12 w-12 rounded-full bg-green-500/10 flex items-center justify-center">
+                  <Trophy className="h-6 w-6 text-green-600" />
+                </div>
+                <p className="text-xs text-muted-foreground font-medium">Elite Players</p>
+              </div>
+              <div className="flex flex-col items-center text-center space-y-2">
+                <div className="h-12 w-12 rounded-full bg-green-500/10 flex items-center justify-center">
+                  <Target className="h-6 w-6 text-green-600" />
+                </div>
+                <p className="text-xs text-muted-foreground font-medium">Under Par</p>
+              </div>
+              <div className="flex flex-col items-center text-center space-y-2">
+                <div className="h-12 w-12 rounded-full bg-green-500/10 flex items-center justify-center">
+                  <Users className="h-6 w-6 text-green-600" />
+                </div>
+                <p className="text-xs text-muted-foreground font-medium">Community</p>
+              </div>
             </div>
 
-            <Button
-              type="submit"
-              disabled={isLoading || !email}
-              className="w-full"
-              size="lg"
-            >
-              <Mail className="mr-2 h-5 w-5" />
-              {isLoading ? "Sending..." : "Send Magic Link"}
-            </Button>
+            <form onSubmit={handleMagicLinkSignIn} className="space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="email" className="text-sm font-medium">
+                  Email Address
+                </label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="your.email@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isLoading}
+                  className="h-12"
+                  autoComplete="email"
+                  autoFocus
+                />
+                {error && (
+                  <p className="text-sm text-red-500">{error}</p>
+                )}
+              </div>
 
-            <p className="text-xs text-center text-muted-foreground">
-              By signing in, you agree to our Terms of Service and Privacy Policy
-            </p>
-          </form>
+              <Button
+                type="submit"
+                disabled={isLoading || !email}
+                className="w-full h-12 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                size="lg"
+              >
+                <Mail className="mr-2 h-5 w-5" />
+                {isLoading ? "Sending Magic Link..." : "Join the 4Under Club"}
+              </Button>
+
+              <p className="text-xs text-center text-muted-foreground leading-relaxed">
+                By joining, you agree to our Terms of Service and Privacy Policy.<br />
+                No passwords needed — we'll send you a secure sign-in link.
+              </p>
+            </form>
+          </div>
         )}
       </DialogContent>
     </Dialog>
