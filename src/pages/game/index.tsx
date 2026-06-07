@@ -10,6 +10,7 @@ import { scoreOptions, Course, GameSettings, GameScore } from "@/types";
 import { courseService } from "@/services/courseService";
 import { gameService } from "@/services/gameService";
 import { useToast } from "@/hooks/use-toast";
+import { AuthDialog } from "@/components/AuthDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -42,6 +43,7 @@ export default function GamePage() {
   const [gameMode, setGameMode] = useState<'setup' | 'play'>('setup');
   const [setupStep, setSetupStep] = useState<'course' | 'tee'>('course');
   const [submittingGame, setSubmittingGame] = useState(false);
+  const [authDialogOpen, setAuthDialogOpen] = useState(false);
   
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -216,16 +218,18 @@ export default function GamePage() {
     console.log('Hole Scores:', holeScores);
     console.log('Current Nine:', currentNine);
     
-    if (!gameSettings || !user) {
-      console.log('❌ No game settings or user - redirecting to setup');
-      if (!user) {
-        toast({
-          variant: 'destructive',
-          title: 'Authentication Required',
-          description: 'Please sign in to complete your game'
-        });
-        router.push('/auth/login');
-      }
+    if (!gameSettings) {
+      console.log('❌ No game settings - redirecting to setup');
+      return;
+    }
+
+    if (!user) {
+      console.log('❌ No user - showing auth dialog');
+      toast({
+        title: 'Sign In Required',
+        description: 'Join the 4Under Club to save your score and compete on the leaderboard!'
+      });
+      setAuthDialogOpen(true);
       return;
     }
 
@@ -609,6 +613,7 @@ export default function GamePage() {
   return (
     <div className="bg-white flex flex-col">
       {gameMode === "setup" ? renderSetupUI() : renderPlayUI()}
+      <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} />
     </div>
   );
 }
