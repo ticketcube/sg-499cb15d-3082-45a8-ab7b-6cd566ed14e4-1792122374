@@ -5,10 +5,56 @@ import { supabase } from "@/integrations/supabase/client";
 export default function AuthCallback() {
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
+    const [status, setStatus] = useState<string>("Completing sign in...");
 
     useEffect(() => {
         let mounted = true;
-        let timeoutId: NodeJS.Timeout;
+        let authTimeoutId: NodeJS.Timeout;
+        let pollIntervalId: NodeJS.Timeout;
+
+        const pollForProfile = async (userId: string): Promise<boolean> => {
+            console.log("[AuthCallback] Polling for profile:", userId);
+            
+            const { data, error } = await supabase
+                .from("user_profiles")
+                .select("id")
+                .eq("user_id", userId)
+                .maybeSingle();
+
+            if (error) {
+                console.error("[AuthCallback] Profile fetch error:", error);
+                return false;
+            }
+
+            const exists = !!data;
+            console.log("[AuthCallback] Profile exists:", exists);
+            return exists;
+        };
+
+        const waitForProfile = async (userId: string): Promise<boolean> => {
+            const maxAttempts = 10; // 10 attempts over 5 seconds
+            const delayMs = 500;
+            
+            for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+                if (!mounted) return false;
+                
+                console.log(`[AuthCallback] Profile check attempt ${attempt}/${maxAttempts}`);
+                const exists = await pollForProfile(userId);
+                
+                if (exists) {
+                    console.log("[AuthCallback] Profile found!");
+                    return true;
+                }
+                
+                if (attempt < maxAttempts) {
+                    setStatus(`Setting up your account... (${attempt}/${maxAttempts})`);
+                    await new Promise(resolve => setTimeout(resolve, delayMs));
+                }
+            }
+            
+            console.error("[AuthCallback] Profile not found after polling");
+            return false;
+        };
 
         const handleAuthCallback = async () => {
             try {
@@ -16,7 +62,7 @@ export default function AuthCallback() {
                 console.log("[AuthCallback] URL:", window.location.href);
 
                 // Set a timeout in case auth state change never fires
-                timeoutId = setTimeout(() => {
+                authTimeoutId = setTimeout(() => {
                     if (mounted) {
                         console.error("[AuthCallback] Auth timeout - no session after 10 seconds");
                         setError("Authentication timed out. Please try signing in again.");
@@ -34,7 +80,20 @@ export default function AuthCallback() {
                         console.log("[AuthCallback] User email:", session.user.email);
 
                         // Clear the timeout since we got a successful sign in
-                        clearTimeout(timeoutId);
+                        clearTimeout(authTimeoutId);
+
+                        // Wait for profile to be created by the database trigger
+                        setStatus("Setting up your account...");
+                        const profileExists = await waitForProfile(session.user.id);
+
+                        if (!mounted) return;
+
+                        if (!profileExists) {
+                            console.error("[AuthCallback] Profile creation failed or timed out");
+                            setError("Account setup incomplete. Please contact support or try signing in again.");
+                            subscription.unsubscribe();
+                            return;
+                        }
 
                         // Get redirect path from sessionStorage
                         const redirectPath = sessionStorage.getItem("auth_redirect") || "/game";
@@ -45,13 +104,14 @@ export default function AuthCallback() {
                         // Unsubscribe before redirecting
                         subscription.unsubscribe();
                         
-                        // Small delay to ensure auth state is fully settled
-                        await new Promise(resolve => setTimeout(resolve, 500));
+                        // Small final delay to ensure state is fully settled
+                        setStatus("Complete! Redirecting...");
+                        await new Promise(resolve => setTimeout(resolve, 300));
                         
                         router.replace(redirectPath);
                     } else if (event === "SIGNED_OUT" || event === "USER_DELETED") {
                         console.error("[AuthCallback] Unexpected event:", event);
-                        clearTimeout(timeoutId);
+                        clearTimeout(authTimeoutId);
                         subscription.unsubscribe();
                         setError("Authentication failed. Please try again.");
                     }
@@ -60,7 +120,7 @@ export default function AuthCallback() {
             } catch (error) {
                 console.error("[AuthCallback] Error:", error);
                 setError("Something went wrong. Please try signing in again.");
-                clearTimeout(timeoutId);
+                clearTimeout(authTimeoutId);
             }
         };
 
@@ -68,7 +128,8 @@ export default function AuthCallback() {
 
         return () => {
             mounted = false;
-            if (timeoutId) clearTimeout(timeoutId);
+            if (authTimeoutId) clearTimeout(authTimeoutId);
+            if (pollIntervalId) clearInterval(pollIntervalId);
         };
     }, [router]);
 
@@ -107,8 +168,8 @@ export default function AuthCallback() {
             <div className="text-center space-y-4">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
                 <div className="space-y-2">
-                    <p className="text-white text-lg font-medium">Completing sign in...</p>
-                    <p className="text-gray-400 text-sm">Setting up your account</p>
+                    <p className="text-white text-lg font-medium">{status}</p>
+                    <p className="text-gray-400 text-sm">This usually takes just a moment</p>
                 </div>
             </div>
         </div>
