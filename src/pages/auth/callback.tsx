@@ -4,70 +4,77 @@ import { supabase } from "@/integrations/supabase/client";
 
 export default function AuthCallback() {
     const router = useRouter();
-    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        let mounted = true;
+        let timeoutId: NodeJS.Timeout;
+
         const handleAuthCallback = async () => {
             try {
-                console.log("[AuthCallback] Processing magic link callback");
-                console.log("[AuthCallback] Current URL:", window.location.href);
+                console.log("[AuthCallback] Starting auth callback flow");
+                console.log("[AuthCallback] URL:", window.location.href);
 
-                const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+                // Set a timeout in case auth state change never fires
+                timeoutId = setTimeout(() => {
+                    if (mounted) {
+                        console.error("[AuthCallback] Auth timeout - no session after 10 seconds");
+                        setError("Authentication timed out. Please try signing in again.");
+                    }
+                }, 10000);
 
-                console.log("[AuthCallback] Session data:", sessionData);
-                console.log("[AuthCallback] Session error:", sessionError);
+                // Wait for Supabase to process the magic link tokens and fire auth state change
+                const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+                    console.log("[AuthCallback] Auth event:", event);
+                    
+                    if (!mounted) return;
 
-                if (sessionError) {
-                    console.error("[AuthCallback] Session error:", sessionError);
-                    setError("Authentication failed. Please try again.");
-                    return;
-                }
+                    if (event === "SIGNED_IN" && session) {
+                        console.log("[AuthCallback] User signed in:", session.user.id);
+                        console.log("[AuthCallback] User email:", session.user.email);
 
-                if (!sessionData.session || !sessionData.session.user) {
-                    console.log("[AuthCallback] No session found yet, waiting...");
-                    setTimeout(handleAuthCallback, 1000);
-                    return;
-                }
+                        // Clear the timeout since we got a successful sign in
+                        clearTimeout(timeoutId);
 
-                const user = sessionData.session.user;
-                console.log("[AuthCallback] User authenticated:", user.id);
-                console.log("[AuthCallback] User email:", user.email);
-
-                const redirectPath = sessionStorage.getItem("auth_redirect") || "/";
-                console.log("[AuthCallback] Redirecting to:", redirectPath);
-                
-                sessionStorage.removeItem("auth_redirect");
-                router.replace(redirectPath);
+                        // Get redirect path from sessionStorage
+                        const redirectPath = sessionStorage.getItem("auth_redirect") || "/game";
+                        console.log("[AuthCallback] Redirecting to:", redirectPath);
+                        
+                        sessionStorage.removeItem("auth_redirect");
+                        
+                        // Unsubscribe before redirecting
+                        subscription.unsubscribe();
+                        
+                        // Small delay to ensure auth state is fully settled
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        
+                        router.replace(redirectPath);
+                    } else if (event === "SIGNED_OUT" || event === "USER_DELETED") {
+                        console.error("[AuthCallback] Unexpected event:", event);
+                        clearTimeout(timeoutId);
+                        subscription.unsubscribe();
+                        setError("Authentication failed. Please try again.");
+                    }
+                });
 
             } catch (error) {
                 console.error("[AuthCallback] Error:", error);
                 setError("Something went wrong. Please try signing in again.");
-            } finally {
-                setLoading(false);
+                clearTimeout(timeoutId);
             }
         };
 
         handleAuthCallback();
+
+        return () => {
+            mounted = false;
+            if (timeoutId) clearTimeout(timeoutId);
+        };
     }, [router]);
 
     const handleRetryAuth = () => {
         router.replace("/");
     };
-
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-black to-gray-900">
-                <div className="text-center space-y-4">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
-                    <div className="space-y-2">
-                        <p className="text-white text-lg font-medium">Completing sign in...</p>
-                        <p className="text-gray-400 text-sm">Setting up your account</p>
-                    </div>
-                </div>
-            </div>
-        );
-    }
 
     if (error) {
         return (
@@ -95,5 +102,15 @@ export default function AuthCallback() {
         );
     }
 
-    return null;
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-black to-gray-900">
+            <div className="text-center space-y-4">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
+                <div className="space-y-2">
+                    <p className="text-white text-lg font-medium">Completing sign in...</p>
+                    <p className="text-gray-400 text-sm">Setting up your account</p>
+                </div>
+            </div>
+        </div>
+    );
 }
