@@ -109,7 +109,7 @@ export default function AuthCallback() {
                         await new Promise(resolve => setTimeout(resolve, 300));
                         
                         router.replace(redirectPath);
-                    } else if (event === "SIGNED_OUT" || event === "USER_DELETED") {
+                    } else if (event === "SIGNED_OUT") {
                         console.error("[AuthCallback] Unexpected event:", event);
                         clearTimeout(authTimeoutId);
                         subscription.unsubscribe();
