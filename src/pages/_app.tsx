@@ -11,7 +11,7 @@ import { useEffect } from 'react'
 export default function App({ Component, pageProps }: AppProps) {
     const router = useRouter();
     // Pages that should NOT have the header
-    const noLayoutRoutes = ['/4unders', '/mvg'];
+    const noLayoutRoutes = ['/4unders', '/mvg', ''];
     const shouldHideLayout = noLayoutRoutes.includes(router.pathname);
 
   useEffect(() => {
