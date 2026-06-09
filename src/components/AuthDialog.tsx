@@ -165,19 +165,19 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                 <div className="h-12 w-12 rounded-full bg-green-500/10 flex items-center justify-center">
                   <Trophy className="h-6 w-6 text-green-600" />
                 </div>
-                <p className="text-xs text-muted-foreground font-medium">Elite Players</p>
+                <p className="text-xs text-muted-foreground font-medium">Any Level Can Win</p>
               </div>
               <div className="flex flex-col items-center text-center space-y-2">
                 <div className="h-12 w-12 rounded-full bg-green-500/10 flex items-center justify-center">
                   <Target className="h-6 w-6 text-green-600" />
                 </div>
-                <p className="text-xs text-muted-foreground font-medium">Under Par</p>
+                <p className="text-xs text-muted-foreground font-medium">Beat Your Target and Win</p>
               </div>
               <div className="flex flex-col items-center text-center space-y-2">
                 <div className="h-12 w-12 rounded-full bg-green-500/10 flex items-center justify-center">
                   <Users className="h-6 w-6 text-green-600" />
                 </div>
-                <p className="text-xs text-muted-foreground font-medium">Community</p>
+                <p className="text-xs text-muted-foreground font-medium">Members Only</p>
               </div>
             </div>
 
