@@ -123,7 +123,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           <DialogDescription className="text-center text-base pt-2">
             {emailSent 
               ? "Check your email to complete your sign-in"
-              : "Elite golfers playing under par, together"
+              : "Fast, Fun and Fair Golf"
             }
           </DialogDescription>
         </DialogHeader>
