@@ -129,7 +129,7 @@ export default function FourUndersClub() {
 
                             {/* Tagline */}
                             <div className="text-center md:text-left">
-                                <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-gray-900 mb-3">
+                                <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-black mb-3">
                                     Our Mission
 
                                 </h1>
