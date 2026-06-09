@@ -141,7 +141,7 @@ export default function FourUndersClub() {
 
                                 <div className="flex gap-3 items-start">
                                     <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-1 flex-shrink-0" />
-                                    <p>Uphold Four Under pace-of-play standards without exception.</p>
+                                    <p>Uphold Four Under Pace of Play</p>
                                 </div>
 
                                 <div className="flex gap-3 items-start">
