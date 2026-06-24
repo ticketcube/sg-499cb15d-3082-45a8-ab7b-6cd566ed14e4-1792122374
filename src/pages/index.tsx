@@ -355,26 +355,9 @@ export default function FourUndersClub() {
                                                 improve the Rancho Park golf experience.
                                             </p>
 
-                                            <Link href="/game" className="block">
-                                                <Button
-                                                    size="lg"
-                                                    className="
-                !w-full
-                !h-14
-                !rounded-xl
-                !bg-emerald-600
-                hover:!bg-emerald-700
-                !text-white
-                !font-semibold
-              "
-                                                >
-                                                    Try 4Points Now
-                                                </Button>
-                                            </Link>
+                                          
 
-                                            <p className="mt-4 text-sm text-gray-500">
-                                                Start playing the Four Under format today
-                                            </p>
+                                            
 
                                         </div>
 
