@@ -129,7 +129,7 @@ export default function FourUndersClub() {
 
                             {/* Tagline */}
                             <div className="text-center md:text-left">
-                                <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-black mb-3">
+                                <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-gray-900 mb-3">
                                     Our Mission
 
                                 </h1>
@@ -141,7 +141,7 @@ export default function FourUndersClub() {
 
                                 <div className="flex gap-3 items-start">
                                     <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-1 flex-shrink-0" />
-                                    <p>Uphold Four Under Pace of Play</p>
+                                    <p>Uphold Four Under pace-of-play standards without exception.</p>
                                 </div>
 
                                 <div className="flex gap-3 items-start">
@@ -182,6 +182,13 @@ export default function FourUndersClub() {
 
                                 <p className="text-sm text-gray-500 mt-4">
                                     Takes less than 30 seconds
+                                </p>
+
+                                <p className="text-sm text-gray-500 mt-2">
+                                    Founded by{" "}
+                                    <Link href="/mvg" className="text-emerald-600 hover:text-emerald-700 underline">
+                                        Minimum Viable Golf
+                                    </Link>
                                 </p>
 
                             </motion.div>
@@ -355,9 +362,26 @@ export default function FourUndersClub() {
                                                 improve the Rancho Park golf experience.
                                             </p>
 
-                                          
+                                            <Link href="/game" className="block">
+                                                <Button
+                                                    size="lg"
+                                                    className="
+                !w-full
+                !h-14
+                !rounded-xl
+                !bg-emerald-600
+                hover:!bg-emerald-700
+                !text-white
+                !font-semibold
+              "
+                                                >
+                                                    Try 4Points Now
+                                                </Button>
+                                            </Link>
 
-                                            
+                                            <p className="mt-4 text-sm text-gray-500">
+                                                Start playing the Four Under format today
+                                            </p>
 
                                         </div>
 
