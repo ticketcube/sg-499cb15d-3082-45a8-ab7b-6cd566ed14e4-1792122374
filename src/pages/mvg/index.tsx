@@ -55,18 +55,28 @@ export default function MVGPage() {
           </div>
         </section>
 
+  <section className="py-16 px-4 bg-card/50">
+          <div className="container mx-auto max-w-4xl">
+            <h2 className="text-3xl font-bold mb-8 text-center">What is Minimum Viable Golf?</h2>
+            <div className="aspect-video rounded-lg overflow-hidden shadow-xl">
+              <iframe
+                width="100%"
+                height="100%"
+                src="https://www.youtube.com/embed/2jDmcyRrsh8"
+                title="What is Minimum Viable Golf?"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </section>
      
 
         {/* Nine Disciplines */}
         <section className="py-16 px-4">
           <div className="container mx-auto max-w-6xl">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold mb-4">Nine Disciplines for Better Golf</h2>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                MVG organizes golf mastery into three branches: Physical, Mental, and Emotional. 
-                Master these nine disciplines and watch your game transform.
-              </p>
-            </div>
+           
 
             <Tabs defaultValue="physical" className="w-full">
               <TabsList className="grid w-full grid-cols-3 mb-8">
@@ -169,44 +179,10 @@ export default function MVGPage() {
         </section>
 
         {/* Introduction Video */}
-        <section className="py-16 px-4 bg-card/50">
-          <div className="container mx-auto max-w-4xl">
-            <h2 className="text-3xl font-bold mb-8 text-center">What is Minimum Viable Golf?</h2>
-            <div className="aspect-video rounded-lg overflow-hidden shadow-xl">
-              <iframe
-                width="100%"
-                height="100%"
-                src="https://www.youtube.com/embed/2jDmcyRrsh8"
-                title="What is Minimum Viable Golf?"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            </div>
-          </div>
-        </section>
+      
 
         {/* CTA Section */}
-        <section className="py-20 px-4">
-          <div className="container mx-auto max-w-4xl text-center">
-            <h2 className="text-4xl font-bold mb-6">Ready to Transform Your Game?</h2>
-            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Start with the minimum that's viable. Try 4Points—the faster, more competitive way to play golf.
-            </p>
-            <div className="flex flex-wrap gap-4 justify-center">
-              <Link href="/game">
-                <Button size="lg" className="gap-2">
-                  Play Your First 4Points Round <ArrowRight className="w-5 h-5" />
-                </Button>
-              </Link>
-              <a href="https://www.youtube.com/@minimumviablegolf" target="_blank" rel="noopener noreferrer">
-                <Button size="lg" variant="outline" className="gap-2">
-                  Watch More Videos <Play className="w-5 h-5" />
-                </Button>
-              </a>
-            </div>
-          </div>
-        </section>
+      
       </div>
   );
 }
