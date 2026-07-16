@@ -184,6 +184,13 @@ export default function FourUndersClub() {
           Takes less than 30 seconds
         </p>
 
+        <p className="text-sm text-gray-500 mt-2">
+          Founded by{" "}
+          <Link href="/mvg" className="text-emerald-600 hover:text-emerald-700 underline">
+            Minimum Viable Golf
+          </Link>
+        </p>
+
       </motion.div>
     )}
 
