@@ -45,14 +45,10 @@ export default function MVGPage() {
               build the minimum that's actually viable, then iterate.
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
-              <Link href="/game">
-                <Button size="lg" className="gap-2">
-                  Play 4Points <ArrowRight className="w-5 h-5" />
-                </Button>
-              </Link>
+            
               <a href="https://minimumviablegolf.substack.com" target="_blank" rel="noopener noreferrer">
                 <Button size="lg" variant="outline" className="gap-2">
-                  Read the Philosophy <Play className="w-5 h-5" />
+                  Why? <Play className="w-5 h-5" />
                 </Button>
               </a>
             </div>
@@ -140,45 +136,7 @@ export default function MVGPage() {
                 </div>
                 
                 {/* 4Points Callout */}
-                <Card className="bg-primary/5 border-primary/20 border-2">
-                  <CardHeader>
-                    <CardTitle className="text-2xl flex items-center gap-2">
-                      <ArrowRight className="w-6 h-6 text-primary" />
-                      Game/Match Selection in Action: 4Points
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-lg">
-                      <span className="font-semibold">4Points</span> is the perfect example of MVG's Mental Discipline #2 in action. 
-                      Instead of traditional stroke play that can drag on for hours, 4Points offers:
-                    </p>
-                    <ul className="space-y-2 ml-6">
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary font-bold">•</span>
-                        <span>Faster rounds (under 3 hours)</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary font-bold">•</span>
-                        <span>More competitive and engaging scoring</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary font-bold">•</span>
-                        <span>Better feedback on your performance</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary font-bold">•</span>
-                        <span>A format that works for all skill levels</span>
-                      </li>
-                    </ul>
-                    <div className="pt-4">
-                      <Link href="/game">
-                        <Button size="lg" className="gap-2">
-                          Try 4Points Now <ArrowRight className="w-5 h-5" />
-                        </Button>
-                      </Link>
-                    </div>
-                  </CardContent>
-                </Card>
+               
               </TabsContent>
 
               <TabsContent value="emotional" className="space-y-6">
