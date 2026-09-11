@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { ArrowRight, Play } from "lucide-react";
 import Head from "next/head";
+import Image from "next/image";
 
 // Configuration - Update this with your actual Google Calendar booking URL
 const GOLFMUSIC_BOOKING_URL = "https://calendar.app.google/zhyDRuKSDSpNCb1HA";
@@ -88,9 +89,16 @@ export default function GolfMusicPage() {
         {/* Hero Section */}
         <section className="relative py-24 md:py-32 px-4 bg-black text-white">
           <div className="container mx-auto max-w-5xl text-center">
-            <h1 className="text-7xl md:text-8xl lg:text-9xl font-bold mb-8 tracking-tight">
-              GOLFMUSIC
-            </h1>
+            <div className="mb-12 flex justify-center">
+              <Image 
+                src="/GMMG.png"
+                alt="GOLFMUSIC"
+                width={600}
+                height={200}
+                className="w-full max-w-2xl h-auto"
+                priority
+              />
+            </div>
             
             <p className="text-3xl md:text-4xl font-light mb-4 tracking-wide">
               Golfers Who Love Music.
@@ -316,7 +324,7 @@ export default function GolfMusicPage() {
               {signatureQuestions.map((question, idx) => (
                 <div 
                   key={idx}
-                  className="border-2 border-white p-6 md:p-8 rounded-lg hover:bg-white hover:text-black transition-colors duration-300"
+                  className="border-2 border-white p-6 md:p-8 rounded-lg hover:bg-red-600 hover:border-red-600 transition-colors duration-300"
                 >
                   <p className="text-xl md:text-2xl font-light leading-relaxed">
                     "{question}"
