@@ -125,6 +125,22 @@ export default function GolfMusicPage() {
             </div>
           </div>
         </section>
+              <section className="py-16 px-4 bg-card/50">
+                  <div className="container mx-auto max-w-4xl">
+                      <h2 className="text-3xl font-bold mb-8 text-center">What is Minimum Viable Golf?</h2>
+                      <div className="aspect-video rounded-lg overflow-hidden shadow-xl">
+                          <iframe
+                              width="100%"
+                              height="100%"
+                              src="https://www.youtube.com/embed/2jDmcyRrsh8"
+                              title="What is Minimum Viable Golf?"
+                              frameBorder="0"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                          />
+                      </div>
+                  </div>
+              </section>
 
         {/* The Concept Section */}
         <section className="py-20 md:py-28 px-4 bg-white">
