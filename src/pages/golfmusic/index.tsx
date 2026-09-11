@@ -6,7 +6,7 @@ import { ArrowRight, Play } from "lucide-react";
 import Head from "next/head";
 
 // Configuration - Update this with your actual Google Calendar booking URL
-const GOLFMUSIC_BOOKING_URL = "https://calendar.google.com/calendar/appointments/schedules/YOUR_BOOKING_ID";
+const GOLFMUSIC_BOOKING_URL = "https://calendar.app.google/zhyDRuKSDSpNCb1HA";
 
 // Placeholder episode data
 const episodes = [
