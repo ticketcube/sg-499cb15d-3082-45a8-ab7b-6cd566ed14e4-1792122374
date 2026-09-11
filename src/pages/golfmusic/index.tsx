@@ -116,7 +116,7 @@ export default function GolfMusicPage() {
               <Button 
                 size="lg" 
                 variant="outline"
-                              className="text-lg px-8 py-6  bg-green-600 hover:bg-green-700 text-whitefont-semibold"
+                              className="text-lg px-8 py-6  bg-red-600 hover:bg-red-700 text-whitefont-semibold"
                 onClick={scrollToEpisodes}
               >
                 WATCH GOLFMUSIC
