@@ -240,17 +240,7 @@ export default function GolfMusicPage() {
                       </div>
                     </div>
                     
-                    <div className="space-y-2">
-                      <div className="text-sm text-gray-600">
-                        {episode.guestName} · {episode.guestDescription}
-                      </div>
-                      <h3 className="text-xl font-bold group-hover:text-green-600 transition-colors">
-                        {episode.title}
-                      </h3>
-                      <p className="text-gray-600 text-sm leading-relaxed">
-                        {episode.description}
-                      </p>
-                    </div>
+                   
                   </div>
                 </a>
               ))}
