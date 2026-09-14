@@ -46,9 +46,9 @@ export default function MVGPage() {
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
             
-              <a href="https://minimumviablegolf.substack.com" target="_blank" rel="noopener noreferrer">
+                      <a href="https://mvg.golf/golfmusic" target="_blank" rel="noopener noreferrer">
                 <Button size="lg" variant="outline" className="gap-2">
-                  Why? <Play className="w-5 h-5" />
+                  Want to find out more? <Play className="w-5 h-5" />
                 </Button>
               </a>
             </div>
