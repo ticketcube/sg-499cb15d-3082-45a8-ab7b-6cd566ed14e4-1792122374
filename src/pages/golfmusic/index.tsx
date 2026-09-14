@@ -90,7 +90,22 @@ export default function GolfMusicPage() {
           <div className="container mx-auto max-w-5xl text-center">
             <h1 className="text-7xl md:text-8xl lg:text-9xl font-bold mb-8 tracking-tight">
               GOLFMUSIC
-            </h1>
+                      </h1>
+                      <div className="flex-shrink-0">
+                          <Image
+                              src="/4Under_logo_vertical.jpg"
+                              alt="Four Under Club"
+                              width={120}
+                              height={185}
+                              priority
+                              className="
+            w-[100px]
+            md:w-[120px]
+            h-auto
+            object-contain
+          "
+                          />
+                      </div>
             
             <p className="text-3xl md:text-4xl font-light mb-4 tracking-wide">
               Golfers Who Love Music.
