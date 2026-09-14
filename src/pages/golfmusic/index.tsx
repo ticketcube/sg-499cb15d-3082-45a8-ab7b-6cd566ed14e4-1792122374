@@ -265,7 +265,7 @@ export default function GolfMusicPage() {
             </h3>
             
             <p className="text-lg md:text-xl text-gray-700 mb-8 leading-relaxed max-w-2xl mx-auto">
-              GolfMusic is part of Minimum Viable Golf — a golf media project exploring new ways to think about the game.
+              GolfMusic is part of Minimum Viable Golf — a philosophy for golfers.
             </p>
             
             <a href="https://www.youtube.com/@minimumviablegolf" target="_blank" rel="noopener noreferrer">
@@ -308,24 +308,7 @@ export default function GolfMusicPage() {
                       YouTube
                     </a>
                   </div>
-                  <div>
-                    <a 
-                      href="https://www.instagram.com/minimumviablegolf" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-gray-300 hover:text-white transition-colors"
-                    >
-                      Instagram
-                    </a>
-                  </div>
-                  <div>
-                    <a 
-                      href="mailto:hello@mvg.golf"
-                      className="text-gray-300 hover:text-white transition-colors"
-                    >
-                      Contact
-                    </a>
-                  </div>
+                 
                   <div>
                     <a 
                       href={GOLFMUSIC_BOOKING_URL}
