@@ -362,7 +362,7 @@ export default function FourUndersClub() {
                                                 improve the Rancho Park golf experience.
                                             </p>
 
-                                            <Link href="/game" className="block">
+                                            <Link href="/golfmusic" className="block">
                                                 <Button
                                                     size="lg"
                                                     className="
