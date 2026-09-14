@@ -92,7 +92,7 @@ export default function GolfMusicPage() {
             <h1 className="text-5xl md:text-5xl lg:text-5xl font-bold mb-6 tracking-tight">
               GOLFMUSIC
                       </h1>
-                      <div className="flex justify-center">
+                      <div className="flex justify-center mb-6">
                           <Image
                               src="/GMMG.jpeg"
                               alt="Four Under Club"
