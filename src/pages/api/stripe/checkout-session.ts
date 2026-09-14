@@ -1,4 +1,3 @@
-
 import { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
@@ -22,25 +21,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { priceId, userId, gamepool_id, quantity = 1 } = req.body;
+    const { priceId, userId, gamepool_id, quantity = 1, metadata } = req.body;
 
     console.log('API Route - Received request:', { 
       priceId, 
       userId,
       gamepool_id,
       quantity,
+      metadata,
       nodeEnv: process.env.NODE_ENV,
       stripeKeyPrefix: process.env.STRIPE_SECRET_KEY?.substring(0, 8) + '...'
     });
 
-    if (!priceId || !userId || !gamepool_id) {
+    if (!priceId || !userId) {
       console.error('Missing parameters:', { 
         priceId: !!priceId, 
-        userId: !!userId, 
-        gamepool_id: !!gamepool_id 
+        userId: !!userId
       });
       return res.status(400).json({ 
-        error: 'Missing required parameters: priceId, userId, and gamepool_id are required.' 
+        error: 'Missing required parameters: priceId and userId are required.' 
       });
     }
 
@@ -49,41 +48,47 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(500).json({ error: 'Payment system not configured properly' });
     }
 
-    // PHASE 2: Pre-checkout inventory validation
-    console.log('Checking inventory for gamepool:', gamepool_id);
+    // PHASE 2: Pre-checkout inventory validation (only for game entries, not memberships)
+    const isMembershipPayment = !gamepool_id || gamepool_id === 'four_unders_club' || (metadata?.product === 'four_unders_membership');
     
-    const { data: gamepool, error: gamepoolError } = await supabaseAdmin
-      .from('gamepools')
-      .select('id, name, current_players, max_players, status')
-      .eq('id', gamepool_id)
-      .eq('status', 'ACTIVE')
-      .single();
+    if (!isMembershipPayment && gamepool_id) {
+      console.log('Checking inventory for gamepool:', gamepool_id);
+      
+      const { data: gamepool, error: gamepoolError } = await supabaseAdmin
+        .from('gamepools')
+        .select('id, name, current_players, max_players, status')
+        .eq('id', gamepool_id)
+        .eq('status', 'ACTIVE')
+        .single();
 
-    if (gamepoolError || !gamepool) {
-      console.error('Failed to fetch gamepool:', gamepoolError);
-      return res.status(400).json({ 
-        error: 'Game pool not found or inactive' 
+      if (gamepoolError || !gamepool) {
+        console.error('Failed to fetch gamepool:', gamepoolError);
+        return res.status(400).json({ 
+          error: 'Game pool not found or inactive' 
+        });
+      }
+
+      // Check if there are enough slots available
+      const availableSlots = gamepool.max_players - gamepool.current_players;
+      
+      console.log('Inventory check:', {
+        gamepool_name: gamepool.name,
+        current_players: gamepool.current_players,
+        max_players: gamepool.max_players,
+        available_slots: availableSlots,
+        requested_quantity: quantity
       });
-    }
 
-    // Check if there are enough slots available
-    const availableSlots = gamepool.max_players - gamepool.current_players;
-    
-    console.log('Inventory check:', {
-      gamepool_name: gamepool.name,
-      current_players: gamepool.current_players,
-      max_players: gamepool.max_players,
-      available_slots: availableSlots,
-      requested_quantity: quantity
-    });
-
-    if (availableSlots < quantity) {
-      console.log('Game is sold out or insufficient slots available');
-      return res.status(400).json({ 
-        error: availableSlots === 0 
-          ? 'Sorry, this game is sold out!' 
-          : `Only ${availableSlots} slot(s) remaining, but you requested ${quantity}` 
-      });
+      if (availableSlots < quantity) {
+        console.log('Game is sold out or insufficient slots available');
+        return res.status(400).json({ 
+          error: availableSlots === 0 
+            ? 'Sorry, this game is sold out!' 
+            : `Only ${availableSlots} slot(s) remaining, but you requested ${quantity}` 
+        });
+      }
+    } else {
+      console.log('Skipping gamepool validation - this is a membership payment');
     }
 
     // Log which Stripe environment we're using
@@ -101,6 +106,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     console.log('Creating Stripe checkout session with domain:', domain);
 
+    // Build metadata object, merging provided metadata with required fields
+    const sessionMetadata = {
+      user_id: userId,
+      ...(gamepool_id && { gamepool_id }),
+      quantity: quantity.toString(),
+      ...(metadata || {})
+    };
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -112,11 +125,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       mode: 'payment',
       success_url: `${domain}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${domain}/payment/cancel`,
-      metadata: {
-        user_id: userId,
-        gamepool_id: gamepool_id,
-        quantity: quantity.toString(),
-      },
+      metadata: sessionMetadata,
     });
 
     if (!session.url) {
@@ -127,8 +136,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log('Stripe session created successfully:', { 
       sessionId: session.id, 
       url: session.url,
-      gamepool_name: gamepool.name,
-      slots_reserved: quantity
+      isMembershipPayment,
+      metadata: sessionMetadata
     });
 
     return res.status(200).json({ sessionId: session.id, url: session.url });
