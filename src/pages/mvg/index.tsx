@@ -47,13 +47,20 @@ export default function MVGPage() {
             <div className="flex flex-wrap gap-4 justify-center">
             
                       <a href="https://mvg.golf/golfmusic" target="_blank" rel="noopener noreferrer">
-                <Button size="lg" variant="outline" className="gap-2">
-                  Want to find out more? <Play className="w-5 h-5" />
-                </Button>
+                          <Button
+                              size="lg"
+                              className="text-lg px-8 py-6 bg-green-600 hover:bg-green-700 text-white font-semibold"
+                          >
+                              SCHEDULE A CHAT
+                              <ArrowRight className="ml-2 w-5 h-5" />
+                          </Button>
               </a>
             </div>
           </div>
         </section>
+
+         
+
 
   <section className="py-16 px-4 bg-card/50">
           <div className="container mx-auto max-w-4xl">
