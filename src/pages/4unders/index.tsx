@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { CheckCircle2, Clock, Target, Zap, ArrowRight } from "lucide-react";
+import { CheckCircle2, Clock, Target, Zap, ArrowRight, CreditCard } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "@/hooks/use-toast";
 
@@ -21,9 +21,48 @@ export default function FourUndersClub() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [surveyAnswers, setSurveyAnswers] = useState<SurveyAnswers>({});
+  const [showPayment, setShowPayment] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   const handleAnswer = (key: string, value: string) => {
     setSurveyAnswers(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handlePayment = async () => {
+    setIsProcessingPayment(true);
+    try {
+      const response = await fetch("/api/stripe/checkout-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          priceId: process.env.NEXT_PUBLIC_STRIPE_4UNDERS_PRICE_ID || "price_1QoNEyGpLakj8bkFV5gPa31d",
+          userId: "guest_" + Date.now(), // Temporary ID for guests
+          gamepool_id: "four_unders_club",
+          metadata: {
+            product: "four_unders_membership",
+            survey_answers: JSON.stringify(surveyAnswers)
+          }
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Payment failed");
+      }
+
+      const { url } = await response.json();
+      
+      // Redirect to Stripe checkout
+      window.location.href = url;
+    } catch (error) {
+      console.error("Payment error:", error);
+      toast({
+        title: "Payment failed",
+        description: error instanceof Error ? error.message : "Please try again or contact support.",
+        variant: "destructive",
+      });
+      setIsProcessingPayment(false);
+    }
   };
 
   const handleSubmit = async () => {
@@ -95,6 +134,24 @@ export default function FourUndersClub() {
   const currentStepData = surveySteps[currentStep];
   const canProceed = surveyAnswers[currentStepData?.key as keyof SurveyAnswers];
 
+  // Determine if user needs to pay (answered anything other than "no" to question 3)
+  const needsPayment = surveyAnswers.price_premium && surveyAnswers.price_premium !== "no";
+
+  const handleNext = () => {
+    // If we just finished question 3 (index 2)
+    if (currentStep === 2) {
+      if (needsPayment) {
+        // Show payment step
+        setShowPayment(true);
+      } else {
+        // Skip to email step
+        setCurrentStep(3);
+      }
+    } else {
+      setCurrentStep(prev => prev + 1);
+    }
+  };
+
   return (
     <>
       <Head>
@@ -155,7 +212,7 @@ export default function FourUndersClub() {
 
   
     {/* CTA */}
-    {!showSurvey && currentStep < surveySteps.length && (
+    {!showSurvey && currentStep < surveySteps.length && !showPayment && (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -194,11 +251,93 @@ export default function FourUndersClub() {
       </motion.div>
     )}
 
+            {/* Payment Step */}
+            <AnimatePresence>
+              {showPayment && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.4 }}
+                  className="mt-12"
+                >
+                  <Card className="border-2 border-emerald-300 shadow-xl">
+                    <CardHeader>
+                      <div className="flex items-center justify-between mb-4">
+                        <span className="text-sm font-semibold text-emerald-600">
+                          MEMBERSHIP
+                        </span>
+                      </div>
+                      <CardTitle className="text-xl md:text-2xl">
+                        Join the Four Under Club
+                      </CardTitle>
+                    </CardHeader>
+                    
+                    <CardContent className="space-y-6">
+                      <div className="bg-emerald-50 rounded-lg p-6 border border-emerald-200">
+                        <div className="flex items-start gap-4">
+                          <CreditCard className="w-8 h-8 text-emerald-600 flex-shrink-0 mt-1" />
+                          <div className="flex-1">
+                            <h3 className="font-bold text-lg mb-2">
+                              Reserve Your Tournament Spot
+                            </h3>
+                            <p className="text-gray-700 mb-4">
+                              $50 secures your spot in the first Four Under Club tournament
+                              at Rancho Park. Limited to the first 48 members.
+                            </p>
+                            <ul className="space-y-2 text-sm text-gray-600">
+                              <li className="flex items-start gap-2">
+                                <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                                <span>Guaranteed 4-hour or faster round</span>
+                              </li>
+                              <li className="flex items-start gap-2">
+                                <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                                <span>First tournament entry included</span>
+                              </li>
+                              <li className="flex items-start gap-2">
+                                <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                                <span>Exclusive member benefits and events</span>
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+                        
+                        <div className="mt-6 pt-6 border-t border-emerald-200">
+                          <div className="flex items-center justify-between mb-4">
+                            <span className="text-gray-600">Membership Fee:</span>
+                            <span className="text-2xl font-bold text-emerald-900">$50</span>
+                          </div>
+                        </div>
+                      </div>
 
+                      <div className="flex gap-3">
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowPayment(false)}
+                          disabled={isProcessingPayment}
+                          className="flex-1"
+                        >
+                          Back
+                        </Button>
+                        
+                        <Button
+                          onClick={handlePayment}
+                          disabled={isProcessingPayment}
+                          className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                        >
+                          {isProcessingPayment ? "Processing..." : "Pay $50 & Join"}
+                          {!isProcessingPayment && <ArrowRight className="ml-2 w-4 h-4" />}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Survey Section */}
             <AnimatePresence>
-              {showSurvey && currentStep < surveySteps.length && (
+              {showSurvey && currentStep < surveySteps.length && !showPayment && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
@@ -220,7 +359,7 @@ export default function FourUndersClub() {
                             {currentStepData.type === "email" ? "Final Step" : `Question ${currentStep + 1} of 3`}
                           </span>
                           <div className="flex gap-1">
-                            {surveySteps.map((_, idx) => (
+                            {surveySteps.slice(0, 3).map((_, idx) => (
                               <div
                                 key={idx}
                                 className={`h-2 w-8 rounded-full transition-colors ${
@@ -300,7 +439,7 @@ export default function FourUndersClub() {
                               if (currentStepData.type === "email") {
                                 handleSubmit();
                               } else {
-                                setCurrentStep(prev => prev + 1);
+                                handleNext();
                               }
                             }}
                             disabled={!canProceed || isSubmitting}
