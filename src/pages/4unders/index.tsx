@@ -35,7 +35,7 @@ export default function FourUndersClub() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          priceId: process.env.NEXT_PUBLIC_STRIPE_4UNDERS_PRICE_ID || "price_1QoNEyGpLakj8bkFV5gPa31d",
+          priceId: process.env.NEXT_PUBLIC_STRIPE_4U_PRICE_ID || "price_1QoNEyGpLakj8bkFV5gPa31d",
           userId: "guest_" + Date.now(), // Temporary ID for guests
           gamepool_id: "four_unders_club",
           metadata: {
