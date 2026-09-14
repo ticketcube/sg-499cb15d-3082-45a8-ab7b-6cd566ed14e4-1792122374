@@ -375,12 +375,19 @@ export default function FourUndersClub() {
                 !font-semibold
               "
                                                 >
-                                                    Try 4Points Now
+                                                    LET'S TALK
                                                 </Button>
                                             </Link>
 
                                             <p className="mt-4 text-sm text-gray-500">
-                                                Start playing the Four Under format today
+                                    
+                                                Got a golf story?
+
+                                                Got a music story?
+
+                                                Got both?
+
+                                                Let's spend 15 minutes talking about it.
                                             </p>
 
                                         </div>
