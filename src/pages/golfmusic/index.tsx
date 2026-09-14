@@ -113,15 +113,7 @@ export default function GolfMusicPage() {
                 </Button>
               </a>
               
-              <Button 
-                size="lg" 
-                variant="outline"
-                className="text-lg px-8 py-6  bg-red-600 hover:bg-red-700 text-white font-semibold"
-                onClick={scrollToEpisodes}
-              >
-                WATCH GOLFMUSIC
-                <Play className="ml-2 w-5 h-5" />
-              </Button>
+              
             </div>
           </div>
         </section>
