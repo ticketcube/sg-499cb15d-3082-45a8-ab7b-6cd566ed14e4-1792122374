@@ -201,7 +201,7 @@ export default function GolfMusicPage() {
         <section className="py-20 md:py-28 px-4 bg-black text-white">
           <div className="container mx-auto max-w-5xl">
             <h2 className="text-5xl md:text-6xl font-bold mb-16 text-center">
-              THE QUESTIONS
+              CONVERSATION 
             </h2>
             
             <div className="grid md:grid-cols-2 gap-6 md:gap-8">
