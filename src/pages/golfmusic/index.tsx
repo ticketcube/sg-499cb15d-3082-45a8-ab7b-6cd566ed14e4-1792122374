@@ -85,11 +85,10 @@ export default function GolfMusicPage() {
         <meta name="twitter:image" content="https://mvg.golf/golfmusic.png" />
       </Head>
 
-      <div className="min-h-screen bg-white">
-        {/* Hero Section */}
-        <section className="relative py-24 md:py-32 px-4 bg-black text-white">
-          <div className="container mx-auto max-w-5xl text-center">
-            <h1 className="text-5xl md:text-5xl lg:text-5xl font-bold mb-6 tracking-tight">
+          <div className="min-h-screen bg-white overflow-x-hidden">
+              <section className="relative py-24 md:py-32 px-4 bg-black text-white">
+                  <div className="container mx-auto max-w-5xl text-center">
+            <h1 className="text-4xl md:text-5xl lg:text-5xl font-bold mb-6 tracking-tight">
               GOLFMUSIC
                       </h1>
                       <div className="flex justify-center mb-6">
