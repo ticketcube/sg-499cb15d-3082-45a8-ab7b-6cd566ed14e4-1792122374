@@ -94,7 +94,7 @@ export default function GolfMusicPage() {
                       </h1>
                       <div className="flex-shrink-0">
                           <Image
-                              src="/4Under_logo_vertical.jpg"
+                              src="/GMMG.jpg"
                               alt="Four Under Club"
                               width={120}
                               height={185}
