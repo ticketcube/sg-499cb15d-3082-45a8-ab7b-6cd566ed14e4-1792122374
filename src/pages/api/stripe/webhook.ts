@@ -1,4 +1,3 @@
-
 import { NextApiRequest, NextApiResponse } from 'next';
 import { buffer } from 'micro';
 import Stripe from "stripe";
@@ -48,7 +47,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (event.type === 'checkout.session.completed') {
         const session = event.data.object as Stripe.Checkout.Session;
 
-        const { user_id, gamepool_id, quantity } = session.metadata || {};
+        const { user_id, gamepool_id, quantity, product, email, username, round_duration, last_score, price_premium } = session.metadata || {};
         const paymentIntentId = typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id;
 
         if (!user_id) {
@@ -62,14 +61,44 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         console.log('Processing successful payment:', { 
             user_id, 
             gamepool_id,
+            product,
             quantity: parsedQuantity,
             sessionId: session.id,
-            paymentIntentId 
+            paymentIntentId,
+            email,
+            username
         });
 
         try {
+            // Check if this is a Four Unders membership payment
+            if (product === 'four_unders_membership' && email && username) {
+                console.log('Processing Four Unders membership payment');
+
+                // Create waitlist entry with survey data
+                const { error: waitlistError } = await supabaseAdmin
+                    .from('four_unders_waitlist')
+                    .insert({
+                        email,
+                        username,
+                        round_duration,
+                        last_score,
+                        price_premium,
+                        paid: true,
+                        stripe_checkout_id: session.id,
+                        stripe_payment_intent_id: paymentIntentId,
+                        amount_paid: session.amount_total ? session.amount_total / 100 : 50
+                    });
+
+                if (waitlistError) {
+                    console.error('Failed to create Four Unders waitlist entry:', waitlistError);
+                    // Don't fail the webhook, but log the error
+                } else {
+                    console.log('Successfully created Four Unders waitlist entry for:', email);
+                }
+            }
+
             // PHASE 2: Handle inventory tracking if gamepool_id is provided
-            if (gamepool_id) {
+            if (gamepool_id && gamepool_id !== 'four_unders_club') {
                 console.log('Processing inventory update for gamepool:', gamepool_id);
 
                 // Create gamepool entry record
@@ -104,28 +133,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 }
 
                 console.log(`Successfully incremented current_players by ${parsedQuantity} for gamepool:`, gamepool_id);
+
+                // Update user's member_cat to indicate they've paid
+                const { error } = await supabaseAdmin
+                    .from('profiles')
+                    .update({ 
+                        member_cat: 'aug31_paid',
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', user_id);
+
+                if (error) {
+                    console.error('Failed to update user profile:', error);
+                    return res.status(500).json({ error: 'Failed to update user access.' });
+                }
             }
 
-            // Update user's member_cat to indicate they've paid for August 31 game
-            const { error } = await supabaseAdmin
-                .from('profiles')
-                .update({ 
-                    member_cat: 'aug31_paid',
-                    updated_at: new Date().toISOString()
-                })
-                .eq('id', user_id);
-
-            if (error) {
-                console.error('Failed to update user profile:', error);
-                return res.status(500).json({ error: 'Failed to update user access.' });
-            }
-
-            // Optional: Record the payment transaction
+            // Optional: Record the payment transaction (for all payments)
             const { error: transactionError } = await supabaseAdmin
                 .from('payment_transactions')
                 .insert({
                     user_id: user_id,
-                    amount: session.amount_total ? session.amount_total / 100 : 35, // Convert cents to dollars
+                    amount: session.amount_total ? session.amount_total / 100 : 35,
                     status: 'completed',
                     stripe_payment_intent_id: paymentIntentId,
                     stripe_customer_id: session.customer as string,
@@ -133,15 +162,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
             if (transactionError) {
                 console.error('Failed to record payment transaction:', transactionError);
-                // Don't fail the webhook for this, user access is already granted
+                // Don't fail the webhook for this
             }
 
             console.log('Successfully processed payment webhook:', {
                 user_id,
                 gamepool_id,
+                product,
                 quantity: parsedQuantity,
-                member_cat_updated: true,
-                inventory_updated: !!gamepool_id
+                four_unders_membership: product === 'four_unders_membership',
+                waitlist_created: !!(product === 'four_unders_membership' && email)
             });
 
         } catch (error) {

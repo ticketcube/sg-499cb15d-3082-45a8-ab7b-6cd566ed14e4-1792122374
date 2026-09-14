@@ -14,6 +14,7 @@ interface SurveyAnswers {
   last_score?: string;
   price_premium?: string;
   email?: string;
+  username?: string;
 }
 
 export default function FourUndersClub() {
@@ -29,6 +30,38 @@ export default function FourUndersClub() {
   };
 
   const handlePayment = async () => {
+    // Validate email and username
+    if (!surveyAnswers.email || !surveyAnswers.username) {
+      toast({
+        title: "Missing information",
+        description: "Please enter both email and username to continue.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(surveyAnswers.email)) {
+      toast({
+        title: "Invalid email",
+        description: "Please enter a valid email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Basic username validation (alphanumeric, underscore, dash, 3-20 chars)
+    const usernameRegex = /^[a-zA-Z0-9_-]{3,20}$/;
+    if (!usernameRegex.test(surveyAnswers.username)) {
+      toast({
+        title: "Invalid username",
+        description: "Username must be 3-20 characters (letters, numbers, underscore, dash only).",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsProcessingPayment(true);
     try {
       const response = await fetch("/api/stripe/checkout-session", {
@@ -36,11 +69,15 @@ export default function FourUndersClub() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           priceId: process.env.NEXT_PUBLIC_STRIPE_4U_PRICE_ID || "price_1QoNEyGpLakj8bkFV5gPa31d",
-          userId: "guest_" + Date.now(), // Temporary ID for guests
+          userId: "guest_" + Date.now(),
           gamepool_id: "four_unders_club",
           metadata: {
             product: "four_unders_membership",
-            survey_answers: JSON.stringify(surveyAnswers)
+            email: surveyAnswers.email,
+            username: surveyAnswers.username,
+            round_duration: surveyAnswers.round_duration || "",
+            last_score: surveyAnswers.last_score || "",
+            price_premium: surveyAnswers.price_premium || ""
           }
         })
       });
@@ -274,6 +311,41 @@ export default function FourUndersClub() {
                     </CardHeader>
                     
                     <CardContent className="space-y-6">
+                      {/* Email and Username Inputs */}
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Email Address *
+                          </label>
+                          <Input
+                            type="email"
+                            placeholder="your.email@example.com"
+                            value={surveyAnswers.email || ""}
+                            onChange={(e) => handleAnswer("email", e.target.value)}
+                            className="text-base"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">
+                            We'll send tournament details and updates here
+                          </p>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Golfer Username *
+                          </label>
+                          <Input
+                            type="text"
+                            placeholder="golf_username"
+                            value={surveyAnswers.username || ""}
+                            onChange={(e) => handleAnswer("username", e.target.value.toLowerCase())}
+                            className="text-base"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">
+                            3-20 characters, letters/numbers only (can be changed later)
+                          </p>
+                        </div>
+                      </div>
+
                       <div className="bg-emerald-50 rounded-lg p-6 border border-emerald-200">
                         <div className="flex items-start gap-4">
                           <CreditCard className="w-8 h-8 text-emerald-600 flex-shrink-0 mt-1" />
@@ -322,7 +394,7 @@ export default function FourUndersClub() {
                         
                         <Button
                           onClick={handlePayment}
-                          disabled={isProcessingPayment}
+                          disabled={isProcessingPayment || !surveyAnswers.email || !surveyAnswers.username}
                           className="flex-1 bg-emerald-600 hover:bg-emerald-700"
                         >
                           {isProcessingPayment ? "Processing..." : "Pay $50 & Join"}
