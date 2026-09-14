@@ -108,11 +108,7 @@ export default function GolfMusicPage() {
                           />
                       </div>
             
-            <p className="text-3xl md:text-4xl font-light mb-4 tracking-wide">
-              Golfers Who Love Music.
-              <br />
-              Musicians Who Love Golf.
-            </p>
+          
             
             <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto mb-12 leading-relaxed">
               A new Minimum Viable Golf series exploring the weird, funny and surprisingly deep connection between golf and music.
