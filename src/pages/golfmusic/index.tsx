@@ -89,15 +89,15 @@ export default function GolfMusicPage() {
         {/* Hero Section */}
         <section className="relative py-24 md:py-32 px-4 bg-black text-white">
           <div className="container mx-auto max-w-5xl text-center">
-            <h1 className="text-7xl md:text-8xl lg:text-9xl font-bold mb-8 tracking-tight">
+            <h1 className="text-5xl md:text-5xl lg:text-5xl font-bold mb-6 tracking-tight">
               GOLFMUSIC
                       </h1>
                       <div className="flex-shrink-0">
                           <Image
                               src="/GMMG.jpeg"
                               alt="Four Under Club"
-                              width={120}
-                              height={185}
+                              width={480}
+                              height={740}
                               priority
                               className="
             w-[100px]
