@@ -102,6 +102,67 @@ export default function FourUndersClub() {
     }
   };
 
+  const handleWaitlistOnly = async () => {
+    // Validate email and username
+    if (!surveyAnswers.email || !surveyAnswers.username) {
+      toast({
+        title: "Missing information",
+        description: "Please enter both email and username to continue.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(surveyAnswers.email)) {
+      toast({
+        title: "Invalid email",
+        description: "Please enter a valid email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Basic username validation (alphanumeric, underscore, dash, 3-20 chars)
+    const usernameRegex = /^[a-zA-Z0-9_-]{3,20}$/;
+    if (!usernameRegex.test(surveyAnswers.username)) {
+      toast({
+        title: "Invalid username",
+        description: "Username must be 3-20 characters (letters, numbers, underscore, dash only).",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch("/api/4unders-waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(surveyAnswers)
+      });
+
+      if (!response.ok) throw new Error("Submission failed");
+
+      toast({
+        title: "Welcome to the club! 🏌️",
+        description: "We'll be in touch soon with next steps.",
+      });
+      setCurrentStep(surveySteps.length);
+      setShowPayment(false);
+    } catch (error) {
+      console.error("Submission error:", error);
+      toast({
+        title: "Submission failed",
+        description: "Please try again or contact us directly.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
@@ -302,12 +363,15 @@ export default function FourUndersClub() {
                     <CardHeader>
                       <div className="flex items-center justify-between mb-4">
                         <span className="text-sm font-semibold text-emerald-600">
-                          MEMBERSHIP
+                          MEMBERSHIP OPTIONS
                         </span>
                       </div>
                       <CardTitle className="text-xl md:text-2xl">
                         Join the Four Under Club
                       </CardTitle>
+                      <p className="text-gray-600 mt-2">
+                        Choose how you'd like to join
+                      </p>
                     </CardHeader>
                     
                     <CardContent className="space-y-6">
@@ -346,18 +410,22 @@ export default function FourUndersClub() {
                         </div>
                       </div>
 
-                      <div className="bg-emerald-50 rounded-lg p-6 border border-emerald-200">
-                        <div className="flex items-start gap-4">
+                      {/* Paid Option */}
+                      <div className="bg-emerald-50 rounded-lg p-6 border-2 border-emerald-300">
+                        <div className="flex items-start gap-4 mb-4">
                           <CreditCard className="w-8 h-8 text-emerald-600 flex-shrink-0 mt-1" />
                           <div className="flex-1">
-                            <h3 className="font-bold text-lg mb-2">
-                              Reserve Your Tournament Spot
-                            </h3>
-                            <p className="text-gray-700 mb-4">
-                              $50 secures your spot in the first Four Under Club tournament
+                            <div className="flex items-center justify-between mb-2">
+                              <h3 className="font-bold text-lg">
+                                Reserve Your Tournament Spot
+                              </h3>
+                              <span className="text-2xl font-bold text-emerald-900">$50</span>
+                            </div>
+                            <p className="text-gray-700 mb-3">
+                              Secure your spot in the first Four Under Club tournament
                               at Rancho Park. Limited to the first 48 members.
                             </p>
-                            <ul className="space-y-2 text-sm text-gray-600">
+                            <ul className="space-y-2 text-sm text-gray-700">
                               <li className="flex items-start gap-2">
                                 <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
                                 <span>Guaranteed 4-hour or faster round</span>
@@ -368,37 +436,50 @@ export default function FourUndersClub() {
                               </li>
                               <li className="flex items-start gap-2">
                                 <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                                <span>Exclusive member benefits and events</span>
+                                <span>Exclusive member benefits and priority access</span>
                               </li>
                             </ul>
                           </div>
                         </div>
                         
-                        <div className="mt-6 pt-6 border-t border-emerald-200">
-                          <div className="flex items-center justify-between mb-4">
-                            <span className="text-gray-600">Membership Fee:</span>
-                            <span className="text-2xl font-bold text-emerald-900">$50</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex gap-3">
-                        <Button
-                          variant="outline"
-                          onClick={() => setShowPayment(false)}
-                          disabled={isProcessingPayment}
-                          className="flex-1"
-                        >
-                          Back
-                        </Button>
-                        
                         <Button
                           onClick={handlePayment}
                           disabled={isProcessingPayment || !surveyAnswers.email || !surveyAnswers.username}
-                          className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                          className="w-full bg-emerald-600 hover:bg-emerald-700 h-12"
                         >
-                          {isProcessingPayment ? "Processing..." : "Pay $50 & Join"}
+                          {isProcessingPayment ? "Processing..." : "Pay $50 & Reserve Spot"}
                           {!isProcessingPayment && <ArrowRight className="ml-2 w-4 h-4" />}
+                        </Button>
+                      </div>
+
+                      {/* Free Waitlist Option */}
+                      <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                          <div className="w-full border-t border-gray-300" />
+                        </div>
+                        <div className="relative flex justify-center text-sm">
+                          <span className="bg-white px-4 text-gray-500">or</span>
+                        </div>
+                      </div>
+
+                      <div className="bg-gray-50 rounded-lg p-6 border-2 border-gray-200">
+                        <div className="mb-4">
+                          <h3 className="font-bold text-lg mb-2">
+                            Join Waitlist Only
+                          </h3>
+                          <p className="text-gray-600 text-sm">
+                            Stay informed about Four Under Club updates, events, and future opportunities.
+                            No payment required.
+                          </p>
+                        </div>
+                        
+                        <Button
+                          onClick={handleWaitlistOnly}
+                          disabled={isSubmitting || isProcessingPayment || !surveyAnswers.email || !surveyAnswers.username}
+                          variant="outline"
+                          className="w-full h-12 border-2"
+                        >
+                          {isSubmitting ? "Joining..." : "Join Waitlist Only (Free)"}
                         </Button>
                       </div>
                     </CardContent>
