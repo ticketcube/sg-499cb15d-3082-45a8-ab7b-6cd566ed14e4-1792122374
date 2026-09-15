@@ -1098,6 +1098,8 @@ export type Database = {
           last_score: string | null
           paid: boolean | null
           price_premium: string | null
+          referral_code: string | null
+          referred_by: string | null
           round_duration: string | null
           stripe_checkout_id: string | null
           stripe_payment_intent_id: string | null
@@ -1111,6 +1113,8 @@ export type Database = {
           last_score?: string | null
           paid?: boolean | null
           price_premium?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
           round_duration?: string | null
           stripe_checkout_id?: string | null
           stripe_payment_intent_id?: string | null
@@ -1124,6 +1128,8 @@ export type Database = {
           last_score?: string | null
           paid?: boolean | null
           price_premium?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
           round_duration?: string | null
           stripe_checkout_id?: string | null
           stripe_payment_intent_id?: string | null
