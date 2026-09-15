@@ -25,12 +25,14 @@ export default function MembersPage() {
   const [referralStats, setReferralStats] = useState<ReferralStats | null>(null);
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
   const GOAL = 30;
   const PRICE = 50;
   const progressPercent = Math.min((totalPaid / GOAL) * 100, 100);
 
   useEffect(() => {
+    setMounted(true);
     fetchMembers();
     fetchUserReferralCode();
   }, []);
@@ -221,11 +223,12 @@ export default function MembersPage() {
                 
                 <div className="flex gap-3">
                   <div className="flex-1 bg-gray-100 rounded-lg p-3 font-mono text-sm break-all">
-                    {typeof window !== 'undefined' && window.location.origin}/4unders?ref={referralCode}
+                    {mounted ? `${window.location.origin}/4unders?ref=${referralCode}` : ''}
                   </div>
                   <Button
                     onClick={copyReferralLink}
                     className="bg-emerald-600 hover:bg-emerald-700"
+                    disabled={!mounted}
                   >
                     {copied ? (
                       <>
