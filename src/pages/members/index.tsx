@@ -10,12 +10,19 @@ import { supabase } from "@/integrations/supabase/client";
 interface Member {
   username: string;
   created_at: string;
+  referral_code?: string;
+}
+
+interface ReferralStats {
+  referral_code: string;
+  referral_count: number;
 }
 
 export default function MembersPage() {
   const [members, setMembers] = useState<Member[]>([]);
   const [totalPaid, setTotalPaid] = useState(0);
   const [referralCode, setReferralCode] = useState<string>("");
+  const [referralStats, setReferralStats] = useState<ReferralStats | null>(null);
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -25,14 +32,14 @@ export default function MembersPage() {
 
   useEffect(() => {
     fetchMembers();
-    generateReferralCode();
+    fetchUserReferralCode();
   }, []);
 
   const fetchMembers = async () => {
     try {
       const { data, error } = await supabase
         .from("four_unders_waitlist")
-        .select("username, created_at")
+        .select("username, created_at, referral_code")
         .eq("paid", true)
         .order("created_at", { ascending: true });
 
@@ -52,10 +59,48 @@ export default function MembersPage() {
     }
   };
 
-  const generateReferralCode = () => {
-    // Generate a unique 8-character code
-    const code = Math.random().toString(36).substring(2, 10).toUpperCase();
-    setReferralCode(code);
+  const fetchUserReferralCode = async () => {
+    try {
+      // Try to get user's referral code from URL parameter or local storage
+      const urlParams = new URLSearchParams(window.location.search);
+      const codeFromUrl = urlParams.get('code');
+      
+      if (codeFromUrl) {
+        // Fetch stats for this referral code
+        const { data: member } = await supabase
+          .from("four_unders_waitlist")
+          .select("referral_code")
+          .eq("referral_code", codeFromUrl)
+          .eq("paid", true)
+          .single();
+
+        if (member) {
+          setReferralCode(codeFromUrl);
+          
+          // Count how many people used this referral code
+          const { data: referrals } = await supabase
+            .from("four_unders_waitlist")
+            .select("id")
+            .eq("referred_by", codeFromUrl)
+            .eq("paid", true);
+
+          setReferralStats({
+            referral_code: codeFromUrl,
+            referral_count: referrals?.length || 0
+          });
+          return;
+        }
+      }
+      
+      // Generate a temporary code for visitors
+      const tempCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+      setReferralCode(tempCode);
+    } catch (error) {
+      console.error("Error fetching referral code:", error);
+      // Generate fallback code
+      const fallbackCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+      setReferralCode(fallbackCode);
+    }
   };
 
   const copyReferralLink = () => {
@@ -162,12 +207,21 @@ export default function MembersPage() {
                     <p className="text-sm text-gray-600">
                       Share your unique link. When 2 friends join and pay, your $50 membership is refunded.
                     </p>
+                    {referralStats && referralStats.referral_count > 0 && (
+                      <div className="mt-2 inline-flex items-center gap-2 bg-emerald-100 px-3 py-1 rounded-full">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                        <span className="text-sm font-semibold text-emerald-900">
+                          {referralStats.referral_count} referral{referralStats.referral_count !== 1 ? 's' : ''}
+                          {referralStats.referral_count >= 2 && ' - Refund eligible!'}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
                 
                 <div className="flex gap-3">
                   <div className="flex-1 bg-gray-100 rounded-lg p-3 font-mono text-sm break-all">
-                    {window.location.origin}/4unders?ref={referralCode}
+                    {typeof window !== 'undefined' && window.location.origin}/4unders?ref={referralCode}
                   </div>
                   <Button
                     onClick={copyReferralLink}

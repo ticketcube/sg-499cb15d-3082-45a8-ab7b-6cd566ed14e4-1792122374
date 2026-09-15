@@ -1,13 +1,14 @@
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { CheckCircle2, Clock, Target, Zap, ArrowRight, CreditCard } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "@/hooks/use-toast";
+import { useRouter } from "next/router";
 
 interface SurveyAnswers {
   round_duration?: string;
@@ -15,15 +16,24 @@ interface SurveyAnswers {
   price_premium?: string;
   email?: string;
   username?: string;
+  referred_by?: string;
 }
 
 export default function FourUndersClub() {
+  const router = useRouter();
   const [showSurvey, setShowSurvey] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [surveyAnswers, setSurveyAnswers] = useState<SurveyAnswers>({});
   const [showPayment, setShowPayment] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+
+  // Capture referral code from URL
+  useEffect(() => {
+    if (router.query.ref && typeof router.query.ref === 'string') {
+      setSurveyAnswers(prev => ({ ...prev, referred_by: router.query.ref as string }));
+    }
+  }, [router.query.ref]);
 
   const handleAnswer = (key: string, value: string) => {
     setSurveyAnswers(prev => ({ ...prev, [key]: value }));
@@ -77,7 +87,8 @@ export default function FourUndersClub() {
             username: surveyAnswers.username,
             round_duration: surveyAnswers.round_duration || "",
             last_score: surveyAnswers.last_score || "",
-            price_premium: surveyAnswers.price_premium || ""
+            price_premium: surveyAnswers.price_premium || "",
+            referred_by: surveyAnswers.referred_by || ""
           }
         })
       });

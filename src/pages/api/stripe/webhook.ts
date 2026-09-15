@@ -47,7 +47,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (event.type === 'checkout.session.completed') {
         const session = event.data.object as Stripe.Checkout.Session;
 
-        const { user_id, gamepool_id, quantity, product, email, username, round_duration, last_score, price_premium } = session.metadata || {};
+        const { user_id, gamepool_id, quantity, product, email, username, round_duration, last_score, price_premium, referred_by } = session.metadata || {};
         const paymentIntentId = typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id;
 
         if (!user_id) {
@@ -66,13 +66,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             sessionId: session.id,
             paymentIntentId,
             email,
-            username
+            username,
+            referred_by
         });
 
         try {
             // Check if this is a Four Unders membership payment
             if (product === 'four_unders_membership' && email && username) {
                 console.log('Processing Four Unders membership payment');
+
+                // Generate unique referral code for this member (8 characters)
+                const referralCode = Math.random().toString(36).substring(2, 10).toUpperCase();
 
                 // Create waitlist entry with survey data
                 const { error: waitlistError } = await supabaseAdmin
@@ -86,14 +90,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         paid: true,
                         stripe_checkout_id: session.id,
                         stripe_payment_intent_id: paymentIntentId,
-                        amount_paid: session.amount_total ? session.amount_total / 100 : 50
+                        amount_paid: session.amount_total ? session.amount_total / 100 : 50,
+                        referred_by: referred_by || null,
+                        referral_code: referralCode
                     });
 
                 if (waitlistError) {
                     console.error('Failed to create Four Unders waitlist entry:', waitlistError);
                     // Don't fail the webhook, but log the error
                 } else {
-                    console.log('Successfully created Four Unders waitlist entry for:', email);
+                    console.log('Successfully created Four Unders waitlist entry for:', email, 'with referral code:', referralCode);
                 }
             }
 

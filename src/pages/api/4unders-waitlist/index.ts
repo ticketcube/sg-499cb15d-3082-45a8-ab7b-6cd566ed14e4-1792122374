@@ -10,7 +10,7 @@ export default async function handler(
   }
 
   try {
-    const { round_duration, last_score, price_premium, email } = req.body;
+    const { round_duration, last_score, price_premium, email, username, referred_by } = req.body;
 
     if (!email) {
       return res.status(400).json({ error: "Email is required" });
@@ -26,9 +26,12 @@ export default async function handler(
       .insert([
         {
           email,
+          username: username || null,
           round_duration,
           last_score,
           price_premium,
+          referred_by: referred_by || null,
+          paid: false,
           created_at: new Date().toISOString()
         }
       ])
