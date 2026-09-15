@@ -27,6 +27,13 @@ export default function FourUndersClub() {
   const [surveyAnswers, setSurveyAnswers] = useState<SurveyAnswers>({});
   const [showPayment, setShowPayment] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [priceId, setPriceId] = useState<string>("");
+  const [priceLoading, setPriceLoading] = useState(true);
+
+  // Fetch active 4unders price from database
+  useEffect(() => {
+    fetchActivePriceId();
+  }, []);
 
   // Capture referral code from URL
   useEffect(() => {
@@ -34,6 +41,26 @@ export default function FourUndersClub() {
       setSurveyAnswers(prev => ({ ...prev, referred_by: router.query.ref as string }));
     }
   }, [router.query.ref]);
+
+  const fetchActivePriceId = async () => {
+    try {
+      const response = await fetch("/api/stripe-prices/4unders");
+      if (!response.ok) {
+        throw new Error("Failed to fetch price");
+      }
+      const data = await response.json();
+      setPriceId(data.price_id);
+    } catch (error) {
+      console.error("Error fetching price:", error);
+      toast({
+        title: "Configuration error",
+        description: "Unable to load pricing. Please contact support.",
+        variant: "destructive",
+      });
+    } finally {
+      setPriceLoading(false);
+    }
+  };
 
   const handleAnswer = (key: string, value: string) => {
     setSurveyAnswers(prev => ({ ...prev, [key]: value }));
@@ -72,13 +99,23 @@ export default function FourUndersClub() {
       return;
     }
 
+    // Validate price is loaded
+    if (!priceId) {
+      toast({
+        title: "Configuration error",
+        description: "Pricing not loaded. Please refresh the page or contact support.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsProcessingPayment(true);
     try {
       const response = await fetch("/api/stripe/checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          priceId: process.env.NEXT_PUBLIC_STRIPE_4U_PRICE_ID || "price_1QoNEyGpLakj8bkFV5gPa31d",
+          priceId: priceId,
           userId: "guest_" + Date.now(),
           gamepool_id: "four_unders_club",
           metadata: {
@@ -455,11 +492,11 @@ export default function FourUndersClub() {
                         
                         <Button
                           onClick={handlePayment}
-                          disabled={isProcessingPayment || !surveyAnswers.email || !surveyAnswers.username}
+                          disabled={isProcessingPayment || priceLoading || !priceId || !surveyAnswers.email || !surveyAnswers.username}
                           className="w-full bg-emerald-600 hover:bg-emerald-700 h-12"
                         >
-                          {isProcessingPayment ? "Processing..." : "Pay $50 & Reserve Spot"}
-                          {!isProcessingPayment && <ArrowRight className="ml-2 w-4 h-4" />}
+                          {isProcessingPayment ? "Processing..." : priceLoading ? "Loading..." : "Pay $50 & Reserve Spot"}
+                          {!isProcessingPayment && !priceLoading && <ArrowRight className="ml-2 w-4 h-4" />}
                         </Button>
                       </div>
 
