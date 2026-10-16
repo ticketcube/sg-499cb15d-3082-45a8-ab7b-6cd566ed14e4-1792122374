@@ -165,7 +165,8 @@ export default function GamePage() {
       ghinIndex: scoreType === "ghin" ? parseFloat(ghinIndex) : undefined,
       averageScore: scoreType === "average" ? parseInt(averageScore) : undefined,
       targetScore: targetScore,
-      holes: selectedCourse.holes
+      holes: selectedCourse.holes,
+      roundId: crypto.randomUUID()
     };
     
     setGameSettings(newGameSettings);
@@ -289,6 +290,7 @@ export default function GamePage() {
 
         // Build GameScore object
         const gameScore: GameScore = {
+          roundId: gameSettings.roundId,
           userId: user.id,
           playerName: displayName,
           courseId: gameSettings.courseId,
@@ -344,6 +346,10 @@ export default function GamePage() {
   };
   
   const handleNewGame = () => {
+    // One stray tap on the course shouldn't wipe a round in progress.
+    if (holeScores.length > 0 && !window.confirm("Start a new game? Your current scores will be lost.")) {
+      return;
+    }
     resetGame();
     setGameMode("setup");
     setSetupStep("course");

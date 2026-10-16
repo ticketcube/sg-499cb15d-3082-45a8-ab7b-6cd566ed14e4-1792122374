@@ -1,16 +1,17 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from "stripe";
-import { createClient } from "@supabase/supabase-js";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-01-27.acacia',
 });
 
-// Create Supabase admin client for inventory checks
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-  process.env.SUPABASE_SERVICE_ROLE_KEY as string
-);
+const MEMBERSHIP_POOL_ID = 'four_unders_club';
+const MAX_QUANTITY_PER_CHECKOUT = 4;
+
+// Client-supplied metadata keys the webhook is allowed to read for memberships.
+// Everything else (user_id, gamepool_id, quantity, product) is set by the server.
+const MEMBERSHIP_METADATA_KEYS = ['email', 'username', 'round_duration', 'last_score', 'price_premium', 'referred_by'];
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   res.setHeader('Content-Type', 'application/json');
@@ -21,7 +22,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { priceId, userId, gamepool_id, quantity = 1, metadata } = req.body;
+    const { priceId, gamepool_id, metadata } = req.body;
+    let { userId } = req.body;
+    const quantity = req.body.quantity === undefined ? 1 : Number(req.body.quantity);
 
     console.log('API Route - Received request:', { 
       priceId, 
@@ -48,10 +51,37 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(500).json({ error: 'Payment system not configured properly' });
     }
 
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > MAX_QUANTITY_PER_CHECKOUT) {
+      return res.status(400).json({ error: `Quantity must be a whole number from 1 to ${MAX_QUANTITY_PER_CHECKOUT}.` });
+    }
+
+    // Only charge prices we've configured, so a caller can't swap in a cheaper price.
+    const { data: knownPrice } = await supabaseAdmin
+      .from('stripe_prices')
+      .select('price_id')
+      .eq('price_id', priceId)
+      .eq('active', true)
+      .maybeSingle();
+
+    if (!knownPrice) {
+      return res.status(400).json({ error: 'Unknown price.' });
+    }
+
     // PHASE 2: Pre-checkout inventory validation (only for game entries, not memberships)
-    const isMembershipPayment = !gamepool_id || gamepool_id === 'four_unders_club' || (metadata?.product === 'four_unders_membership');
-    
-    if (!isMembershipPayment && gamepool_id) {
+    const isMembershipPayment = !gamepool_id || gamepool_id === MEMBERSHIP_POOL_ID;
+
+    if (!isMembershipPayment) {
+      // A tournament slot belongs to a real account, so take the user from the
+      // session token rather than trusting the request body.
+      const token = req.headers.authorization?.startsWith('Bearer ')
+        ? req.headers.authorization.slice('Bearer '.length)
+        : null;
+      const { data: authData } = token ? await supabaseAdmin.auth.getUser(token) : { data: { user: null } };
+      if (!authData.user) {
+        return res.status(401).json({ error: 'Please sign in to join this game.' });
+      }
+      userId = authData.user.id;
+
       console.log('Checking inventory for gamepool:', gamepool_id);
       
       const { data: gamepool, error: gamepoolError } = await supabaseAdmin
@@ -106,13 +136,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     console.log('Creating Stripe checkout session with domain:', domain);
 
-    // Build metadata object, merging provided metadata with required fields
-    const sessionMetadata = {
-      user_id: userId,
-      ...(gamepool_id && { gamepool_id }),
-      quantity: quantity.toString(),
-      ...(metadata || {})
-    };
+    // Server-owned fields go last so request metadata can't override them.
+    const sessionMetadata: Record<string, string> = {};
+    if (isMembershipPayment) {
+      for (const key of MEMBERSHIP_METADATA_KEYS) {
+        if (metadata?.[key] !== undefined) sessionMetadata[key] = String(metadata[key]);
+      }
+      sessionMetadata.product = 'four_unders_membership';
+      sessionMetadata.gamepool_id = MEMBERSHIP_POOL_ID;
+    } else {
+      sessionMetadata.gamepool_id = gamepool_id;
+    }
+    sessionMetadata.user_id = userId;
+    sessionMetadata.quantity = quantity.toString();
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
