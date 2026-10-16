@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { buffer } from 'micro';
 import Stripe from "stripe";
-import { createClient } from "@supabase/supabase-js";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
     apiVersion: "2025-01-27.acacia",
@@ -9,11 +9,10 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET as string;
 
-// IMPORTANT: Create a Supabase client with the SERVICE ROLE KEY for admin operations
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-  process.env.SUPABASE_SERVICE_ROLE_KEY as string
-);
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// Postgres unique_violation: this checkout was already recorded by an earlier delivery.
+const UNIQUE_VIOLATION = '23505';
 
 export const config = {
     api: {
@@ -50,6 +49,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const { user_id, gamepool_id, quantity, product, email, username, round_duration, last_score, price_premium, referred_by } = session.metadata || {};
         const paymentIntentId = typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id;
 
+        if (session.payment_status !== 'paid') {
+            console.log('Ignoring checkout.session.completed that is not paid yet:', session.id, session.payment_status);
+            return res.status(200).json({ received: true });
+        }
+
         if (!user_id) {
             console.error('Webhook received checkout.session.completed with missing user_id metadata.', { metadata: session.metadata });
             return res.status(400).json({ error: 'Required user_id metadata is missing.' });
@@ -57,6 +61,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // Parse quantity from metadata (default to 1 if not provided)
         const parsedQuantity = quantity ? parseInt(quantity, 10) : 1;
+        if (!Number.isInteger(parsedQuantity) || parsedQuantity < 1) {
+            console.error('Invalid quantity in checkout metadata:', { sessionId: session.id, quantity });
+            return res.status(400).json({ error: 'Invalid quantity metadata.' });
+        }
 
         console.log('Processing successful payment:', { 
             user_id, 
@@ -95,9 +103,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         referral_code: referralCode
                     });
 
-                if (waitlistError) {
+                if (waitlistError?.code === UNIQUE_VIOLATION) {
+                    console.log('Four Unders membership already recorded for checkout:', session.id);
+                } else if (waitlistError) {
+                    // Fail so Stripe retries: the member has paid and must get a row.
                     console.error('Failed to create Four Unders waitlist entry:', waitlistError);
-                    // Don't fail the webhook, but log the error
+                    return res.status(500).json({ error: 'Failed to record membership.' });
                 } else {
                     console.log('Successfully created Four Unders waitlist entry for:', email, 'with referral code:', referralCode);
                 }
@@ -107,56 +118,50 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             if (gamepool_id && gamepool_id !== 'four_unders_club') {
                 console.log('Processing inventory update for gamepool:', gamepool_id);
 
-                // Create gamepool entry record
-                const { data: entryData, error: entryError } = await supabaseAdmin
-                    .from('gamepool_entries')
-                    .insert({
-                        gamepool_id,
-                        user_id,
-                        quantity: parsedQuantity,
-                        stripe_checkout_id: session.id
-                    })
-                    .select();
-
-                if (entryError) {
-                    console.error('Failed to create gamepool entry:', entryError);
-                    return res.status(500).json({ error: 'Failed to record game entry.' });
+                if (!UUID_RE.test(gamepool_id) || !UUID_RE.test(user_id)) {
+                    console.error('Invalid gamepool_id or user_id in checkout metadata:', { sessionId: session.id, gamepool_id, user_id });
+                    return res.status(400).json({ error: 'Invalid game entry metadata.' });
                 }
 
-                console.log('Successfully created gamepool entry:', entryData);
-
-                // Update gamepool current_players count atomically
-                const { error: rpcError } = await supabaseAdmin
-                    .rpc('increment_current_players', {
-                        pool_id: gamepool_id,
-                        qty: parsedQuantity
+                // Checks capacity, bumps current_players and records the entry in one
+                // transaction, and is a no-op if this checkout was already recorded.
+                const { data: claimResult, error: claimError } = await supabaseAdmin
+                    .rpc('claim_gamepool_slots', {
+                        p_pool_id: gamepool_id,
+                        p_user_id: user_id,
+                        p_qty: parsedQuantity,
+                        p_checkout_id: session.id
                     });
 
-                if (rpcError) {
-                    console.error('Failed to increment current_players:', rpcError);
-                    // This is critical - if we can't update the count, we have oversold
+                if (claimError) {
+                    console.error('Failed to claim gamepool slots:', claimError);
                     return res.status(500).json({ error: 'Failed to update game inventory.' });
                 }
 
-                console.log(`Successfully incremented current_players by ${parsedQuantity} for gamepool:`, gamepool_id);
-
-                // Update user's member_cat to indicate they've paid
-                const { error } = await supabaseAdmin
-                    .from('profiles')
-                    .update({ 
-                        member_cat: 'aug31_paid',
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('id', user_id);
-
-                if (error) {
-                    console.error('Failed to update user profile:', error);
-                    return res.status(500).json({ error: 'Failed to update user access.' });
+                if (claimResult === 'duplicate') {
+                    console.log('Gamepool entry already recorded for checkout:', session.id);
+                    return res.status(200).json({ received: true });
                 }
+
+                if (claimResult === 'sold_out') {
+                    // Several buyers can pass the pre-checkout check for the last slot.
+                    // Whoever completes payment after it's gone gets their money back.
+                    console.warn('Gamepool sold out after payment, refunding:', { gamepool_id, sessionId: session.id });
+                    if (paymentIntentId) {
+                        await stripe.refunds.create(
+                            { payment_intent: paymentIntentId, reason: 'requested_by_customer' },
+                            { idempotencyKey: `sold-out-refund-${session.id}` }
+                        );
+                    }
+                    return res.status(200).json({ received: true, refunded: true });
+                }
+
+                console.log(`Claimed ${parsedQuantity} slot(s) for gamepool:`, gamepool_id);
             }
 
-            // Optional: Record the payment transaction (for all payments)
-            const { error: transactionError } = await supabaseAdmin
+            // Optional: Record the payment transaction. user_id is a uuid column, so
+            // guest membership checkouts (user_id "guest_...") are skipped.
+            const { error: transactionError } = !UUID_RE.test(user_id) ? { error: null } : await supabaseAdmin
                 .from('payment_transactions')
                 .insert({
                     user_id: user_id,

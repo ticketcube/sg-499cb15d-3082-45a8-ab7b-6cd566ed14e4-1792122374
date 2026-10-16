@@ -28,6 +28,9 @@ export interface GameSettings {
   averageScore?: number;
   targetScore: number;
   holes: number;
+  // Generated when the round starts and used as the games row id, so a retried
+  // submission can't create a second leaderboard entry.
+  roundId?: string;
 }
 
 export interface HoleScore {
@@ -45,6 +48,7 @@ export interface HoleCategories {
 }
 
 export interface GameScore {
+  roundId?: string;
   userId: string;
   playerName: string;
   courseId: string;
@@ -102,7 +106,7 @@ export interface Game {
   four_points_earned: number;
   game_type: number;
   user_id: string;
-  profiles?: { display_name: string | null } | null;
+  user_profiles?: { display_name: string | null } | null;
 }
 
 export interface SurveyResponse {

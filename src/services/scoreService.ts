@@ -88,7 +88,7 @@ export const scoreService = {
           total_points,
           four_points_earned,
           created_at,
-          profiles!games_user_id_fkey (
+          user_profiles!games_user_id_fkey (
             display_name
           )
         `)
@@ -107,7 +107,7 @@ export const scoreService = {
       data?.forEach((entry) => {
         const userId = entry.user_id || `guest_${entry.player_name}`;
         // Safely access display_name with proper null checks
-        const profiles = entry.profiles as { display_name?: string | null } | null;
+        const profiles = (entry as unknown as { user_profiles?: { display_name?: string | null } | null }).user_profiles;
         const playerName = profiles?.display_name || entry.player_name;
         
         if (!userBestScores[userId] || entry.total_points > userBestScores[userId].total_points) {

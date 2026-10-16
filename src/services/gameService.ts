@@ -73,6 +73,7 @@ export const gameService = {
     const { data, error } = await supabase
       .from("games")
       .insert({
+        ...(gameScore.roundId && { id: gameScore.roundId }),
         user_id: gameScore.userId,
         player_name: gameScore.playerName,
         course_id: gameScore.courseId,
@@ -94,6 +95,11 @@ export const gameService = {
       .single();
 
     if (error) {
+      // The round was already saved by an earlier attempt (e.g. the response was
+      // lost on a weak on-course connection), so treat the retry as success.
+      if (error.code === "23505" && gameScore.roundId) {
+        return { id: gameScore.roundId };
+      }
       console.error("❌ Error submitting game score:", error);
       throw error;
     }
@@ -107,7 +113,7 @@ export const gameService = {
 
     const { data, error } = await supabase
       .from("games")
-      .select("*, profiles(display_name)")
+      .select("*, user_profiles(display_name)")
       .eq("leaderboard_type", "daily")
       .gte("created_at", today.toISOString())
       .order("four_points_earned", { ascending: false });
@@ -126,7 +132,7 @@ export const gameService = {
 
     const { data, error } = await supabase
       .from("games")
-      .select("*, profiles(display_name)")
+      .select("*, user_profiles(display_name)")
       .eq("leaderboard_type", "monthly")
       .gte("created_at", startOfMonth.toISOString())
       .order("total_points", { ascending: false });
@@ -141,7 +147,7 @@ export const gameService = {
   async getGameById(gameId: string): Promise<Game> {
     const { data, error } = await supabase
       .from("games")
-      .select("*, profiles(display_name)")
+      .select("*, user_profiles(display_name)")
       .eq("id", gameId)
       .single();
 
