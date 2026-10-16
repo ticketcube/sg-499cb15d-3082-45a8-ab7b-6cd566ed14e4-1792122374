@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { supabase } from "@/integrations/supabase/client";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export default async function handler(
   req: NextApiRequest,
@@ -21,7 +21,7 @@ export default async function handler(
       return res.status(400).json({ error: "Invalid email format" });
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("four_unders_waitlist")
       .insert([
         {
@@ -35,7 +35,7 @@ export default async function handler(
           created_at: new Date().toISOString()
         }
       ])
-      .select()
+      .select("id, username, created_at")
       .single();
 
     if (error) {

@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { supabase } from "@/integrations/supabase/client";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export default async function handler(
   req: NextApiRequest,
@@ -10,7 +10,7 @@ export default async function handler(
   }
 
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("stripe_prices")
       .select("price_id, product_name")
       .eq("member_cat", "4unders")
