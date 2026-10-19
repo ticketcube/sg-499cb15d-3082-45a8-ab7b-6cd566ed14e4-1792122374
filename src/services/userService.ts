@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
-type Profile = Database["public"]["Tables"]["profiles"]["Row"];
+type Profile = Database["public"]["Tables"]["user_profiles"]["Row"];
 
 export async function getUserProfile(userId: string) {
   const { data, error } = await supabase
@@ -41,7 +41,7 @@ export async function updateUserProfile(userId: string, updates: Partial<Databas
 export const userService = {
   async updateProfile(userId: string, displayName: string): Promise<Profile | null> {
     const { data: profileData, error: profileError } = await supabase
-      .from("profiles")
+      .from("user_profiles")
       .update({ 
         display_name: displayName,
         updated_at: new Date().toISOString()
@@ -75,7 +75,7 @@ export const userService = {
 
   async getProfile(userId: string): Promise<Profile | null> {
     const { data, error } = await supabase
-      .from("profiles")
+      .from("user_profiles")
       .select("*")
       .eq("id", userId)
       .maybeSingle();
