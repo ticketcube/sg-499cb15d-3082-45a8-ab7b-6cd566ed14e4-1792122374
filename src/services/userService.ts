@@ -3,12 +3,12 @@ import type { Database } from "@/integrations/supabase/types";
 
 type Profile = Database["public"]["Tables"]["user_profiles"]["Row"];
 
-export async function getUserProfile(userId: string) {
+export async function getUserProfile(userId: string): Promise<Profile | null> {
   const { data, error } = await supabase
     .from('user_profiles')
     .select('*')
     .eq('id', userId)
-    .single();
+    .single() as { data: Profile | null; error: any };
 
   if (error) {
     if (error.code === 'PGRST116') {
@@ -22,13 +22,13 @@ export async function getUserProfile(userId: string) {
   return data;
 }
 
-export async function updateUserProfile(userId: string, updates: Partial<Database['public']['Tables']['user_profiles']['Update']>) {
+export async function updateUserProfile(userId: string, updates: Partial<Profile>): Promise<Profile | null> {
   const { data, error } = await supabase
     .from('user_profiles')
     .update(updates)
     .eq('id', userId)
     .select()
-    .single();
+    .single() as { data: Profile | null; error: any };
 
   if (error) {
     console.error("Error updating profile:", error);
@@ -48,7 +48,7 @@ export const userService = {
       })
       .eq("id", userId)
       .select()
-      .maybeSingle();
+      .maybeSingle() as { data: Profile | null; error: any };
 
     if (profileError) {
       console.error("Error updating profile:", profileError);
@@ -78,7 +78,7 @@ export const userService = {
       .from("user_profiles")
       .select("*")
       .eq("id", userId)
-      .maybeSingle();
+      .maybeSingle() as { data: Profile | null; error: any };
 
     if (error) {
       if (error.code === 'PGRST116') {
