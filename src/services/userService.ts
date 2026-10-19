@@ -3,18 +3,18 @@ import type { Database } from "@/integrations/supabase/types";
 
 type Profile = Database["public"]["Tables"]["user_profiles"]["Row"];
 
-export async function getUserProfile(userId: string): Promise<Profile | null> {
+export async function getUserProfile(user_id: string): Promise<Profile | null> {
   const result: any = await supabase
     .from('user_profiles')
     .select('*')
-    .eq('id', user_Id)
+    .eq('id', user_id)
     .single();
   
   const { data, error } = result;
 
   if (error) {
     if (error.code === 'PGRST116') {
-      console.log(`No profile found for user ${userId}. A new one may need to be created.`);
+      console.log(`No profile found for user ${user_id}. A new one may need to be created.`);
       return null;
     }
     console.error("Error fetching profile:", error);
@@ -24,11 +24,11 @@ export async function getUserProfile(userId: string): Promise<Profile | null> {
   return data as Profile | null;
 }
 
-export async function updateUserProfile(userId: string, updates: Partial<Profile>): Promise<Profile | null> {
+export async function updateUserProfile(user_id: string, updates: Partial<Profile>): Promise<Profile | null> {
   const result: any = await supabase
     .from('user_profiles')
     .update(updates)
-    .eq('id', userId)
+    .eq('id', user_id)
     .select()
     .single();
   
@@ -43,14 +43,14 @@ export async function updateUserProfile(userId: string, updates: Partial<Profile
 }
 
 export const userService = {
-  async updateProfile(userId: string, displayName: string): Promise<Profile | null> {
+  async updateProfile(user_id: string, displayName: string): Promise<Profile | null> {
     const result: any = await supabase
       .from("user_profiles")
       .update({ 
         display_name: displayName,
         updated_at: new Date().toISOString()
       })
-      .eq("id", userId)
+      .eq("id", user_id)
       .select()
       .maybeSingle();
     
