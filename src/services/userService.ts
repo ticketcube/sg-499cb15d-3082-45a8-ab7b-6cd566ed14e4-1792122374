@@ -7,7 +7,7 @@ export async function getUserProfile(userId: string): Promise<Profile | null> {
   const result: any = await supabase
     .from('user_profiles')
     .select('*')
-    .eq('id', userId)
+    .eq('user_id', userId)
     .single();
   
   const { data, error } = result;
@@ -28,7 +28,7 @@ export async function updateUserProfile(userId: string, updates: Partial<Profile
   const result: any = await supabase
     .from('user_profiles')
     .update(updates)
-    .eq('id', userId)
+    .eq('user_id', userId)
     .select()
     .single();
   
@@ -50,7 +50,7 @@ export const userService = {
         display_name: displayName,
         updated_at: new Date().toISOString()
       })
-      .eq("id", userId)
+      .eq("user_id", userId)
       .select()
       .maybeSingle();
     
@@ -83,7 +83,7 @@ export const userService = {
     const result: any = await supabase
       .from("user_profiles")
       .select("*")
-      .eq("id", userId)
+      .eq("user_id", userId)
       .maybeSingle();
     
     const { data, error } = result;
