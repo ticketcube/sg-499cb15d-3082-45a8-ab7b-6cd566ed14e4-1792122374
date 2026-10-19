@@ -4,11 +4,13 @@ import type { Database } from "@/integrations/supabase/types";
 type Profile = Database["public"]["Tables"]["user_profiles"]["Row"];
 
 export async function getUserProfile(userId: string): Promise<Profile | null> {
-  const { data, error } = await supabase
+  const result: any = await supabase
     .from('user_profiles')
     .select('*')
     .eq('id', userId)
-    .single() as { data: Profile | null; error: any };
+    .single();
+  
+  const { data, error } = result;
 
   if (error) {
     if (error.code === 'PGRST116') {
@@ -19,28 +21,30 @@ export async function getUserProfile(userId: string): Promise<Profile | null> {
     throw error;
   }
 
-  return data;
+  return data as Profile | null;
 }
 
 export async function updateUserProfile(userId: string, updates: Partial<Profile>): Promise<Profile | null> {
-  const { data, error } = await supabase
+  const result: any = await supabase
     .from('user_profiles')
     .update(updates)
     .eq('id', userId)
     .select()
-    .single() as { data: Profile | null; error: any };
+    .single();
+  
+  const { data, error } = result;
 
   if (error) {
     console.error("Error updating profile:", error);
     throw error;
   }
 
-  return data;
+  return data as Profile | null;
 }
 
 export const userService = {
   async updateProfile(userId: string, displayName: string): Promise<Profile | null> {
-    const { data: profileData, error: profileError } = await supabase
+    const result: any = await supabase
       .from("user_profiles")
       .update({ 
         display_name: displayName,
@@ -48,7 +52,9 @@ export const userService = {
       })
       .eq("id", userId)
       .select()
-      .maybeSingle() as { data: Profile | null; error: any };
+      .maybeSingle();
+    
+    const { data: profileData, error: profileError } = result;
 
     if (profileError) {
       console.error("Error updating profile:", profileError);
@@ -70,15 +76,17 @@ export const userService = {
       throw metadataError;
     }
 
-    return profileData;
+    return profileData as Profile | null;
   },
 
   async getProfile(userId: string): Promise<Profile | null> {
-    const { data, error } = await supabase
+    const result: any = await supabase
       .from("user_profiles")
       .select("*")
       .eq("id", userId)
-      .maybeSingle() as { data: Profile | null; error: any };
+      .maybeSingle();
+    
+    const { data, error } = result;
 
     if (error) {
       if (error.code === 'PGRST116') {
@@ -89,6 +97,6 @@ export const userService = {
       throw error;
     }
 
-    return data;
+    return data as Profile | null;
   }
 };
