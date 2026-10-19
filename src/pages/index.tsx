@@ -22,20 +22,18 @@ interface SurveyAnswers {
 export default function FourUndersClub() {
   const router = useRouter();
   const [showSurvey, setShowSurvey] = useState(false);
-  const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [surveyAnswers, setSurveyAnswers] = useState < SurveyAnswers > ({});
+  const [surveyAnswers, setSurveyAnswers] = useState<SurveyAnswers>({});
   const [showPayment, setShowPayment] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-  const [priceId, setPriceId] = useState < string > ("");
+  const [priceId, setPriceId] = useState<string>("");
   const [priceLoading, setPriceLoading] = useState(true);
+  const [showEmailStep, setShowEmailStep] = useState(false);
 
-  // Fetch active 4unders price from database
   useEffect(() => {
     fetchActivePriceId();
   }, []);
 
-  // Capture referral code from URL
   useEffect(() => {
     if (router.query.ref && typeof router.query.ref === 'string') {
       setSurveyAnswers(prev => ({ ...prev, referred_by: router.query.ref as string }));
@@ -67,7 +65,6 @@ export default function FourUndersClub() {
   };
 
   const handlePayment = async () => {
-    // Validate email and username
     if (!surveyAnswers.email || !surveyAnswers.username) {
       toast({
         title: "Missing information",
@@ -77,7 +74,6 @@ export default function FourUndersClub() {
       return;
     }
 
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(surveyAnswers.email)) {
       toast({
@@ -88,7 +84,6 @@ export default function FourUndersClub() {
       return;
     }
 
-    // Basic username validation (alphanumeric, underscore, dash, 3-20 chars)
     const usernameRegex = /^[a-zA-Z0-9_-]{3,20}$/;
     if (!usernameRegex.test(surveyAnswers.username)) {
       toast({
@@ -99,7 +94,6 @@ export default function FourUndersClub() {
       return;
     }
 
-    // Validate price is loaded
     if (!priceId) {
       toast({
         title: "Configuration error",
@@ -136,8 +130,6 @@ export default function FourUndersClub() {
       }
 
       const { url } = await response.json();
-
-      // Redirect to Stripe checkout
       window.location.href = url;
     } catch (error) {
       console.error("Payment error:", error);
@@ -151,7 +143,6 @@ export default function FourUndersClub() {
   };
 
   const handleWaitlistOnly = async () => {
-    // Validate email and username
     if (!surveyAnswers.email || !surveyAnswers.username) {
       toast({
         title: "Missing information",
@@ -161,7 +152,6 @@ export default function FourUndersClub() {
       return;
     }
 
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(surveyAnswers.email)) {
       toast({
@@ -172,7 +162,6 @@ export default function FourUndersClub() {
       return;
     }
 
-    // Basic username validation (alphanumeric, underscore, dash, 3-20 chars)
     const usernameRegex = /^[a-zA-Z0-9_-]{3,20}$/;
     if (!usernameRegex.test(surveyAnswers.username)) {
       toast({
@@ -197,8 +186,9 @@ export default function FourUndersClub() {
         title: "Welcome to the club! 🏌️",
         description: "We'll be in touch soon with next steps.",
       });
-      setCurrentStep(surveySteps.length);
+      setShowEmailStep(false);
       setShowPayment(false);
+      setShowSurvey(false);
     } catch (error) {
       console.error("Submission error:", error);
       toast({
@@ -211,35 +201,7 @@ export default function FourUndersClub() {
     }
   };
 
-  const handleSubmit = async () => {
-    setIsSubmitting(true);
-    try {
-      const response = await fetch("/api/4unders-waitlist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(surveyAnswers)
-      });
-
-      if (!response.ok) throw new Error("Submission failed");
-
-      toast({
-        title: "Welcome to the club! 🏌️",
-        description: "We'll be in touch soon with next steps.",
-      });
-      setCurrentStep(surveySteps.length);
-    } catch (error) {
-      console.error("Submission error:", error);
-      toast({
-        title: "Submission failed",
-        description: "Please try again or contact us directly.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const surveySteps = [
+  const surveyQuestions = [
     {
       question: "How long are your Rancho Rounds?",
       key: "round_duration",
@@ -269,33 +231,19 @@ export default function FourUndersClub() {
         { value: "maybe", label: "Maybe", icon: CheckCircle2 },
         { value: "no", label: "No Way", icon: CheckCircle2 }
       ]
-    },
-    {
-      question: "Join the Four Under Club",
-      key: "email",
-      type: "email"
     }
   ];
 
-  const currentStepData = surveySteps[currentStep];
-  const canProceed = surveyAnswers[currentStepData?.key as keyof SurveyAnswers];
-
-  // Determine if user needs to pay (answered anything other than "no" to question 3)
+  const allQuestionsAnswered = surveyQuestions.every(q => surveyAnswers[q.key as keyof SurveyAnswers]);
   const needsPayment = surveyAnswers.price_premium && surveyAnswers.price_premium !== "no";
 
-  const handleNext = () => {
-    // If we just finished question 3 (index 2)
-    if (currentStep === 2) {
-      if (needsPayment) {
-        // Show payment step
-        setShowPayment(true);
-      } else {
-        // Skip to email step
-        setCurrentStep(3);
-      }
+  const handleSurveyNext = () => {
+    if (needsPayment) {
+      setShowPayment(true);
     } else {
-      setCurrentStep(prev => prev + 1);
+      setShowEmailStep(true);
     }
+    setShowSurvey(false);
   };
 
   return (
@@ -306,14 +254,10 @@ export default function FourUndersClub() {
       </Head>
 
       <div className="min-h-screen bg-white">
-        {/* Hero Section */}
         <section className="pt-6 pb-12 px-4">
           <div className="max-w-5xl mx-auto">
 
-            {/* Logo + Tagline Row */}
             <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-10 mb-10">
-
-              {/* Logo */}
               <div className="flex-shrink-0">
                 <Image
                   src="/4Under_logo_vertical.jpg"
@@ -321,20 +265,13 @@ export default function FourUndersClub() {
                   width={120}
                   height={185}
                   priority
-                  className="
-            w-[100px]
-            md:w-[120px]
-            h-auto
-            object-contain
-          "
+                  className="w-[100px] md:w-[120px] h-auto object-contain"
                 />
               </div>
 
-              {/* Tagline */}
               <div className="text-center md:text-left">
                 <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-gray-900 mb-3">
                   Our Mission
-
                 </h1>
 
                 <div className="flex gap-3 items-start">
@@ -351,33 +288,19 @@ export default function FourUndersClub() {
                   <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-1 flex-shrink-0" />
                   <p>Promote Fast, Fun and Fair golf.</p>
                 </div>
-
               </div>
-
             </div>
 
-
-            {/* CTA */}
-            {!showSurvey && currentStep < surveySteps.length && !showPayment && (
+            {!showSurvey && !showPayment && !showEmailStep && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="text-center"
               >
-
                 <Button
                   size="lg"
                   onClick={() => setShowSurvey(true)}
-                  className="
-            !bg-emerald-600
-            hover:!bg-emerald-700
-            !text-white
-            !font-semibold
-            !rounded-xl
-            !h-14
-            !px-10
-            !text-lg
-          "
+                  className="!bg-emerald-600 hover:!bg-emerald-700 !text-white !font-semibold !rounded-xl !h-14 !px-10 !text-lg"
                 >
                   Reserve Your Spot
                   <ArrowRight className="ml-2 h-5 w-5" />
@@ -393,11 +316,104 @@ export default function FourUndersClub() {
                     Minimum Viable Golf
                   </Link>
                 </p>
-
               </motion.div>
             )}
 
-            {/* Payment Step */}
+            {/* All 3 Survey Questions on One Screen */}
+            <AnimatePresence>
+              {showSurvey && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.4 }}
+                  className="mt-12"
+                >
+                  <Card className="border-2 border-gray-200 shadow-xl">
+                    <CardHeader>
+                      <div className="flex items-center justify-between mb-4">
+                        <span className="text-sm font-semibold text-gray-500">
+                          Answer All 3 Questions
+                        </span>
+                        <div className="flex gap-1">
+                          {surveyQuestions.map((q, idx) => (
+                            <div
+                              key={idx}
+                              className={`h-2 w-8 rounded-full transition-colors ${
+                                surveyAnswers[q.key as keyof SurveyAnswers] ? "bg-emerald-600" : "bg-gray-200"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <CardTitle className="text-xl md:text-2xl">Quick Survey</CardTitle>
+                    </CardHeader>
+
+                    <CardContent className="space-y-8">
+                      {surveyQuestions.map((questionData, qIndex) => (
+                        <div key={questionData.key} className="space-y-4">
+                          <h3 className="font-semibold text-lg text-gray-900">
+                            {qIndex + 1}. {questionData.question}
+                          </h3>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {questionData.options.map((option) => {
+                              const Icon = option.icon;
+                              const isSelected = surveyAnswers[questionData.key as keyof SurveyAnswers] === option.value;
+
+                              return (
+                                <motion.div
+                                  key={option.value}
+                                  whileHover={{ scale: 1.02 }}
+                                  whileTap={{ scale: 0.98 }}
+                                >
+                                  <Card
+                                    className={`cursor-pointer transition-all border-2 ${
+                                      isSelected
+                                        ? "border-emerald-600 bg-emerald-50 shadow-md"
+                                        : "border-gray-200 hover:border-emerald-300 hover:shadow-sm"
+                                    }`}
+                                    onClick={() => handleAnswer(questionData.key, option.value)}
+                                  >
+                                    <CardContent className="p-4 md:p-6 text-center">
+                                      <Icon className={`w-10 h-10 md:w-12 md:h-12 mx-auto mb-2 md:mb-3 ${
+                                        isSelected ? "text-emerald-600" : "text-gray-400"
+                                      }`} />
+                                      <p className={`font-semibold text-base md:text-lg ${
+                                        isSelected ? "text-emerald-900" : "text-gray-700"
+                                      }`}>
+                                        {option.label}
+                                      </p>
+                                    </CardContent>
+                                  </Card>
+                                </motion.div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+
+                      {allQuestionsAnswered && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="pt-4"
+                        >
+                          <Button
+                            onClick={handleSurveyNext}
+                            className="w-full bg-emerald-600 hover:bg-emerald-700 h-12"
+                          >
+                            Next
+                            <ArrowRight className="ml-2 w-4 h-4" />
+                          </Button>
+                        </motion.div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Payment Step - Side by Side Options */}
             <AnimatePresence>
               {showPayment && (
                 <motion.div
@@ -423,7 +439,6 @@ export default function FourUndersClub() {
                     </CardHeader>
 
                     <CardContent className="space-y-6">
-                      {/* Email and Username Inputs */}
                       <div className="space-y-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -458,77 +473,85 @@ export default function FourUndersClub() {
                         </div>
                       </div>
 
-                      {/* Paid Option */}
-                      <div className="bg-emerald-50 rounded-lg p-6 border-2 border-emerald-300">
-                        <div className="flex items-start gap-4 mb-4">
-                          <CreditCard className="w-8 h-8 text-emerald-600 flex-shrink-0 mt-1" />
-                          <div className="flex-1">
+                      {/* Side by Side Options */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Paid Option */}
+                        <div className="bg-emerald-50 rounded-lg p-6 border-2 border-emerald-300">
+                          <div className="mb-4">
                             <div className="flex items-center justify-between mb-2">
-                              <h3 className="font-bold text-lg">
-                                Reserve Your Tournament Spot
-                              </h3>
+                              <CreditCard className="w-6 h-6 text-emerald-600" />
                               <span className="text-2xl font-bold text-emerald-900">$50</span>
                             </div>
-                            <p className="text-gray-700 mb-3">
-                              Secure your spot in the first Four Under Club tournament
-                              at Rancho Park. Limited to the first 48 members.
+                            <h3 className="font-bold text-lg mb-2">
+                              Reserve Your Spot
+                            </h3>
+                            <p className="text-sm text-gray-700 mb-3">
+                              Secure your spot in the first Four Under Club tournament at Rancho Park. Limited to 48 members.
                             </p>
-                            <ul className="space-y-2 text-sm text-gray-700">
+                            <ul className="space-y-2 text-sm text-gray-700 mb-4">
                               <li className="flex items-start gap-2">
                                 <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                                <span>Guaranteed 4-hour or faster round</span>
+                                <span>Guaranteed 4-hour round</span>
                               </li>
                               <li className="flex items-start gap-2">
                                 <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                                <span>First tournament entry included</span>
+                                <span>First tournament entry</span>
                               </li>
                               <li className="flex items-start gap-2">
                                 <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                                <span>Exclusive member benefits and priority access</span>
+                                <span>Exclusive member benefits</span>
                               </li>
                             </ul>
                           </div>
+
+                          <Button
+                            onClick={handlePayment}
+                            disabled={isProcessingPayment || priceLoading || !priceId || !surveyAnswers.email || !surveyAnswers.username}
+                            className="w-full bg-emerald-600 hover:bg-emerald-700 h-11"
+                          >
+                            {isProcessingPayment ? "Processing..." : priceLoading ? "Loading..." : "Pay $50"}
+                            {!isProcessingPayment && !priceLoading && <ArrowRight className="ml-2 w-4 h-4" />}
+                          </Button>
                         </div>
 
-                        <Button
-                          onClick={handlePayment}
-                          disabled={isProcessingPayment || priceLoading || !priceId || !surveyAnswers.email || !surveyAnswers.username}
-                          className="w-full bg-emerald-600 hover:bg-emerald-700 h-12"
-                        >
-                          {isProcessingPayment ? "Processing..." : priceLoading ? "Loading..." : "Pay $50 & Reserve Spot"}
-                          {!isProcessingPayment && !priceLoading && <ArrowRight className="ml-2 w-4 h-4" />}
-                        </Button>
-                      </div>
+                        {/* Free Waitlist Option */}
+                        <div className="bg-gray-50 rounded-lg p-6 border-2 border-gray-200">
+                          <div className="mb-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <CheckCircle2 className="w-6 h-6 text-gray-600" />
+                              <span className="text-2xl font-bold text-gray-900">Free</span>
+                            </div>
+                            <h3 className="font-bold text-lg mb-2">
+                              Waitlist Only
+                            </h3>
+                            <p className="text-sm text-gray-600 mb-3">
+                              Stay informed about Four Under Club updates, events, and future opportunities. No payment required.
+                            </p>
+                            <ul className="space-y-2 text-sm text-gray-600 mb-4">
+                              <li className="flex items-start gap-2">
+                                <CheckCircle2 className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                                <span>Club updates & news</span>
+                              </li>
+                              <li className="flex items-start gap-2">
+                                <CheckCircle2 className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                                <span>Event notifications</span>
+                              </li>
+                              <li className="flex items-start gap-2">
+                                <CheckCircle2 className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                                <span>Future opportunities</span>
+                              </li>
+                            </ul>
+                          </div>
 
-                      {/* Free Waitlist Option */}
-                      <div className="relative">
-                        <div className="absolute inset-0 flex items-center">
-                          <div className="w-full border-t border-gray-300" />
+                          <Button
+                            onClick={handleWaitlistOnly}
+                            disabled={isSubmitting || isProcessingPayment || !surveyAnswers.email || !surveyAnswers.username}
+                            variant="outline"
+                            className="w-full h-11 border-2"
+                          >
+                            {isSubmitting ? "Joining..." : "Join Waitlist"}
+                          </Button>
                         </div>
-                        <div className="relative flex justify-center text-sm">
-                          <span className="bg-white px-4 text-gray-500">or</span>
-                        </div>
-                      </div>
-
-                      <div className="bg-gray-50 rounded-lg p-6 border-2 border-gray-200">
-                        <div className="mb-4">
-                          <h3 className="font-bold text-lg mb-2">
-                            Join Waitlist Only
-                          </h3>
-                          <p className="text-gray-600 text-sm">
-                            Stay informed about Four Under Club updates, events, and future opportunities.
-                            No payment required.
-                          </p>
-                        </div>
-
-                        <Button
-                          onClick={handleWaitlistOnly}
-                          disabled={isSubmitting || isProcessingPayment || !surveyAnswers.email || !surveyAnswers.username}
-                          variant="outline"
-                          className="w-full h-12 border-2"
-                        >
-                          {isSubmitting ? "Joining..." : "Join Waitlist Only (Free)"}
-                        </Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -536,9 +559,9 @@ export default function FourUndersClub() {
               )}
             </AnimatePresence>
 
-            {/* Survey Section */}
+            {/* Email Only Step (for non-payment path) */}
             <AnimatePresence>
-              {showSurvey && currentStep < surveySteps.length && !showPayment && (
+              {showEmailStep && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
@@ -546,115 +569,56 @@ export default function FourUndersClub() {
                   transition={{ duration: 0.4 }}
                   className="mt-12"
                 >
-                  <motion.div
-                    key={currentStep}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <Card className="border-2 border-gray-200 shadow-xl">
-                      <CardHeader>
-                        <div className="flex items-center justify-between mb-4">
-                          <span className="text-sm font-semibold text-gray-500">
-                            {currentStepData.type === "email" ? "Final Step" : `Question ${currentStep + 1} of 3`}
-                          </span>
-                          <div className="flex gap-1">
-                            {surveySteps.slice(0, 3).map((_, idx) => (
-                              <div
-                                key={idx}
-                                className={`h-2 w-8 rounded-full transition-colors ${idx <= currentStep ? "bg-emerald-600" : "bg-gray-200"
-                                  }`}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                        <CardTitle className="text-xl md:text-2xl">{currentStepData.question}</CardTitle>
-                      </CardHeader>
+                  <Card className="border-2 border-gray-200 shadow-xl">
+                    <CardHeader>
+                      <CardTitle className="text-xl md:text-2xl">Join the Waitlist</CardTitle>
+                    </CardHeader>
 
-                      <CardContent className="space-y-4">
-                        {currentStepData.type !== "email" ? (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            {currentStepData.options?.map((option) => {
-                              const Icon = option.icon;
-                              const isSelected = surveyAnswers[currentStepData.key as keyof SurveyAnswers] === option.value;
+                    <CardContent className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Email Address *
+                        </label>
+                        <Input
+                          type="email"
+                          placeholder="your.email@example.com"
+                          value={surveyAnswers.email || ""}
+                          onChange={(e) => handleAnswer("email", e.target.value)}
+                          className="text-base"
+                        />
+                      </div>
 
-                              return (
-                                <motion.div
-                                  key={option.value}
-                                  whileHover={{ scale: 1.02 }}
-                                  whileTap={{ scale: 0.98 }}
-                                >
-                                  <Card
-                                    className={`cursor-pointer transition-all border-2 ${isSelected
-                                        ? "border-emerald-600 bg-emerald-50 shadow-md"
-                                        : "border-gray-200 hover:border-emerald-300 hover:shadow-sm"
-                                      }`}
-                                    onClick={() => handleAnswer(currentStepData.key, option.value)}
-                                  >
-                                    <CardContent className="p-4 md:p-6 text-center">
-                                      <Icon className={`w-10 h-10 md:w-12 md:h-12 mx-auto mb-2 md:mb-3 ${isSelected ? "text-emerald-600" : "text-gray-400"
-                                        }`} />
-                                      <p className={`font-semibold text-base md:text-lg ${isSelected ? "text-emerald-900" : "text-gray-700"
-                                        }`}>
-                                        {option.label}
-                                      </p>
-                                    </CardContent>
-                                  </Card>
-                                </motion.div>
-                              );
-                            })}
-                          </div>
-                        ) : (
-                          <div className="space-y-4">
-                            <p className="text-gray-600 text-center">
-                              Enter your email to join the Four Under Club waitlist
-                            </p>
-                            <Input
-                              type="email"
-                              placeholder="your.email@example.com"
-                              value={surveyAnswers.email || ""}
-                              onChange={(e) => handleAnswer("email", e.target.value)}
-                              className="text-base md:text-lg p-4 md:p-6 text-center"
-                            />
-                          </div>
-                        )}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Golfer Username *
+                        </label>
+                        <Input
+                          type="text"
+                          placeholder="golf_username"
+                          value={surveyAnswers.username || ""}
+                          onChange={(e) => handleAnswer("username", e.target.value.toLowerCase())}
+                          className="text-base"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          3-20 characters, letters/numbers only
+                        </p>
+                      </div>
 
-                        <div className="flex gap-3 pt-4">
-                          {currentStep > 0 && (
-                            <Button
-                              variant="outline"
-                              onClick={() => setCurrentStep(prev => prev - 1)}
-                              className="flex-1"
-                            >
-                              Back
-                            </Button>
-                          )}
-
-                          <Button
-                            onClick={() => {
-                              if (currentStepData.type === "email") {
-                                handleSubmit();
-                              } else {
-                                handleNext();
-                              }
-                            }}
-                            disabled={!canProceed || isSubmitting}
-                            className="flex-1 bg-emerald-600 hover:bg-emerald-700"
-                          >
-                            {isSubmitting ? "Joining..." : currentStepData.type === "email" ? "Join the Club" : "Next"}
-                            {currentStepData.type !== "email" && <ArrowRight className="ml-2 w-4 h-4" />}
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
+                      <Button
+                        onClick={handleWaitlistOnly}
+                        disabled={isSubmitting || !surveyAnswers.email || !surveyAnswers.username}
+                        className="w-full bg-emerald-600 hover:bg-emerald-700 h-12"
+                      >
+                        {isSubmitting ? "Joining..." : "Join the Club"}
+                      </Button>
+                    </CardContent>
+                  </Card>
                 </motion.div>
               )}
             </AnimatePresence>
 
             {/* Success State */}
-            {currentStep >= surveySteps.length && (
+            {!showSurvey && !showPayment && !showEmailStep && surveyAnswers.email && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -662,29 +626,19 @@ export default function FourUndersClub() {
                 className="mt-10"
               >
                 <Card className="overflow-hidden border-2 border-emerald-300 shadow-xl">
-
                   <CardContent className="p-0">
-
                     <div className="bg-gradient-to-b from-emerald-50 to-white py-8">
-
                       <Image
                         src="/4Under_logo_vertical.jpg"
                         alt="Four Under Club"
                         width={100}
                         height={155}
                         priority
-                        className="
-              mx-auto
-              w-[80px]
-              md:w-[100px]
-              h-auto
-            "
+                        className="mx-auto w-[80px] md:w-[100px] h-auto"
                       />
-
                     </div>
 
                     <div className="px-6 py-8 text-center border-t border-emerald-100">
-
                       <div className="inline-flex items-center rounded-full bg-emerald-100 px-4 py-2 mb-6">
                         <span className="text-sm font-bold text-emerald-700">
                           WAITLIST CONFIRMED
@@ -705,36 +659,17 @@ export default function FourUndersClub() {
                       <Link href="/golfmusic" className="block">
                         <Button
                           size="lg"
-                          className="
-                !w-full
-                !h-14
-                !rounded-xl
-                !bg-emerald-600
-                hover:!bg-emerald-700
-                !text-white
-                !font-semibold
-              "
+                          className="!w-full !h-14 !rounded-xl !bg-emerald-600 hover:!bg-emerald-700 !text-white !font-semibold"
                         >
                           LET'S TALK
                         </Button>
                       </Link>
 
                       <p className="mt-4 text-sm text-gray-500">
-                        Got a golf story?
-
-                        Got a music story?
-
-                        Got both?
-
-                        Let's spend 15 minutes talking about it.
-
-
+                        Got a golf story? Got a music story? Got both? Let's spend 15 minutes talking about it.
                       </p>
-
                     </div>
-
                   </CardContent>
-
                 </Card>
               </motion.div>
             )}
