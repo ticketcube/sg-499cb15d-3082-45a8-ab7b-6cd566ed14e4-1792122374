@@ -355,7 +355,7 @@ export default function FourUndersClub() {
                           <h3 className="font-semibold text-lg text-gray-900">
                             {qIndex + 1}. {questionData.question}
                           </h3>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="grid grid-cols-4 gap-2">
                             {questionData.options.map((option) => {
                               const Icon = option.icon;
                               const isSelected = surveyAnswers[questionData.key as keyof SurveyAnswers] === option.value;
@@ -374,11 +374,11 @@ export default function FourUndersClub() {
                                     }`}
                                     onClick={() => handleAnswer(questionData.key, option.value)}
                                   >
-                                    <CardContent className="p-4 md:p-6 text-center">
-                                      <Icon className={`w-10 h-10 md:w-12 md:h-12 mx-auto mb-2 md:mb-3 ${
+                                    <CardContent className="p-2 md:p-4 text-center">
+                                      <Icon className={`w-6 h-6 md:w-10 md:h-10 mx-auto mb-1 md:mb-2 ${
                                         isSelected ? "text-emerald-600" : "text-gray-400"
                                       }`} />
-                                      <p className={`font-semibold text-base md:text-lg ${
+                                      <p className={`font-semibold text-xs md:text-base leading-tight ${
                                         isSelected ? "text-emerald-900" : "text-gray-700"
                                       }`}>
                                         {option.label}
