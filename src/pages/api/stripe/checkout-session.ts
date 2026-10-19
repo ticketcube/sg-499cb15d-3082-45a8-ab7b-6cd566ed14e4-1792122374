@@ -77,8 +77,42 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       priceIdPrefix: priceId.substring(0, 10) + '...'
     });
 
-    const domain = process.env.NEXT_PUBLIC_APP_URL
-        || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+    // Validate and use the request host for redirect URLs (prevent open redirects)
+    const requestHost = req.headers.host;
+    const allowedDomains = [
+      process.env.NEXT_PUBLIC_4UNDERS_URL,
+      process.env.NEXT_PUBLIC_4POINTS_URL,
+      process.env.NEXT_PUBLIC_MVG_URL,
+      process.env.NEXT_PUBLIC_SITE_URL,
+    ].filter(Boolean); // Remove undefined values
+
+    let domain: string;
+    
+    if (requestHost) {
+      const protocol = req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
+      const requestDomain = `${protocol}://${requestHost}`;
+      
+      // Check if request host matches allowed domains, localhost, or softgen.dev preview
+      const isAllowed = 
+        allowedDomains.some(allowed => requestDomain.startsWith(allowed!)) ||
+        requestHost.includes('localhost') ||
+        requestHost.includes('.softgen.dev');
+      
+      if (isAllowed) {
+        domain = requestDomain;
+        console.log('Using validated request host:', domain);
+      } else {
+        // Fall back to NEXT_PUBLIC_APP_URL for unknown hosts
+        domain = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+        console.warn('Request host not in whitelist, using fallback:', { 
+          requestHost, 
+          fallbackDomain: domain 
+        });
+      }
+    } else {
+      // No host header, use default
+      domain = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    }
 
     console.log('Creating Stripe checkout session with domain:', domain);
 
