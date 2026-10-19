@@ -79,18 +79,18 @@ export const userService = {
     return profileData as Profile | null;
   },
 
-  async getProfile(userId: string): Promise<Profile | null> {
+  async getProfile(user_id: string): Promise<Profile | null> {
     const result: any = await supabase
       .from("user_profiles")
       .select("*")
-      .eq("id", userId)
+      .eq("id", user_id)
       .maybeSingle();
     
     const { data, error } = result;
 
     if (error) {
       if (error.code === 'PGRST116') {
-        console.log(`No profile found for user ${userId}. A new one may need to be created.`);
+        console.log(`No profile found for user ${user_id}. A new one may need to be created.`);
         return null;
       }
       console.error("Error fetching profile:", error);
