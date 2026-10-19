@@ -279,15 +279,7 @@ export default function FourUndersClub() {
                   <p>Play Rancho Park in under 4 hours.</p>
                 </div>
 
-                <div className="flex gap-3 items-start">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-1 flex-shrink-0" />
-                  <p>Uphold Four Under pace-of-play standards without exception.</p>
-                </div>
-
-                <div className="flex gap-3 items-start">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-1 flex-shrink-0" />
-                  <p>Promote Fast, Fun and Fair golf.</p>
-                </div>
+               
               </div>
             </div>
 
