@@ -250,7 +250,21 @@ export default function FourUndersClub() {
     <>
       <Head>
         <title>The Four Under Club - Rancho Park</title>
-        <meta name="description" content="Play Rancho Park in Under 4 Hours - Join the Four Under Club" />
+        <meta name="description" content="The Four Under Club is a group of LA golfers who commit to finishing 18 holes at Rancho Park in under four hours." />
+        
+        {/* Open Graph / Facebook / LinkedIn */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://4unders.com/" />
+        <meta property="og:title" content="Play Rancho in Under 4 Hours?" />
+        <meta property="og:description" content="The Four Under Club is a group of LA golfers who commit to finishing 18 holes at Rancho Park in under four hours." />
+        <meta property="og:image" content="https://4unders.com/4Under_logo_vertical.jpg" />
+        
+        {/* Twitter */}
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content="https://4unders.com/" />
+        <meta property="twitter:title" content="Play Rancho in Under 4 Hours?" />
+        <meta property="twitter:description" content="The Four Under Club is a group of LA golfers who commit to finishing 18 holes at Rancho Park in under four hours." />
+        <meta property="twitter:image" content="https://4unders.com/4Under_logo_vertical.jpg" />
       </Head>
 
       <div className="min-h-screen bg-white">
