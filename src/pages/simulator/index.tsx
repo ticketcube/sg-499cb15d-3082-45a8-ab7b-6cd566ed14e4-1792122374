@@ -54,63 +54,94 @@ export default function SimulatorPage() {
     const slopeRad = (params.slope * Math.PI) / 180;
     const slopeEffect = g * Math.sin(slopeRad);
     
+    console.log("Simulating putts:", params);
+    
     // Try different initial speeds to find high and low paths
-    const speedRange = { min: 3, max: 15 }; // ft/s
-    const speedStep = 0.1;
+    const speedRange = { min: 2, max: 20 }; // ft/s - expanded range
+    const speedStep = 0.2;
+    
+    const successfulSpeeds: number[] = [];
     
     for (let speed = speedRange.min; speed <= speedRange.max; speed += speedStep) {
       const path = calculatePath(speed, params, friction, slopeEffect, g);
       
       // Check if ball goes in the hole (within 2.125 inches radius)
       const holeRadius = 2.125 / 12; // convert to feet
-      const finalPoint = path[path.length - 1];
-      const distanceToHole = Math.sqrt(
-        Math.pow(finalPoint.x, 2) + Math.pow(finalPoint.y - params.distance, 2)
-      );
       
-      if (distanceToHole <= holeRadius && path[path.length - 1].y >= params.distance - 0.5) {
-        const makesIt = true;
-        calculatedPaths.push({
-          points: path,
-          makesIt,
-          speed,
-          label: calculatedPaths.filter(p => p.makesIt).length === 0 ? "Low" : "High",
-        });
+      // Check multiple points near the hole to see if path crosses it
+      let closestDistance = Infinity;
+      let makesIt = false;
+      
+      for (const point of path) {
+        const distanceToHole = Math.sqrt(
+          Math.pow(point.x, 2) + Math.pow(point.y - params.distance, 2)
+        );
+        closestDistance = Math.min(closestDistance, distanceToHole);
         
-        // Only keep first (low) and last (high) successful putts
-        if (calculatedPaths.filter(p => p.makesIt).length >= 2) {
-          const successful = calculatedPaths.filter(p => p.makesIt);
-          calculatedPaths.length = 0;
-          calculatedPaths.push(successful[0], successful[successful.length - 1]);
+        // Ball makes it if it gets within hole radius while traveling towards/past hole
+        if (distanceToHole <= holeRadius && point.y >= params.distance - 0.5 && point.y <= params.distance + 2) {
+          makesIt = true;
           break;
         }
       }
+      
+      if (makesIt) {
+        successfulSpeeds.push(speed);
+      }
+      
+      // Store all paths for visualization if we haven't found any successful ones yet
+      if (successfulSpeeds.length === 0 && calculatedPaths.length < 5) {
+        calculatedPaths.push({
+          points: path,
+          makesIt: false,
+          speed,
+          label: `${speed.toFixed(1)} ft/s`,
+        });
+      }
     }
     
-    // Add some miss examples
-    if (calculatedPaths.length > 0) {
-      const lowSpeed = calculatedPaths[0].speed;
-      const highSpeed = calculatedPaths[calculatedPaths.length - 1].speed;
+    console.log("Successful speeds:", successfulSpeeds);
+    
+    // If we found successful putts, show low and high
+    if (successfulSpeeds.length > 0) {
+      calculatedPaths.length = 0;
       
-      // Too soft
-      const tooSoft = calculatePath(lowSpeed * 0.7, params, friction, slopeEffect, g);
+      const lowSpeed = successfulSpeeds[0];
+      const highSpeed = successfulSpeeds[successfulSpeeds.length - 1];
+      
       calculatedPaths.push({
-        points: tooSoft,
+        points: calculatePath(lowSpeed, params, friction, slopeEffect, g),
+        makesIt: true,
+        speed: lowSpeed,
+        label: "Low",
+      });
+      
+      if (successfulSpeeds.length > 1) {
+        calculatedPaths.push({
+          points: calculatePath(highSpeed, params, friction, slopeEffect, g),
+          makesIt: true,
+          speed: highSpeed,
+          label: "High",
+        });
+      }
+      
+      // Add miss examples
+      calculatedPaths.push({
+        points: calculatePath(lowSpeed * 0.7, params, friction, slopeEffect, g),
         makesIt: false,
         speed: lowSpeed * 0.7,
         label: "Too soft",
       });
       
-      // Too hard
-      const tooHard = calculatePath(highSpeed * 1.3, params, friction, slopeEffect, g);
       calculatedPaths.push({
-        points: tooHard,
+        points: calculatePath(highSpeed * 1.3, params, friction, slopeEffect, g),
         makesIt: false,
         speed: highSpeed * 1.3,
         label: "Too hard",
       });
     }
     
+    console.log("Calculated paths:", calculatedPaths.length);
     setPaths(calculatedPaths);
   };
 
@@ -274,12 +305,21 @@ export default function SimulatorPage() {
               {paths.length > 0 && (
                 <div className="pt-4 border-t space-y-2">
                   <h3 className="font-semibold">Results</h3>
-                  {paths.filter(p => p.makesIt).map((path, idx) => (
-                    <div key={idx} className="text-sm">
-                      <span className="font-medium">{path.label} Path:</span>{" "}
-                      {path.speed.toFixed(1)} ft/s
+                  {paths.filter(p => p.makesIt).length > 0 ? (
+                    paths.filter(p => p.makesIt).map((path, idx) => (
+                      <div key={idx} className="text-sm">
+                        <span className="font-medium">{path.label} Path:</span>{" "}
+                        {path.speed.toFixed(1)} ft/s
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-sm text-muted-foreground">
+                      No successful putts found at these parameters. Try adjusting slope, distance, or green speed.
                     </div>
-                  ))}
+                  )}
+                  <div className="text-xs text-muted-foreground mt-2">
+                    Showing {paths.length} trajectories
+                  </div>
                 </div>
               )}
             </CardContent>
