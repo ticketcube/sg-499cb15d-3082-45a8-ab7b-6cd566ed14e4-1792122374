@@ -6,7 +6,8 @@ import { Slider } from "@/components/ui/slider";
 import { useState, useEffect } from "react";
 
 interface SimulationParams {
-  slope: number; // degrees
+  slope: number; // degrees (uphill/downhill)
+  sideSlope: number; // degrees (left/right break)
   distance: number; // feet
   greenSpeed: number; // stimp reading
   grainDirection: number; // degrees (0 = towards hole)
@@ -28,6 +29,7 @@ interface PuttPath {
 export default function SimulatorPage() {
   const [params, setParams] = useState<SimulationParams>({
     slope: 2,
+    sideSlope: 0,
     distance: 10,
     greenSpeed: 10,
     grainDirection: 0,
@@ -128,6 +130,10 @@ export default function SimulatorPage() {
     let vx = 0;
     let vy = initialSpeed;
     
+    // Side slope effect (positive = breaks right)
+    const sideSlopeRad = (params.sideSlope * Math.PI) / 180;
+    const sideSlopeEffect = g * Math.sin(sideSlopeRad);
+    
     // Grain effect as a lateral force
     const grainRad = (params.grainDirection * Math.PI) / 180;
     const grainForceX = params.grainStrength * 0.5 * Math.cos(grainRad);
@@ -145,11 +151,14 @@ export default function SimulatorPage() {
       const frictionForceX = -friction * g * (vx / speed);
       const frictionForceY = -friction * g * (vy / speed);
       
-      // Slope effect (assuming uphill/downhill in y direction)
+      // Slope effect (uphill/downhill in y direction)
       const slopeForceY = -slopeEffect;
       
+      // Side slope effect (lateral in x direction)
+      const slopeForceX = sideSlopeEffect;
+      
       // Update velocity
-      vx += (frictionForceX + grainForceX) * dt;
+      vx += (frictionForceX + grainForceX + slopeForceX) * dt;
       vy += (frictionForceY + grainForceY + slopeForceY) * dt;
       
       // Update position
@@ -187,7 +196,7 @@ export default function SimulatorPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
-                <Label>Slope: {params.slope.toFixed(1)}°</Label>
+                <Label>Slope (Uphill): {params.slope.toFixed(1)}°</Label>
                 <Slider
                   value={[params.slope]}
                   onValueChange={([value]) => updateParam("slope", value)}
@@ -195,7 +204,19 @@ export default function SimulatorPage() {
                   max={5}
                   step={0.1}
                 />
-                <p className="text-sm text-muted-foreground">Uphill slope in degrees</p>
+                <p className="text-sm text-muted-foreground">Uphill/downhill slope</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Side Slope: {params.sideSlope.toFixed(1)}°</Label>
+                <Slider
+                  value={[params.sideSlope]}
+                  onValueChange={([value]) => updateParam("sideSlope", value)}
+                  min={-5}
+                  max={5}
+                  step={0.1}
+                />
+                <p className="text-sm text-muted-foreground">Left (-) / Right (+) break</p>
               </div>
 
               <div className="space-y-2">
