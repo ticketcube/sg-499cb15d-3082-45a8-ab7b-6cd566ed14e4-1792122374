@@ -172,7 +172,7 @@ export default function SimulatorPage() {
   const viewWidth = 600;
   const viewHeight = 800;
   const holeX = viewWidth / 2;
-  const holeY = 100;
+  const holeY = 100; // Hole at the top
 
   return (
     <Layout>
@@ -300,6 +300,25 @@ export default function SimulatorPage() {
                   />
                 ))}
 
+                {/* Starting position marker */}
+                <line
+                  x1={holeX - 15}
+                  y1={holeY + params.distance * scale}
+                  x2={holeX + 15}
+                  y2={holeY + params.distance * scale}
+                  stroke="#6b7280"
+                  strokeWidth={2}
+                />
+                <text
+                  x={holeX + 20}
+                  y={holeY + params.distance * scale + 5}
+                  fill="#6b7280"
+                  fontSize="12"
+                  fontWeight="600"
+                >
+                  Start ({params.distance}ft)
+                </text>
+
                 {/* Hole */}
                 <circle
                   cx={holeX}
@@ -315,6 +334,15 @@ export default function SimulatorPage() {
                   r={3}
                   fill="#fff"
                 />
+                <text
+                  x={holeX + 15}
+                  y={holeY + 5}
+                  fill="#1f2937"
+                  fontSize="12"
+                  fontWeight="600"
+                >
+                  Hole
+                </text>
 
                 {/* Draw paths */}
                 {paths.map((path, pathIdx) => {
@@ -327,58 +355,50 @@ export default function SimulatorPage() {
                     <g key={pathIdx}>
                       <polyline
                         points={path.points
-                          .map(p => `${holeX + p.x * scale},${holeY + p.y * scale}`)
+                          .map(p => `${holeX + p.x * scale},${holeY + (params.distance - p.y) * scale}`)
                           .join(" ")}
                         fill="none"
                         stroke={color}
-                        strokeWidth={path.makesIt ? 2 : 1.5}
+                        strokeWidth={path.makesIt ? 3 : 2}
                         strokeOpacity={opacity}
                         strokeDasharray={path.makesIt ? "none" : "4,2"}
                       />
                       
                       {/* Starting point */}
                       <circle
-                        cx={holeX}
-                        cy={holeY + path.points[0].y * scale}
-                        r={4}
+                        cx={holeX + path.points[0].x * scale}
+                        cy={holeY + (params.distance - path.points[0].y) * scale}
+                        r={5}
                         fill={color}
                         fillOpacity={opacity}
                       />
                       
-                      {/* End point for misses */}
-                      {!path.makesIt && path.points.length > 0 && (
+                      {/* End point */}
+                      {path.points.length > 0 && (
                         <circle
                           cx={holeX + path.points[path.points.length - 1].x * scale}
-                          cy={holeY + path.points[path.points.length - 1].y * scale}
-                          r={3}
+                          cy={holeY + (params.distance - path.points[path.points.length - 1].y) * scale}
+                          r={4}
                           fill={color}
-                          fillOpacity={opacity}
+                          fillOpacity={opacity * 0.7}
                         />
                       )}
                       
                       {/* Label */}
-                      <text
-                        x={holeX + (path.points[Math.floor(path.points.length / 3)]?.x || 0) * scale + 10}
-                        y={holeY + (path.points[Math.floor(path.points.length / 3)]?.y || 0) * scale}
-                        fill={color}
-                        fontSize="12"
-                        fontWeight="600"
-                      >
-                        {path.label}
-                      </text>
+                      {path.points.length > 5 && (
+                        <text
+                          x={holeX + path.points[Math.floor(path.points.length / 2)].x * scale + 10}
+                          y={holeY + (params.distance - path.points[Math.floor(path.points.length / 2)].y) * scale}
+                          fill={color}
+                          fontSize="12"
+                          fontWeight="600"
+                        >
+                          {path.label}
+                        </text>
+                      )}
                     </g>
                   );
                 })}
-
-                {/* Distance marker */}
-                <text
-                  x={holeX + 20}
-                  y={holeY + params.distance * scale}
-                  fill="#6b7280"
-                  fontSize="11"
-                >
-                  {params.distance}ft
-                </text>
               </svg>
 
               <div className="mt-4 space-y-2 text-sm">
