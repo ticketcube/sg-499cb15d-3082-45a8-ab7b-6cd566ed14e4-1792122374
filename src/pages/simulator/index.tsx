@@ -24,6 +24,8 @@ interface PuttPath {
   makesIt: boolean;
   speed: number;
   label: string;
+  aimAngle?: number;
+  endDistance?: number;
 }
 
 export default function SimulatorPage() {
@@ -59,14 +61,12 @@ export default function SimulatorPage() {
     const speedStep = 0.5;
     const angleRange = { min: -45, max: 45 }; // degrees to aim
     const angleStep = 0.5;
+    const maxEndDistance = 3; // feet past hole
     
-    const successfulPutts: { speed: number; angle: number; path: Point[] }[] = [];
-    let bestMiss: { speed: number; angle: number; path: Point[]; dist: number } | null = null;
+    const successfulPutts: { speed: number; angle: number; path: Point[]; endDist: number }[] = [];
     
     // 2D Search: for each speed, try angles until we make it
     for (let speed = speedRange.min; speed <= speedRange.max; speed += speedStep) {
-      let madeItAtThisSpeed = false;
-      
       for (let angle = angleRange.min; angle <= angleRange.max; angle += angleStep) {
         const angleRad = (angle * Math.PI) / 180;
         const vx = speed * Math.sin(angleRad);
@@ -77,14 +77,16 @@ export default function SimulatorPage() {
         // Check if ball goes in the hole (within 2.125 inches radius)
         const holeRadius = 2.125 / 12; // convert to feet
         
-        let closestDistance = Infinity;
         let makesIt = false;
+        const endPoint = path[path.length - 1];
+        const endDistance = Math.sqrt(
+          Math.pow(endPoint.x, 2) + Math.pow(endPoint.y - params.distance, 2)
+        );
         
         for (const point of path) {
           const distanceToHole = Math.sqrt(
             Math.pow(point.x, 2) + Math.pow(point.y - params.distance, 2)
           );
-          closestDistance = Math.min(closestDistance, distanceToHole);
           
           // Ball makes it if it gets within hole radius
           if (distanceToHole <= holeRadius && point.y >= params.distance - 0.5 && point.y <= params.distance + 2) {
@@ -93,15 +95,10 @@ export default function SimulatorPage() {
           }
         }
         
-        if (makesIt) {
-          successfulPutts.push({ speed, angle, path });
-          madeItAtThisSpeed = true;
+        // Only accept putts that make it AND end within 3 feet of the hole
+        if (makesIt && endDistance <= maxEndDistance) {
+          successfulPutts.push({ speed, angle, path, endDist: endDistance });
           break; // Move to next speed once we find a working angle for this speed
-        } else {
-          // Track best miss for visualization if nothing goes in
-          if (!bestMiss || closestDistance < bestMiss.dist) {
-            bestMiss = { speed, angle, path, dist: closestDistance };
-          }
         }
       }
     }
@@ -118,7 +115,9 @@ export default function SimulatorPage() {
         points: lowPutt.path,
         makesIt: true,
         speed: lowPutt.speed,
-        label: `Low (${lowPutt.angle > 0 ? 'Right' : 'Left'} ${Math.abs(lowPutt.angle).toFixed(1)}°)`,
+        aimAngle: lowPutt.angle,
+        endDistance: lowPutt.endDist,
+        label: "Low",
       });
       
       if (successfulPutts.length > 1 && highPutt.speed > lowPutt.speed) {
@@ -126,28 +125,54 @@ export default function SimulatorPage() {
           points: highPutt.path,
           makesIt: true,
           speed: highPutt.speed,
-          label: `High (${highPutt.angle > 0 ? 'Right' : 'Left'} ${Math.abs(highPutt.angle).toFixed(1)}°)`,
+          aimAngle: highPutt.angle,
+          endDistance: highPutt.endDist,
+          label: "High",
         });
       }
       
-      // Add a miss example (slightly off aim from the low putt)
-      const missVx = lowPutt.speed * Math.sin(((lowPutt.angle - 2) * Math.PI) / 180);
-      const missVy = lowPutt.speed * Math.cos(((lowPutt.angle - 2) * Math.PI) / 180);
-      calculatedPaths.push({
-        points: calculatePath(missVx, missVy, params, friction, slopeEffect, g),
-        makesIt: false,
-        speed: lowPutt.speed,
-        label: "Miss (Pulled)",
-      });
+      // Add miss examples that end within 3 feet (slightly off aim)
+      // Miss #1: aim 3 degrees off from low putt
+      const miss1Angle = lowPutt.angle - 3;
+      const miss1Vx = lowPutt.speed * Math.sin((miss1Angle * Math.PI) / 180);
+      const miss1Vy = lowPutt.speed * Math.cos((miss1Angle * Math.PI) / 180);
+      const miss1Path = calculatePath(miss1Vx, miss1Vy, params, friction, slopeEffect, g);
+      const miss1End = miss1Path[miss1Path.length - 1];
+      const miss1Dist = Math.sqrt(
+        Math.pow(miss1End.x, 2) + Math.pow(miss1End.y - params.distance, 2)
+      );
       
-    } else if (bestMiss) {
-      // Show closest miss if nothing goes in
-      calculatedPaths.push({
-        points: bestMiss.path,
-        makesIt: false,
-        speed: bestMiss.speed,
-        label: `Best Miss (Aim ${bestMiss.angle}°)`,
-      });
+      if (miss1Dist <= maxEndDistance) {
+        calculatedPaths.push({
+          points: miss1Path,
+          makesIt: false,
+          speed: lowPutt.speed,
+          aimAngle: miss1Angle,
+          endDistance: miss1Dist,
+          label: "Miss Left",
+        });
+      }
+      
+      // Miss #2: aim 3 degrees off from low putt (other direction)
+      const miss2Angle = lowPutt.angle + 3;
+      const miss2Vx = lowPutt.speed * Math.sin((miss2Angle * Math.PI) / 180);
+      const miss2Vy = lowPutt.speed * Math.cos((miss2Angle * Math.PI) / 180);
+      const miss2Path = calculatePath(miss2Vx, miss2Vy, params, friction, slopeEffect, g);
+      const miss2End = miss2Path[miss2Path.length - 1];
+      const miss2Dist = Math.sqrt(
+        Math.pow(miss2End.x, 2) + Math.pow(miss2End.y - params.distance, 2)
+      );
+      
+      if (miss2Dist <= maxEndDistance) {
+        calculatedPaths.push({
+          points: miss2Path,
+          makesIt: false,
+          speed: lowPutt.speed,
+          aimAngle: miss2Angle,
+          endDistance: miss2Dist,
+          label: "Miss Right",
+        });
+      }
     }
     
     setPaths(calculatedPaths);
@@ -304,23 +329,53 @@ export default function SimulatorPage() {
               </Button>
 
               {paths.length > 0 && (
-                <div className="pt-4 border-t space-y-2">
+                <div className="pt-4 border-t space-y-3">
                   <h3 className="font-semibold">Results</h3>
                   {paths.filter(p => p.makesIt).length > 0 ? (
-                    paths.filter(p => p.makesIt).map((path, idx) => (
-                      <div key={idx} className="text-sm">
-                        <span className="font-medium">{path.label} Path:</span>{" "}
-                        {path.speed.toFixed(1)} ft/s
-                      </div>
-                    ))
+                    <>
+                      {paths.filter(p => p.makesIt).map((path, idx) => (
+                        <div key={idx} className="space-y-1 p-3 bg-muted/50 rounded-md">
+                          <div className="font-medium text-base">{path.label} Path</div>
+                          <div className="text-sm">
+                            <span className="text-muted-foreground">Speed:</span>{" "}
+                            <span className="font-semibold">{path.speed.toFixed(1)} ft/s</span>
+                          </div>
+                          <div className="text-sm">
+                            <span className="text-muted-foreground">Aim:</span>{" "}
+                            <span className="font-semibold">
+                              {path.aimAngle! > 0 
+                                ? `${path.aimAngle!.toFixed(1)}° Right` 
+                                : path.aimAngle! < 0
+                                ? `${Math.abs(path.aimAngle!).toFixed(1)}° Left`
+                                : "Straight"}
+                            </span>
+                          </div>
+                          <div className="text-sm">
+                            <span className="text-muted-foreground">Ends:</span>{" "}
+                            <span className="font-semibold">{path.endDistance!.toFixed(1)} ft past hole</span>
+                          </div>
+                        </div>
+                      ))}
+                      
+                      {paths.filter(p => !p.makesIt).length > 0 && (
+                        <div className="pt-2">
+                          <div className="text-sm font-medium mb-2">Misses (within 3ft):</div>
+                          {paths.filter(p => !p.makesIt).map((path, idx) => (
+                            <div key={idx} className="text-sm text-muted-foreground ml-2">
+                              {path.label}: {path.aimAngle! > 0 
+                                ? `${path.aimAngle!.toFixed(1)}° Right` 
+                                : `${Math.abs(path.aimAngle!).toFixed(1)}° Left`}
+                              {" "}({path.endDistance!.toFixed(1)}ft from hole)
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
                   ) : (
                     <div className="text-sm text-muted-foreground">
-                      No successful putts found at these parameters. Try adjusting slope, distance, or green speed.
+                      No successful putts found that end within 3 feet. Try adjusting parameters.
                     </div>
                   )}
-                  <div className="text-xs text-muted-foreground mt-2">
-                    Showing {paths.length} trajectories
-                  </div>
                 </div>
               )}
             </CardContent>
