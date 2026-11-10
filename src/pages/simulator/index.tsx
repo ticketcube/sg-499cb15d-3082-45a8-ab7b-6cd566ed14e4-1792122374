@@ -54,99 +54,108 @@ export default function SimulatorPage() {
     const slopeRad = (params.slope * Math.PI) / 180;
     const slopeEffect = g * Math.sin(slopeRad);
     
-    console.log("Simulating putts:", params);
+    // Search ranges
+    const speedRange = { min: 2, max: 25 }; // ft/s
+    const speedStep = 0.5;
+    const angleRange = { min: -45, max: 45 }; // degrees to aim
+    const angleStep = 0.5;
     
-    // Try different initial speeds to find high and low paths
-    const speedRange = { min: 2, max: 20 }; // ft/s - expanded range
-    const speedStep = 0.2;
+    const successfulPutts: { speed: number; angle: number; path: Point[] }[] = [];
+    let bestMiss: { speed: number; angle: number; path: Point[]; dist: number } | null = null;
     
-    const successfulSpeeds: number[] = [];
-    
+    // 2D Search: for each speed, try angles until we make it
     for (let speed = speedRange.min; speed <= speedRange.max; speed += speedStep) {
-      const path = calculatePath(speed, params, friction, slopeEffect, g);
+      let madeItAtThisSpeed = false;
       
-      // Check if ball goes in the hole (within 2.125 inches radius)
-      const holeRadius = 2.125 / 12; // convert to feet
-      
-      // Check multiple points near the hole to see if path crosses it
-      let closestDistance = Infinity;
-      let makesIt = false;
-      
-      for (const point of path) {
-        const distanceToHole = Math.sqrt(
-          Math.pow(point.x, 2) + Math.pow(point.y - params.distance, 2)
-        );
-        closestDistance = Math.min(closestDistance, distanceToHole);
+      for (let angle = angleRange.min; angle <= angleRange.max; angle += angleStep) {
+        const angleRad = (angle * Math.PI) / 180;
+        const vx = speed * Math.sin(angleRad);
+        const vy = speed * Math.cos(angleRad);
         
-        // Ball makes it if it gets within hole radius while traveling towards/past hole
-        if (distanceToHole <= holeRadius && point.y >= params.distance - 0.5 && point.y <= params.distance + 2) {
-          makesIt = true;
-          break;
+        const path = calculatePath(vx, vy, params, friction, slopeEffect, g);
+        
+        // Check if ball goes in the hole (within 2.125 inches radius)
+        const holeRadius = 2.125 / 12; // convert to feet
+        
+        let closestDistance = Infinity;
+        let makesIt = false;
+        
+        for (const point of path) {
+          const distanceToHole = Math.sqrt(
+            Math.pow(point.x, 2) + Math.pow(point.y - params.distance, 2)
+          );
+          closestDistance = Math.min(closestDistance, distanceToHole);
+          
+          // Ball makes it if it gets within hole radius
+          if (distanceToHole <= holeRadius && point.y >= params.distance - 0.5 && point.y <= params.distance + 2) {
+            makesIt = true;
+            break;
+          }
+        }
+        
+        if (makesIt) {
+          successfulPutts.push({ speed, angle, path });
+          madeItAtThisSpeed = true;
+          break; // Move to next speed once we find a working angle for this speed
+        } else {
+          // Track best miss for visualization if nothing goes in
+          if (!bestMiss || closestDistance < bestMiss.dist) {
+            bestMiss = { speed, angle, path, dist: closestDistance };
+          }
         }
       }
-      
-      if (makesIt) {
-        successfulSpeeds.push(speed);
-      }
-      
-      // Store all paths for visualization if we haven't found any successful ones yet
-      if (successfulSpeeds.length === 0 && calculatedPaths.length < 5) {
-        calculatedPaths.push({
-          points: path,
-          makesIt: false,
-          speed,
-          label: `${speed.toFixed(1)} ft/s`,
-        });
-      }
     }
     
-    console.log("Successful speeds:", successfulSpeeds);
-    
-    // If we found successful putts, show low and high
-    if (successfulSpeeds.length > 0) {
-      calculatedPaths.length = 0;
+    // Process results for visualization
+    if (successfulPutts.length > 0) {
+      // Sort by speed
+      successfulPutts.sort((a, b) => a.speed - b.speed);
       
-      const lowSpeed = successfulSpeeds[0];
-      const highSpeed = successfulSpeeds[successfulSpeeds.length - 1];
+      const lowPutt = successfulPutts[0];
+      const highPutt = successfulPutts[successfulPutts.length - 1];
       
       calculatedPaths.push({
-        points: calculatePath(lowSpeed, params, friction, slopeEffect, g),
+        points: lowPutt.path,
         makesIt: true,
-        speed: lowSpeed,
-        label: "Low",
+        speed: lowPutt.speed,
+        label: `Low (${lowPutt.angle > 0 ? 'Right' : 'Left'} ${Math.abs(lowPutt.angle).toFixed(1)}°)`,
       });
       
-      if (successfulSpeeds.length > 1) {
+      if (successfulPutts.length > 1 && highPutt.speed > lowPutt.speed) {
         calculatedPaths.push({
-          points: calculatePath(highSpeed, params, friction, slopeEffect, g),
+          points: highPutt.path,
           makesIt: true,
-          speed: highSpeed,
-          label: "High",
+          speed: highPutt.speed,
+          label: `High (${highPutt.angle > 0 ? 'Right' : 'Left'} ${Math.abs(highPutt.angle).toFixed(1)}°)`,
         });
       }
       
-      // Add miss examples
+      // Add a miss example (slightly off aim from the low putt)
+      const missVx = lowPutt.speed * Math.sin(((lowPutt.angle - 2) * Math.PI) / 180);
+      const missVy = lowPutt.speed * Math.cos(((lowPutt.angle - 2) * Math.PI) / 180);
       calculatedPaths.push({
-        points: calculatePath(lowSpeed * 0.7, params, friction, slopeEffect, g),
+        points: calculatePath(missVx, missVy, params, friction, slopeEffect, g),
         makesIt: false,
-        speed: lowSpeed * 0.7,
-        label: "Too soft",
+        speed: lowPutt.speed,
+        label: "Miss (Pulled)",
       });
       
+    } else if (bestMiss) {
+      // Show closest miss if nothing goes in
       calculatedPaths.push({
-        points: calculatePath(highSpeed * 1.3, params, friction, slopeEffect, g),
+        points: bestMiss.path,
         makesIt: false,
-        speed: highSpeed * 1.3,
-        label: "Too hard",
+        speed: bestMiss.speed,
+        label: `Best Miss (Aim ${bestMiss.angle}°)`,
       });
     }
     
-    console.log("Calculated paths:", calculatedPaths.length);
     setPaths(calculatedPaths);
   };
 
   const calculatePath = (
-    initialSpeed: number,
+    initialVx: number,
+    initialVy: number,
     params: SimulationParams,
     friction: number,
     slopeEffect: number,
@@ -158,46 +167,38 @@ export default function SimulatorPage() {
     
     let x = 0;
     let y = 0;
-    let vx = 0;
-    let vy = initialSpeed;
+    let vx = initialVx;
+    let vy = initialVy;
     
     // Side slope effect (positive = breaks right)
     const sideSlopeRad = (params.sideSlope * Math.PI) / 180;
     const sideSlopeEffect = g * Math.sin(sideSlopeRad);
     
-    // Grain effect as a lateral force
+    // Grain effect (0 = towards hole = +Y, 90 = right = +X)
     const grainRad = (params.grainDirection * Math.PI) / 180;
-    const grainForceX = params.grainStrength * 0.5 * Math.cos(grainRad);
-    const grainForceY = params.grainStrength * 0.5 * Math.sin(grainRad);
+    const grainForceX = params.grainStrength * 0.5 * Math.sin(grainRad);
+    const grainForceY = params.grainStrength * 0.5 * Math.cos(grainRad);
     
     for (let t = 0; t < maxTime; t += dt) {
       points.push({ x, y });
       
-      // Calculate speed
       const speed = Math.sqrt(vx * vx + vy * vy);
-      
       if (speed < 0.1) break; // Ball stopped
       
       // Friction opposes motion
       const frictionForceX = -friction * g * (vx / speed);
       const frictionForceY = -friction * g * (vy / speed);
       
-      // Slope effect (uphill/downhill in y direction)
-      const slopeForceY = -slopeEffect;
-      
-      // Side slope effect (lateral in x direction)
-      const slopeForceX = sideSlopeEffect;
-      
       // Update velocity
-      vx += (frictionForceX + grainForceX + slopeForceX) * dt;
-      vy += (frictionForceY + grainForceY + slopeForceY) * dt;
+      vx += (frictionForceX + grainForceX + sideSlopeEffect) * dt;
+      vy += (frictionForceY + grainForceY - slopeEffect) * dt;
       
       // Update position
       x += vx * dt;
       y += vy * dt;
       
       // Stop if ball reaches far past the hole
-      if (y > params.distance + 10) break;
+      if (y > params.distance + 15) break;
     }
     
     return points;
